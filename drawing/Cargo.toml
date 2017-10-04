@@ -1,0 +1,9 @@
+[package]
+name = "drawing"
+version = "0.1.0"
+authors = ["Marek G <no@mail.com>"]
+description = "Drawing library"
+
+[dependencies]
+winit = "*"
+euclid = "*"

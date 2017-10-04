@@ -1,0 +1,13 @@
+[package]
+name = "drawing_examples"
+version = "0.1.0"
+authors = ["Marek G <no@mail.com>"]
+
+[dependencies]
+drawing = { path = "../drawing", version = "*" }
+drawing_gfx = { path = "../drawing_gfx", version = "*" }
+winit = "*"
+
+[[bin]]
+name = "simple"
+path = "src/simple.rs"

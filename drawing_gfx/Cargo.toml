@@ -1,0 +1,13 @@
+[package]
+name = "drawing_gfx"
+version = "0.1.0"
+authors = ["Marek G <no@mail.com>"]
+
+[dependencies]
+drawing = { path = "../drawing", version = "*" }
+winit = "0.7"
+glutin = "*"
+gfx = "*"
+gfx_core = "*"
+gfx_device_dx11 = "*"
+gfx_window_dxgi = "*"
