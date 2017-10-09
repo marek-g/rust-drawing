@@ -11,6 +11,10 @@ impl<B: Backend> Renderer<B> {
 		Renderer { backend: backend }
 	}
 
+	pub fn update_window_size(&mut self, width: u16, height: u16) {
+		self.backend.update_window_size(width, height)
+	}
+
 	pub fn draw(&mut self, size: PhysPixelSize, primitives: Vec<Primitive>) {
 		let physical_pixel_to_device_transform = B::get_device_transform(size);
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();

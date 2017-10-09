@@ -18,6 +18,8 @@ fn main() {
 
     // main loop
     let mut running = true;
+    let mut width = 0;
+    let mut height = 0;
     while running {
         events_loop.poll_events(|event| {
             if let winit::Event::WindowEvent { event, .. } = event {
@@ -28,20 +30,26 @@ fn main() {
                             .. },
                         ..
                     } | winit::WindowEvent::Closed => running = false,
+                    winit::WindowEvent::Resized(w, h) => {
+                        width = w; height = h;
+                        renderer.update_window_size(w as u16, h as u16)
+                    }
                     _ => (),
                 }
             }
         });
 
+        if width <= 0 || height <= 0 { continue }
+
         let primitives = vec![
             Primitive::Rectangle { color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
-                rect: UserPixelRect::new(UserPixelPoint::new(100.0f32, 100.0f32),
+                rect: UserPixelRect::new(UserPixelPoint::new(-100.0f32, -100.0f32),
                     UserPixelSize::new(200.0f32, 50.0f32)) },
             Primitive::Line { color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 thickness: UserPixelThickness::new(1.0f32),
                 start_point: UserPixelPoint::new(100.0f32, 100.0f32),
                 end_point: UserPixelPoint::new(300.0f32, 100.0f32) }
         ];
-        renderer.draw(PhysPixelSize::new(800.0f32, 600.0f32), primitives);
+        renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
     }
 }

@@ -6,6 +6,8 @@ use units::*;
 pub trait Backend {
 	fn create_backend_window(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self;
+
+	fn update_window_size(&mut self, width: u16, height: u16);
 	
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
