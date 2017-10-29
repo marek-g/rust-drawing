@@ -43,11 +43,11 @@ fn main() {
 
         let primitives = vec![
             Primitive::Rectangle { color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
-                rect: UserPixelRect::new(UserPixelPoint::new(-100.0f32, -100.0f32),
+                rect: UserPixelRect::new(UserPixelPoint::new(100.5f32, 100.5f32),
                     UserPixelSize::new(200.0f32, 50.0f32)) },
             Primitive::Line { color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 thickness: UserPixelThickness::new(1.0f32),
-                start_point: UserPixelPoint::new(100.0f32, 100.0f32),
+                start_point: UserPixelPoint::new(100.5f32, 100.5f32),
                 end_point: UserPixelPoint::new(300.0f32, 100.0f32) }
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);

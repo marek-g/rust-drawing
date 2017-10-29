@@ -65,18 +65,13 @@ impl drawing::backend::Backend for GfxBackend {
 	}
 
     fn update_window_size(&mut self, width: u16, height: u16) {
-        if let Ok(view) = gfx_window_dxgi::update_views(&mut self.window, &mut self.factory, &mut self.device, width, height) {
-            self.target_view = view;
-            println!("ok")
-        } else {
-            println!("fail")
-        }
+        // gfx handles that for us
     }
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
-            2.0f32 / size.width, 0.0f32, 1000f32,//-1.0f32,
-            0.0f32, -2.0f32 / size.height, 1000f32,//1.0f32
+            2.0f32 / size.width, 0.0f32, -1.0f32,
+            0.0f32, -2.0f32 / size.height, 1.0f32,
         )
     }
 
@@ -114,8 +109,8 @@ impl drawing::backend::Backend for GfxBackend {
 
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
-            [transform.m31, transform.m32, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0]];
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,
@@ -147,8 +142,8 @@ impl GfxBackend {
 
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
-            [transform.m31, transform.m32, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0]];
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,
@@ -194,8 +189,8 @@ impl GfxBackend {
 
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
-            [transform.m31, transform.m32, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0]];
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,

@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            //"type": "lldb",
+            //"program": "${workspaceRoot}/target/debug/webrender-test.exe",
+            //"sourceLanguages": ["rust"]
+            "type": "gdb",
+            "request": "launch",
+            "target": "${workspaceRoot}/target/debug/simple.exe",
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "build"
+        }
+    ]
+}
