@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "drawing"
+		},
+		{
+			"path": "drawing_gfx"
+		},
+		{
+			"path": "drawing_examples"
+		}
+	],
+	"settings": {}
+}

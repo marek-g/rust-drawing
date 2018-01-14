@@ -5,7 +5,7 @@ authors = ["Marek G <no@mail.com>"]
 
 [dependencies]
 drawing = { path = "../drawing", version = "*" }
-winit = "0.7"
+winit = "*"
 glutin = "*"
 gfx = "*"
 gfx_core = "*"
