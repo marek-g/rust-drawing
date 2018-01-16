@@ -7,6 +7,7 @@ authors = ["Marek G <no@mail.com>"]
 drawing = { path = "../drawing", version = "*" }
 drawing_gfx = { path = "../drawing_gfx", version = "*" }
 winit = "*"
+shared_library = "*"
 
 [[bin]]
 name = "simple"

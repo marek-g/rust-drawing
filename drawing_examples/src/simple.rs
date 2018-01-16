@@ -1,6 +1,7 @@
 extern crate winit;
 extern crate drawing;
 extern crate drawing_gfx;
+extern crate shared_library;
 
 use drawing::backend::Backend;
 use drawing::renderer::Renderer;
@@ -9,8 +10,9 @@ use drawing::units::*;
 use drawing_gfx::backend::GfxBackend;
 
 fn main() {
+    set_process_high_dpi_aware();
     let window_builder = winit::WindowBuilder::new()
-            .with_title("Title");
+        .with_title("Title");
     let mut events_loop = winit::EventsLoop::new(); 
 
 
@@ -52,4 +54,49 @@ fn main() {
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
     }
+}
+
+type Result = std::result::Result<(), ()>;
+
+// Helper function to dynamically load a function pointer and call it.
+// The result of the callback is forwarded.
+#[cfg(windows)]
+fn try_get_function_pointer<F>(dll: &str, name: &str, callback: &Fn(&F) -> Result) -> Result {
+    use shared_library::dynamic_library::DynamicLibrary;
+    use std::path::Path;
+
+    // Try to load the function dynamically.
+    let lib = DynamicLibrary::open(Some(Path::new(dll))).map_err(|_| ())?;
+
+    let func_ptr = unsafe {
+        lib.symbol::<F>(name).map_err(|_| ())?
+    };
+
+    let func = unsafe { std::mem::transmute(&func_ptr) };
+
+    callback(func)
+}
+
+#[cfg(windows)]
+pub fn set_process_high_dpi_aware() {
+    let _result = try_get_function_pointer::<unsafe extern "system" fn() -> u32>(
+        "User32.dll",
+        "SetProcessDPIAware",
+        &|SetProcessDPIAware| {
+            // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms633543(v=vs.85).aspx
+            let result = unsafe {
+                SetProcessDPIAware()
+            };
+
+            match result {
+                0 => Err(()),
+                _ => Ok(())
+            }
+        }
+    );
+}
+
+/// This function only works on Windows.
+#[cfg(not(windows))]
+pub fn set_process_high_dpi_aware() {
 }

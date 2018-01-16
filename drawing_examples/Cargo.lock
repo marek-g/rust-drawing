@@ -107,6 +107,7 @@ version = "0.1.0"
 dependencies = [
  "drawing 0.1.0",
  "drawing_gfx 0.1.0",
+ "shared_library 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "winit 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
