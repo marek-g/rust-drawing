@@ -8,6 +8,7 @@ extern crate gfx_window_dxgi;
 use self::drawing::color::*;
 use self::drawing::units::*;
 use gfx::traits::FactoryExt;
+use backend::gfx_core::Device;
 
 pub struct GfxBackend {
 	window: gfx_window_dxgi::Window,
@@ -65,7 +66,14 @@ impl drawing::backend::Backend for GfxBackend {
 	}
 
     fn update_window_size(&mut self, width: u16, height: u16) {
-        // gfx handles that for us
+        // TODO: this appears to not be working
+        // because rendering target view is still in use (and I don't know how to release it yet)
+        match gfx_window_dxgi::update_views(&mut self.window, &mut self.factory, &mut self.device, width, height) {
+            Ok(target_view) => {
+                self.target_view = target_view;
+            },
+            Err(e) => println!("Resize failed: {}", e),
+        }
     }
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
@@ -128,6 +136,7 @@ impl drawing::backend::Backend for GfxBackend {
 	fn end(&mut self) {
         self.encoder.flush(&mut self.device);
         self.window.swap_buffers(1);
+        self.device.cleanup();
 	}
 }
 
