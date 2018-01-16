@@ -14,7 +14,7 @@ pub struct GfxBackend {
 	window: gfx_window_dxgi::Window,
 	device: gfx_device_dx11::Device,
 	factory: gfx_device_dx11::Factory,
-	target_view: gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>,
+	target_view: Option<gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>>,
 	encoder: gfx::Encoder<gfx_device_dx11::Resources, gfx_device_dx11::CommandBuffer<gfx_device_dx11::CommandList>>,
 	color_pipeline_triangles: gfx::PipelineState<gfx_device_dx11::Resources, ColorPipeline::Meta>,
 	color_pipeline_lines: gfx::PipelineState<gfx_device_dx11::Resources, ColorPipeline::Meta>,
@@ -56,9 +56,9 @@ impl drawing::backend::Backend for GfxBackend {
 			TexturedPipeline::new()
 		).unwrap();
 
-		let mut encoder = factory.create_command_buffer().into(); 
+		let mut encoder = factory.create_command_buffer().into();
 
-		GfxBackend { window: window, device: device, factory: factory, target_view: target_view,
+		GfxBackend { window: window, device: device, factory: factory, target_view: Some(target_view),
 			encoder: encoder,
 			color_pipeline_triangles: color_pipeline_triangles,
 			color_pipeline_lines: color_pipeline_lines,
@@ -66,11 +66,10 @@ impl drawing::backend::Backend for GfxBackend {
 	}
 
     fn update_window_size(&mut self, width: u16, height: u16) {
-        // TODO: this appears to not be working
-        // because rendering target view is still in use (and I don't know how to release it yet)
-        match gfx_window_dxgi::update_views(&mut self.window, &mut self.factory, &mut self.device, width, height) {
+        self.target_view = None;
+        match gfx_window_dxgi::update_views::<ColorFormat, gfx_device_dx11::Device>(&mut self.window, &mut self.factory, &mut self.device, width, height) {
             Ok(target_view) => {
-                self.target_view = target_view;
+                self.target_view = Some(target_view);
             },
             Err(e) => println!("Resize failed: {}", e),
         }
@@ -84,7 +83,9 @@ impl drawing::backend::Backend for GfxBackend {
     }
 
 	fn begin(&mut self) {
-		self.encoder.clear(&self.target_view, [0.1, 0.2, 0.3, 1.0]);
+        if let Some(ref target_view) = self.target_view {
+            self.encoder.clear(target_view, [0.5, 0.2, 0.3, 1.0]);
+        }
 	}
 
     fn line(&mut self, color: &Color, thickness: DeviceThickness,
@@ -102,35 +103,37 @@ impl drawing::backend::Backend for GfxBackend {
 		color: &Color,
         rect: Rect,
         transform: UnknownToDeviceTransform) {
-		let p1 = [ rect.origin.x, rect.origin.y ];
-        let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
+        if let Some(ref target_view) = self.target_view {
+            let p1 = [ rect.origin.x, rect.origin.y ];
+            let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
-        let TRIANGLE: [ColorVertex; 6] = [
-            ColorVertex { pos: [ p1[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p2[1] ], color: *color },
-            ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
-        ];
-        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
+            let TRIANGLE: [ColorVertex; 6] = [
+                ColorVertex { pos: [ p1[0], p1[1] ], color: *color },
+                ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
+                ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
+                ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
+                ColorVertex { pos: [ p2[0], p2[1] ], color: *color },
+                ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
+            ];
+            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
 
-        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-            [transform.m21, transform.m22, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [transform.m31, transform.m32, 0.0, 1.0]];
+            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+                [transform.m21, transform.m22, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
-            vbuf: vertex_buffer,
-            locals: self.factory.create_constant_buffer(1),
-            transform: transform,
-            out: self.target_view.clone()
-        };
+            let mut data = ColorPipeline::Data {
+                vbuf: vertex_buffer,
+                locals: self.factory.create_constant_buffer(1),
+                transform: transform,
+                out: target_view.clone()
+            };
 
-        let locals = Locals { transform: transform };
-        self.encoder.update_constant_buffer(&data.locals, &locals);
+            let locals = Locals { transform: transform };
+            self.encoder.update_constant_buffer(&data.locals, &locals);
 
-		self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+            self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+        }
 	}
 
 	fn end(&mut self) {
@@ -143,75 +146,79 @@ impl drawing::backend::Backend for GfxBackend {
 impl GfxBackend {
 	fn line_native(&mut self, color: &Color, start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
-        let LINE: [ColorVertex; 2] = [
-            ColorVertex { pos: [ start_point.x, start_point.y ], color: *color },
-            ColorVertex { pos: [ end_point.x, end_point.y ], color: *color },
-        ];
-        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&LINE, ());
+        if let Some(ref target_view) = self.target_view {
+            let LINE: [ColorVertex; 2] = [
+                ColorVertex { pos: [ start_point.x, start_point.y ], color: *color },
+                ColorVertex { pos: [ end_point.x, end_point.y ], color: *color },
+            ];
+            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&LINE, ());
 
-        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-            [transform.m21, transform.m22, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [transform.m31, transform.m32, 0.0, 1.0]];
+            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+                [transform.m21, transform.m22, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
-            vbuf: vertex_buffer,
-            locals: self.factory.create_constant_buffer(1),
-            transform: transform,
-            out: self.target_view.clone()
-        };
+            let mut data = ColorPipeline::Data {
+                vbuf: vertex_buffer,
+                locals: self.factory.create_constant_buffer(1),
+                transform: transform,
+                out: target_view.clone()
+            };
 
-        let locals = Locals { transform: transform };
-        self.encoder.update_constant_buffer(&data.locals, &locals);
+            let locals = Locals { transform: transform };
+            self.encoder.update_constant_buffer(&data.locals, &locals);
 
-        self.encoder.draw(&slice, &self.color_pipeline_lines, &data);
+            self.encoder.draw(&slice, &self.color_pipeline_lines, &data);
+        }
     }
 
     fn line_triangulated(&mut self, color: &Color, thickness: DeviceThickness,
         start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
-        let len = (((start_point.x - end_point.x)*(start_point.x - end_point.x) +
-            (start_point.y - end_point.y)*(start_point.y - start_point.y))  as f32).sqrt();
-        let normal_x = (end_point.y - start_point.y) / len;
-        let normal_y = -(start_point.x - end_point.x) / len;
+        if let Some(ref target_view) = self.target_view {
+            let len = (((start_point.x - end_point.x)*(start_point.x - end_point.x) +
+                (start_point.y - end_point.y)*(start_point.y - start_point.y))  as f32).sqrt();
+            let normal_x = (end_point.y - start_point.y) / len;
+            let normal_y = -(start_point.x - end_point.x) / len;
 
-        let diff_x = normal_x * thickness.get() * 0.5f32;
-        let diff_y = normal_y * thickness.get() * 0.5f32;
-        let p1a_x = start_point.x - diff_x;
-        let p1a_y = start_point.y - diff_y;
-        let p1b_x = start_point.x + diff_x;
-        let p1b_y = start_point.y + diff_y;
-        let p2a_x = end_point.x - diff_x;
-        let p2a_y = end_point.y - diff_y;
-        let p2b_x = end_point.x + diff_x;
-        let p2b_y = end_point.y + diff_y;;
+            let diff_x = normal_x * thickness.get() * 0.5f32;
+            let diff_y = normal_y * thickness.get() * 0.5f32;
+            let p1a_x = start_point.x - diff_x;
+            let p1a_y = start_point.y - diff_y;
+            let p1b_x = start_point.x + diff_x;
+            let p1b_y = start_point.y + diff_y;
+            let p2a_x = end_point.x - diff_x;
+            let p2a_y = end_point.y - diff_y;
+            let p2b_x = end_point.x + diff_x;
+            let p2b_y = end_point.y + diff_y;;
 
-        let TRIANGLE: [ColorVertex; 6] = [
-            ColorVertex { pos: [ p1a_x, p1a_y ], color: *color },
-            ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
-            ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
-            ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
-            ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
-            ColorVertex { pos: [ p2b_x, p2b_y ], color: *color },
-        ];
-        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
+            let TRIANGLE: [ColorVertex; 6] = [
+                ColorVertex { pos: [ p1a_x, p1a_y ], color: *color },
+                ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
+                ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
+                ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
+                ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
+                ColorVertex { pos: [ p2b_x, p2b_y ], color: *color },
+            ];
+            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
 
-        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-            [transform.m21, transform.m22, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [transform.m31, transform.m32, 0.0, 1.0]];
+            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+                [transform.m21, transform.m22, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
-            vbuf: vertex_buffer,
-            locals: self.factory.create_constant_buffer(1),
-            transform: transform,
-            out: self.target_view.clone()
-        };
+            let mut data = ColorPipeline::Data {
+                vbuf: vertex_buffer,
+                locals: self.factory.create_constant_buffer(1),
+                transform: transform,
+                out: target_view.clone()
+            };
 
-        let locals = Locals { transform: transform };
-        self.encoder.update_constant_buffer(&data.locals, &locals);
+            let locals = Locals { transform: transform };
+            self.encoder.update_constant_buffer(&data.locals, &locals);
 
-        self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+            self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+        }
     }
 }
 
