@@ -9,5 +9,11 @@ winit = "*"
 glutin = "*"
 gfx = "*"
 gfx_core = "*"
+
+[target.'cfg(windows)'.dependencies]
 gfx_device_dx11 = "*"
 gfx_window_dxgi = "*"
+
+[target.'cfg(not(windows))'.dependencies]
+gfx_device_gl = "*"
+gfx_window_glutin = "*"
