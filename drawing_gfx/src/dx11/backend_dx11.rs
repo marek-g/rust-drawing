@@ -21,7 +21,7 @@ pub struct GfxBackend {
 	textured_pipeline_triangles: gfx::PipelineState<gfx_device_dx11::Resources, TexturedPipeline::Meta>
 }
 
-impl drawing::backend::Backend for GfxBackend {
+impl drawing::backend::WindowBackend for GfxBackend {
 	fn create_backend_window(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
 		let (window, mut device, mut factory, target_view) =
@@ -74,7 +74,9 @@ impl drawing::backend::Backend for GfxBackend {
             Err(e) => println!("Resize failed: {}", e),
         }
     }
+}
 
+impl drawing::backend::Backend for GfxBackend {
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
             2.0f32 / size.width, 0.0f32, -1.0f32,

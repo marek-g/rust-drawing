@@ -24,8 +24,8 @@ pub struct GfxBackend {
 	textured_pipeline_triangles: gfx::PipelineState<gfx_device_gl::Resources, TexturedPipeline::Meta>
 }
 
-impl drawing::backend::Backend for GfxBackend {
-	fn create_backend_window(window_builder: winit::WindowBuilder,
+impl drawing::backend::WindowBackend for GfxBackend {
+    	fn create_backend_window(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
@@ -76,7 +76,9 @@ impl drawing::backend::Backend for GfxBackend {
     fn update_window_size(&mut self, width: u16, height: u16) {
         gfx_window_glutin::update_views(&self.window, &mut self.target_view, &mut self.stencil_view);
     }
+}
 
+impl drawing::backend::Backend for GfxBackend {
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
             2.0f32 / size.width, 0.0f32, -1.0f32,

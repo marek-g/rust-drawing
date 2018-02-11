@@ -3,7 +3,7 @@ extern crate drawing;
 extern crate drawing_gfx;
 extern crate shared_library;
 
-use drawing::backend::Backend;
+use drawing::backend::WindowBackend;
 use drawing::renderer::Renderer;
 use drawing::primitive::Primitive;
 use drawing::units::*;

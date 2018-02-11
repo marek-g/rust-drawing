@@ -1,12 +1,12 @@
-use backend::Backend;
+use backend::WindowBackend;
 use primitive::Primitive;
 use units::*;
 
-pub struct Renderer<B: Backend> {
+pub struct Renderer<B: WindowBackend> {
 	backend: B
 }
 
-impl<B: Backend> Renderer<B> {
+impl<B: WindowBackend> Renderer<B> {
 	pub fn new(backend: B) -> Renderer<B> {
 		Renderer { backend: backend }
 	}
