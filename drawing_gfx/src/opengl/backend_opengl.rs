@@ -124,7 +124,6 @@ impl drawing::backend::Backend for GfxBackend {
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
-            transform: transform,
             out: self.target_view.clone()
         };
 
@@ -158,7 +157,6 @@ impl GfxBackend {
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
-            transform: transform,
             out: self.target_view.clone()
         };
 
@@ -205,7 +203,6 @@ impl GfxBackend {
         let mut data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
-            transform: transform,
             out: self.target_view.clone()
         };
 
@@ -237,15 +234,12 @@ gfx_defines! {
     pipeline ColorPipeline {
         vbuf: gfx::VertexBuffer<ColorVertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "Locals",
-        transform: gfx::Global<[[f32; 4]; 4]> = "u_Transform",
-        //out: gfx::RenderTarget<ColorFormat> = "Target0",
         out: gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::ColorMask::all(), gfx::preset::blend::ALPHA),
     }
 
     pipeline TexturedPipeline {
         vbuf: gfx::VertexBuffer<TexturedVertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "Locals",
-        transform: gfx::Global<[[f32; 4]; 4]> = "u_Transform",
         color: gfx::TextureSampler<[f32; 4]> = "t_Color",
         out: gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::ColorMask::all(), gfx::preset::blend::ALPHA),
     }
