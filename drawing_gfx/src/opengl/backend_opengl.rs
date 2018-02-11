@@ -75,13 +75,6 @@ impl drawing::backend::Backend for GfxBackend {
 
     fn update_window_size(&mut self, width: u16, height: u16) {
         gfx_window_glutin::update_views(&self.window, &mut self.target_view, &mut self.stencil_view);
-        /*self.target_view = None;
-        match gfx_window_glutin::update_views::<ColorFormat, gfx_device_gl::Device>(&mut self.window, &mut self.factory, &mut self.device, width, height) {
-            Ok(target_view) => {
-                self.target_view = Some(target_view);
-            },
-            Err(e) => println!("Resize failed: {}", e),
-        }*/
     }
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
