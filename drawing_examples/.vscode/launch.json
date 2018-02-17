@@ -3,12 +3,12 @@
     "configurations": [
         {
             "name": "Debug",
-            //"type": "lldb",
-            //"program": "${workspaceRoot}/target/debug/webrender-test.exe",
-            //"sourceLanguages": ["rust"]
-            "type": "gdb",
             "request": "launch",
-            "target": "${workspaceRoot}/target/debug/simple.exe",
+            "type": "lldb",
+            "sourceLanguages": ["rust"],
+            "program": "${workspaceRoot}/target/debug/simple",
+            //"type": "gdb",
+            //"target": "${workspaceRoot}/target/debug/simple.exe",
             "cwd": "${workspaceRoot}",
             "preLaunchTask": "build"
         }
