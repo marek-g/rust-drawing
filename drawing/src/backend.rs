@@ -7,15 +7,26 @@ pub trait Backend {
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
 	fn begin(&mut self);
-	
+
+	fn triangles_color(&mut self, color: &Color, vertices: &[Point],
+		transform: UnknownToDeviceTransform);
+
+	fn end(&mut self);
+
 	fn line(&mut self, color: &Color, thickness: DeviceThickness,
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform);
 
 	fn rect(&mut self, color: &Color, rect: Rect,
-        transform: UnknownToDeviceTransform);
+        transform: UnknownToDeviceTransform) {
+        let p1 = [ rect.origin.x, rect.origin.y ];
+        let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
-	fn end(&mut self);
+		self.triangles_color(color, &[
+			Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
+			Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
+			], transform);
+	}
 }
 
 pub trait WindowBackend : Backend {

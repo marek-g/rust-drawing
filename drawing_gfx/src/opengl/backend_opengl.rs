@@ -90,33 +90,13 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.clear(&self.target_view, [0.5, 0.2, 0.3, 1.0]);
 	}
 
-    fn line(&mut self, color: &Color, thickness: DeviceThickness,
-		start_point: Point, end_point: Point,
-		transform: UnknownToDeviceTransform) {
-        // TODO:
-		//if thickness == 1.0f32 {
-            self.line_native(color, start_point, end_point, transform);
-        //} else {
-            //self.line_triangulated(color, thickness, start_point, end_point, transform);
-        //} 
-	}
- 
-	fn rect(&mut self,
-		color: &Color,
-        rect: Rect,
+    fn triangles_color(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
-        let p1 = [ rect.origin.x, rect.origin.y ];
-        let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
+        let VERTICES: Vec<ColorVertex> = vertices.iter().map(|&point| ColorVertex {
+            pos: [ point.x, point.y], color: *color
+        }).collect();
 
-        let TRIANGLE: [ColorVertex; 6] = [
-            ColorVertex { pos: [ p1[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p1[1] ], color: *color },
-            ColorVertex { pos: [ p2[0], p2[1] ], color: *color },
-            ColorVertex { pos: [ p1[0], p2[1] ], color: *color },
-        ];
-        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
 
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
@@ -133,6 +113,17 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.update_constant_buffer(&data.locals, &locals);
 
         self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+    }
+
+    fn line(&mut self, color: &Color, thickness: DeviceThickness,
+		start_point: Point, end_point: Point,
+		transform: UnknownToDeviceTransform) {
+        // TODO:
+		//if thickness == 1.0f32 {
+            self.line_native(color, start_point, end_point, transform);
+        //} else {
+            //self.line_triangulated(color, thickness, start_point, end_point, transform);
+        //} 
 	}
 
 	fn end(&mut self) {
