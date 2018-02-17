@@ -4,11 +4,17 @@ use color::*;
 use units::*;
 
 pub trait Backend {
+	type Texture: Texture;
+
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
 	fn begin(&mut self);
 
-	fn triangles_color(&mut self, color: &Color, vertices: &[Point],
+	fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
+		transform: UnknownToDeviceTransform);
+
+	fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform);
 
 	fn end(&mut self);
@@ -22,7 +28,7 @@ pub trait Backend {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
-		self.triangles_color(color, &[
+		self.triangles_colored(color, &[
 			Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
 			Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
 			], transform);
@@ -38,4 +44,8 @@ pub trait WindowBackend : Backend {
 
 pub trait TextureBackend : Backend {
 	fn create_texure_backend(width: u16, height: u16) -> Self;
+}
+
+pub trait Texture {
+
 }

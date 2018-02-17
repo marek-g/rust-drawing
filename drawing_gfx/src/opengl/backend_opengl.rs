@@ -12,6 +12,17 @@ use self::glutin::GlContext;
 use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GfxTexture {
+    pub surface: gfx::handle::Texture<gfx_device_gl::Resources, gfx::format::R8_G8_B8_A8>,
+    pub sampler: gfx::handle::Sampler<gfx_device_gl::Resources>,
+    pub view: gfx::handle::ShaderResourceView<gfx_device_gl::Resources, [f32; 4]>
+}
+
+impl drawing::backend::Texture for GfxTexture {
+
+}
+
 pub struct GfxBackend {
 	window: glutin::GlWindow,
 	device: gfx_device_gl::Device,
@@ -79,6 +90,8 @@ impl drawing::backend::WindowBackend for GfxBackend {
 }
 
 impl drawing::backend::Backend for GfxBackend {
+    type Texture = GfxTexture;
+
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
             2.0f32 / size.width, 0.0f32, -1.0f32,
@@ -90,7 +103,7 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.clear(&self.target_view, [0.5, 0.2, 0.3, 1.0]);
 	}
 
-    fn triangles_color(&mut self, color: &Color, vertices: &[Point],
+    fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
         let VERTICES: Vec<ColorVertex> = vertices.iter().map(|&point| ColorVertex {
             pos: [ point.x, point.y], color: *color
@@ -113,6 +126,33 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.update_constant_buffer(&data.locals, &locals);
 
         self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
+    }
+
+    fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+		vertices: &[Point], uv: &[Point],
+		transform: UnknownToDeviceTransform) {
+        let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
+            pos: [ point.x, point.y], tex_coord: [uv.x, uv.y]
+        }).collect();
+
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
+
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
+
+        let mut data = TexturedPipeline::Data {
+            vbuf: vertex_buffer,
+            locals: self.factory.create_constant_buffer(1),
+            texture: (texture.view.clone(), texture.sampler.clone()),
+            out: self.target_view.clone()
+        };
+
+        let locals = Locals { transform: transform };
+        self.encoder.update_constant_buffer(&data.locals, &locals);
+
+        self.encoder.draw(&slice, &self.textured_pipeline_triangles, &data);
     }
 
     fn line(&mut self, color: &Color, thickness: DeviceThickness,
@@ -233,7 +273,7 @@ gfx_defines! {
     pipeline TexturedPipeline {
         vbuf: gfx::VertexBuffer<TexturedVertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "Locals",
-        color: gfx::TextureSampler<[f32; 4]> = "t_Color",
+        texture: gfx::TextureSampler<[f32; 4]> = "t_Color",
         out: gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::ColorMask::all(), gfx::preset::blend::ALPHA),
     }
 }
