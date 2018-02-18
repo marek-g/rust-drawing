@@ -9,8 +9,10 @@ extern crate glutin;
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
+use gfx::Factory;
 use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
+use backend::drawing::backend::Texture;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
@@ -20,7 +22,44 @@ pub struct GfxTexture {
 }
 
 impl drawing::backend::Texture for GfxTexture {
+    type Factory = gfx_device_gl::Factory;
+    type Encoder = gfx::Encoder<gfx_device_gl::Resources, gfx_device_gl::CommandBuffer>;
+	type Error = gfx::CombinedError;
+    type Error2 = gfx::UpdateError<[u16; 3]>;
 
+	fn create(factory: &mut Self::Factory, memory: &[u8],
+		width: u16, height: u16) -> Result<Self, Self::Error> {
+        let kind = gfx::texture::Kind::D2(width, height, gfx::texture::AaMode::Single);
+        let (surface, view) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
+            kind, gfx::texture::Mipmap::Provided, &[&memory])?;
+        let sampler = factory.create_sampler_linear();
+        Ok(GfxTexture {
+            surface: surface,
+            sampler: sampler,
+            view: view
+        })
+    }
+
+	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
+		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2> {
+        let img_info = gfx::texture::ImageInfoCommon {
+            xoffset: offset_x,
+            yoffset: offset_y,
+            zoffset: 0,
+            width: width,
+            height: height,
+            depth: 0,
+            format: (),
+            mipmap: 0,
+        };
+        let data = gfx::memory::cast_slice(memory);
+        encoder.update_texture::<_, gfx::format::Rgba8>(&self.surface, None, img_info, data).map_err(Into::into)
+    }
+
+    fn get_size(&self) -> (u16, u16) {
+        let (w, h, _, _) = self.surface.get_info().kind.get_dimensions();
+        (w, h)
+    }
 }
 
 pub struct GfxBackend {
@@ -97,6 +136,10 @@ impl drawing::backend::Backend for GfxBackend {
             2.0f32 / size.width, 0.0f32, -1.0f32,
             0.0f32, -2.0f32 / size.height, 1.0f32,
         )
+    }
+
+    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
+        Self::Texture::create(&mut self.factory, memory, width, height).unwrap()
     }
 
 	fn begin(&mut self) {

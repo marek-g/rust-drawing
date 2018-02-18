@@ -1,7 +1,7 @@
 use color::*;
 use units::*;
 
-pub enum Primitive {
+pub enum Primitive<'a> {
     Line {
         color: Color,
         thickness: UserPixelThickness,
@@ -16,7 +16,11 @@ pub enum Primitive {
         color: Color,
         position: UserPixelPoint,
         size: UserPixelThickness,
-        text: &'static str,
+        text: &'a str,
+    },
+    Image {
+        path: &'a str,
+        rect: UserPixelRect,
     },
     PushLayer {
         opacity: u8

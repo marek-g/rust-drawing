@@ -8,6 +8,8 @@ pub trait Backend {
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
+	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture;
+
 	fn begin(&mut self);
 
 	fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
@@ -33,6 +35,24 @@ pub trait Backend {
 			Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
 			], transform);
 	}
+
+	fn texture(&mut self,
+		color: &Color, texture: &Self::Texture,
+		rect: Rect, transform: UnknownToDeviceTransform) {
+        let p1 = [ rect.origin.x, rect.origin.y ];
+        let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
+
+		self.triangles_textured(color, texture,
+			&[
+				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
+				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
+			],
+			&[
+				Point::new(0.0, 0.0), Point::new(1.0, 0.0), Point::new(0.0, 1.0),
+				Point::new(1.0, 0.0), Point::new(1.0, 1.0), Point::new(0.0, 1.0),
+			],
+			transform);
+	}
 }
 
 pub trait WindowBackend : Backend {
@@ -42,10 +62,17 @@ pub trait WindowBackend : Backend {
 	fn update_window_size(&mut self, width: u16, height: u16);
 }
 
-pub trait TextureBackend : Backend {
-	fn create_texure_backend(width: u16, height: u16) -> Self;
-}
+pub trait Texture : Sized {
+	type Factory;
+	type Encoder;
+	type Error;
+	type Error2;
 
-pub trait Texture {
+	fn create(factory: &mut Self::Factory, memory: &[u8],
+		width: u16, height: u16) -> Result<Self, Self::Error>;
 
+	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
+		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2>;
+
+	fn get_size(&self) -> (u16, u16);
 }

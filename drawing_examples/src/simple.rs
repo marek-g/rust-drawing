@@ -2,6 +2,7 @@ extern crate winit;
 extern crate drawing;
 extern crate drawing_gfx;
 extern crate shared_library;
+extern crate find_folder;
 
 use drawing::backend::WindowBackend;
 use drawing::renderer::Renderer;
@@ -17,6 +18,7 @@ fn main() {
 
 
     let mut renderer = Renderer::new(GfxBackend::create_backend_window(window_builder, &events_loop));
+    let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
 
     // main loop
     let mut running = true;
@@ -50,7 +52,11 @@ fn main() {
             Primitive::Line { color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 thickness: UserPixelThickness::new(1.0f32),
                 start_point: UserPixelPoint::new(100.5f32, 100.5f32),
-                end_point: UserPixelPoint::new(300.5f32, 100.5f32) }
+                end_point: UserPixelPoint::new(300.5f32, 100.5f32) },
+            Primitive::Image { path: &image_path, rect: UserPixelRect::new(
+                UserPixelPoint::new(100.5f32, 150.0f32),
+                UserPixelSize::new(200.0f32, 200.0f32)
+            )}
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
     }

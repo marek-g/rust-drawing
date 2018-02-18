@@ -8,6 +8,7 @@ drawing = { path = "../drawing", version = "*" }
 drawing_gfx = { path = "../drawing_gfx", version = "*" }
 winit = "*"
 shared_library = "*"
+find_folder = "*"
 
 [[bin]]
 name = "simple"

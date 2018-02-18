@@ -1,3 +1,5 @@
+extern crate image;
+
 use backend::WindowBackend;
 use primitive::Primitive;
 use units::*;
@@ -44,6 +46,15 @@ impl<B: WindowBackend> Renderer<B> {
 
 				&Primitive::Text { .. } => {
 
+				},
+
+				&Primitive::Image { rect, path } => {
+					let img = image::open(path).unwrap().to_rgba();
+					let (w, h) = img.dimensions();
+					let data: &[u8] = &img;
+					let texture = self.backend.create_texture(data, w as u16, h as u16);
+					self.backend.texture(&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
+						unknown_to_device_transform)
 				},
 
 				&Primitive::PushLayer { .. } => {
