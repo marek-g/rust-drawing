@@ -61,7 +61,6 @@ impl drawing::backend::Texture for GfxTexture {
 }
 
 pub struct GfxBackend {
-	window: gfx_window_dxgi::Window,
 	device: gfx_device_dx11::Device,
 	factory: gfx_device_dx11::Factory,
 	target_view: Option<gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>>,
@@ -71,7 +70,12 @@ pub struct GfxBackend {
 	textured_pipeline_triangles: gfx::PipelineState<gfx_device_dx11::Resources, TexturedPipeline::Meta>
 }
 
-impl drawing::backend::WindowBackend for GfxBackend {
+pub struct GfxWindowBackend {
+    window: gfx_window_dxgi::Window,
+    gfx_backend: GfxBackend
+}
+
+impl drawing::backend::WindowBackend for GfxWindowBackend {
 	fn create_backend_window(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
 		let (window, mut device, mut factory, target_view) =
@@ -108,21 +112,64 @@ impl drawing::backend::WindowBackend for GfxBackend {
 
 		let mut encoder = factory.create_command_buffer().into();
 
-		GfxBackend { window: window, device: device, factory: factory, target_view: Some(target_view),
-			encoder: encoder,
-			color_pipeline_triangles: color_pipeline_triangles,
-			color_pipeline_lines: color_pipeline_lines,
-			textured_pipeline_triangles: textured_pipeline_triangles }
+		GfxWindowBackend {
+            window: window,
+            gfx_backend: GfxBackend {
+                device: device, factory: factory, target_view: Some(target_view),
+                encoder: encoder,
+                color_pipeline_triangles: color_pipeline_triangles,
+                color_pipeline_lines: color_pipeline_lines,
+                textured_pipeline_triangles: textured_pipeline_triangles
+            }
+        }
 	}
 
     fn update_window_size(&mut self, width: u16, height: u16) {
-        self.target_view = None;
-        match gfx_window_dxgi::update_views::<ColorFormat, gfx_device_dx11::Device>(&mut self.window, &mut self.factory, &mut self.device, width, height) {
+        self.gfx_backend.target_view = None;
+        match gfx_window_dxgi::update_views::<ColorFormat, gfx_device_dx11::Device>(&mut self.window, &mut self.gfx_backend.factory, &mut self.gfx_backend.device, width, height) {
             Ok(target_view) => {
-                self.target_view = Some(target_view);
+                self.gfx_backend.target_view = Some(target_view);
             },
             Err(e) => println!("Resize failed: {}", e),
         }
+    }
+}
+
+impl drawing::backend::Backend for GfxWindowBackend {
+    type Texture = GfxTexture;
+
+    fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
+        GfxBackend::get_device_transform(size)
+    }
+
+    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
+        self.gfx_backend.create_texture(memory, width, height)
+    }
+
+    fn begin(&mut self) {
+        self.gfx_backend.begin()
+    }
+
+    fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
+        transform: UnknownToDeviceTransform) {
+        self.gfx_backend.triangles_colored(color, vertices, transform)
+    }
+
+    fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+		vertices: &[Point], uv: &[Point],
+		transform: UnknownToDeviceTransform) {
+        self.gfx_backend.triangles_textured(color, texture, vertices, uv, transform)
+    }
+
+    fn line(&mut self, color: &Color, thickness: DeviceThickness,
+		start_point: Point, end_point: Point,
+		transform: UnknownToDeviceTransform) {
+        self.gfx_backend.line(color, thickness, start_point, end_point, transform)
+    }
+
+    fn end(&mut self) {
+        self.gfx_backend.end();
+        self.window.swap_buffers(1);
     }
 }
 
@@ -215,7 +262,6 @@ impl drawing::backend::Backend for GfxBackend {
 
 	fn end(&mut self) {
         self.encoder.flush(&mut self.device);
-        self.window.swap_buffers(1);
         self.device.cleanup();
 	}
 }
