@@ -158,6 +158,10 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.begin()
     }
 
+    fn clear(&mut self, color: &Color) {
+        self.gfx_backend.clear(color)
+    }
+
     fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
         self.gfx_backend.triangles_colored(color, vertices, transform)
@@ -201,8 +205,11 @@ impl drawing::backend::Backend for GfxBackend {
     }
 
 	fn begin(&mut self) {
-        self.encoder.clear(&self.target_view, [0.5, 0.2, 0.3, 1.0]);
 	}
+
+    fn clear(&mut self, color: &Color) {
+        self.encoder.clear(&self.target_view, *color);
+    }
 
     fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {

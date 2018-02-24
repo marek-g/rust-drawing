@@ -155,6 +155,10 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.begin()
     }
 
+    fn clear(&mut self, color: &Color) {
+        self.gfx_backend.clear(color)
+    }
+
     fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
         self.gfx_backend.triangles_colored(color, vertices, transform)
@@ -197,11 +201,14 @@ impl drawing::backend::Backend for GfxBackend {
         self.factory.view_texture_as_render_target(&texture.surface, 0, None).unwrap()
     }
 
-	fn begin(&mut self) {
+    fn begin(&mut self) {
+    }
+
+    fn clear(&mut self, color: &Color) {
         if let Some(ref target_view) = self.target_view {
-            self.encoder.clear(target_view, [0.5, 0.2, 0.3, 1.0]);
+            self.encoder.clear(target_view, *color);
         }
-	}
+    }
 
     fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {

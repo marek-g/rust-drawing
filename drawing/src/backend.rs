@@ -15,6 +15,8 @@ pub trait Backend {
 
 	fn begin(&mut self);
 
+	fn clear(&mut self, color: &Color);
+
 	fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
 		transform: UnknownToDeviceTransform);
 

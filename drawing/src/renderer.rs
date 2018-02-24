@@ -27,6 +27,7 @@ impl<B: WindowBackend> Renderer<B> {
 		);
 
 		self.backend.begin();
+		self.backend.clear(&[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
 
 		for primitive in &primitives {
             match primitive {
