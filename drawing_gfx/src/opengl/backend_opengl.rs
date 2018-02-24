@@ -79,7 +79,7 @@ pub struct GfxWindowBackend {
 }
 
 impl drawing::backend::WindowBackend for GfxWindowBackend {
-    fn create_backend_window(window_builder: winit::WindowBuilder,
+    fn create_window_backend(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))

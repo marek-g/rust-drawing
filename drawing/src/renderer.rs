@@ -40,7 +40,7 @@ impl<B: WindowBackend> Renderer<B> {
 				},
 				
 				&Primitive::Rectangle { ref color, rect } => {
-					self.backend.rect(color, rect.to_untyped(),
+					self.backend.rect_colored(color, rect.to_untyped(),
 						unknown_to_device_transform)
 				},
 
@@ -53,7 +53,7 @@ impl<B: WindowBackend> Renderer<B> {
 					let (w, h) = img.dimensions();
 					let data: &[u8] = &img;
 					let texture = self.backend.create_texture(data, w as u16, h as u16);
-					self.backend.texture(&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
+					self.backend.rect_textured(&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
 						unknown_to_device_transform)
 				},
 

@@ -25,7 +25,7 @@ pub trait Backend {
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform);
 
-	fn rect(&mut self, color: &Color, rect: Rect,
+	fn rect_colored(&mut self, color: &Color, rect: Rect,
         transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
@@ -36,7 +36,7 @@ pub trait Backend {
 			], transform);
 	}
 
-	fn texture(&mut self,
+	fn rect_textured(&mut self,
 		color: &Color, texture: &Self::Texture,
 		rect: Rect, transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
@@ -56,7 +56,7 @@ pub trait Backend {
 }
 
 pub trait WindowBackend : Backend {
-	fn create_backend_window(window_builder: winit::WindowBuilder,
+	fn create_window_backend(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self;
 
 	fn update_window_size(&mut self, width: u16, height: u16);

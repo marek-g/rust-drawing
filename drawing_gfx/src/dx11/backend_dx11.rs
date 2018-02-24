@@ -76,7 +76,7 @@ pub struct GfxWindowBackend {
 }
 
 impl drawing::backend::WindowBackend for GfxWindowBackend {
-	fn create_backend_window(window_builder: winit::WindowBuilder,
+	fn create_window_backend(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
 		let (window, mut device, mut factory, target_view) =
             gfx_window_dxgi::init::<ColorFormat>(window_builder, &events_loop).unwrap(); 

@@ -18,7 +18,7 @@ fn main() {
     let mut events_loop = winit::EventsLoop::new(); 
 
 
-    let mut renderer = Renderer::new(GfxWindowBackend::create_backend_window(window_builder, &events_loop));
+    let mut renderer = Renderer::new(GfxWindowBackend::create_window_backend(window_builder, &events_loop));
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
 
     // main loop
