@@ -27,7 +27,8 @@ impl<B: WindowBackend> Renderer<B> {
 		);
 
 		self.backend.begin();
-		self.backend.clear(&[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
+		let target_view = self.backend.get_main_render_target();
+		self.backend.clear(&target_view, &[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
 
 		for primitive in &primitives {
             match primitive {
@@ -35,13 +36,13 @@ impl<B: WindowBackend> Renderer<B> {
 					let thickness = user_pixel_to_device_transform.transform_point(
 						&UserPixelPoint::new(thickness.get(), thickness.get())
 					).x_typed();
-					self.backend.line(color, thickness,
+					self.backend.line(&target_view, color, thickness,
 						start_point.to_untyped(), end_point.to_untyped(),
 						unknown_to_device_transform);
 				},
 				
 				&Primitive::Rectangle { ref color, rect } => {
-					self.backend.rect_colored(color, rect.to_untyped(),
+					self.backend.rect_colored(&target_view, color, rect.to_untyped(),
 						unknown_to_device_transform)
 				},
 
@@ -54,8 +55,19 @@ impl<B: WindowBackend> Renderer<B> {
 					let (w, h) = img.dimensions();
 					let data: &[u8] = &img;
 					let texture = self.backend.create_texture(data, w as u16, h as u16);
-					self.backend.rect_textured(&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
-						unknown_to_device_transform)
+					self.backend.rect_textured(&target_view,
+						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
+						unknown_to_device_transform);
+
+					let (texture2, texture2_view) = self.backend.create_render_target(w as u16, h as u16);
+					/*self.backend.line(&texture_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32],
+						DeviceThickness::new(1.0f), )*/
+					self.backend.clear(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 0.2f32]);
+					self.backend.rect_colored(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32], rect.to_untyped(),
+						unknown_to_device_transform);
+					self.backend.rect_textured(&target_view,
+						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture2, rect.to_untyped(),
+						unknown_to_device_transform);
 				},
 
 				&Primitive::PushLayer { .. } => {

@@ -11,45 +11,51 @@ pub trait Backend {
 
 	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture;
 
-	fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget;
-
-	fn get_render_target(&mut self)-> Self::RenderTarget;
+	fn get_main_render_target(&mut self)-> Self::RenderTarget;
+	fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget);
 
 	fn begin(&mut self);
 
-	fn clear(&mut self, color: &Color);
+	fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 
-	fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
+	fn triangles_colored(&mut self, target: &Self::RenderTarget,
+		color: &Color, vertices: &[Point],
 		transform: UnknownToDeviceTransform);
 
-	fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+	fn triangles_textured(&mut self, target: &Self::RenderTarget,
+		color: &Color, texture: &Self::Texture,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform);
 
 	fn end(&mut self);
 
-	fn line(&mut self, color: &Color, thickness: DeviceThickness,
+	fn line(&mut self, target: &Self::RenderTarget,
+		color: &Color, thickness: DeviceThickness,
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform);
 
-	fn rect_colored(&mut self, color: &Color, rect: Rect,
+	fn rect_colored(&mut self, target: &Self::RenderTarget,
+		color: &Color, rect: Rect,
         transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
-		self.triangles_colored(color, &[
-			Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
-			Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
+		self.triangles_colored(target,
+			color,
+			&[
+				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
+				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
 			], transform);
 	}
 
-	fn rect_textured(&mut self,
+	fn rect_textured(&mut self, target: &Self::RenderTarget,
 		color: &Color, texture: &Self::Texture,
 		rect: Rect, transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
-		self.triangles_textured(color, texture,
+		self.triangles_textured(target,
+			color, texture,
 			&[
 				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
 				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),

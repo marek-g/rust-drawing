@@ -147,37 +147,41 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.create_texture(memory, width, height)
     }
 
-    fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget {
-        self.gfx_backend.create_render_target_for_texture(texture)
+    fn get_main_render_target(&mut self)-> Self::RenderTarget {
+        self.gfx_backend.get_main_render_target()
     }
 
-    fn get_render_target(&mut self)-> Self::RenderTarget {
-        self.gfx_backend.get_render_target()
+    fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
+        self.gfx_backend.create_render_target(width, height)
     }
 
     fn begin(&mut self) {
         self.gfx_backend.begin()
     }
 
-    fn clear(&mut self, color: &Color) {
-        self.gfx_backend.clear(color)
+    fn clear(&mut self, target: &Self::RenderTarget,
+        color: &Color) {
+        self.gfx_backend.clear(target, color)
     }
 
-    fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
+    fn triangles_colored(&mut self, target: &Self::RenderTarget,
+        color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
-        self.gfx_backend.triangles_colored(color, vertices, transform)
+        self.gfx_backend.triangles_colored(target, color, vertices, transform)
     }
 
-    fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+    fn triangles_textured(&mut self, target: &Self::RenderTarget,
+        color: &Color, texture: &Self::Texture,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
-        self.gfx_backend.triangles_textured(color, texture, vertices, uv, transform)
+        self.gfx_backend.triangles_textured(target, color, texture, vertices, uv, transform)
     }
 
-    fn line(&mut self, color: &Color, thickness: DeviceThickness,
+    fn line(&mut self, target: &Self::RenderTarget,
+        color: &Color, thickness: DeviceThickness,
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
-        self.gfx_backend.line(color, thickness, start_point, end_point, transform)
+        self.gfx_backend.line(target, color, thickness, start_point, end_point, transform)
     }
 
     fn end(&mut self) {
@@ -201,85 +205,85 @@ impl drawing::backend::Backend for GfxBackend {
         Self::Texture::create(&mut self.factory, memory, width, height).unwrap()
     }
 
-    fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget {
-        self.factory.view_texture_as_render_target(&texture.surface, 0, None).unwrap()
+    fn get_main_render_target(&mut self)-> Self::RenderTarget {
+        self.target_view.unwrap().clone()
     }
 
-    fn get_render_target(&mut self)-> Self::RenderTarget {
-        self.target_view.unwrap().clone()
+    fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
+        let (texture, srv, render_target) = self.factory.create_render_target(width, height).unwrap();
+        let sampler = self.factory.create_sampler_linear();
+        (GfxTexture { surface: texture, sampler: sampler, srv: srv }, render_target)
     }
 
     fn begin(&mut self) {
     }
 
-    fn clear(&mut self, color: &Color) {
-        if let Some(ref target_view) = self.target_view {
-            self.encoder.clear(target_view, *color);
-        }
+    fn clear(&mut self, target: &Self::RenderTarget,
+        color: &Color) {
+        self.encoder.clear(target, *color);
     }
 
-    fn triangles_colored(&mut self, color: &Color, vertices: &[Point],
+    fn triangles_colored(&mut self, target: &Self::RenderTarget,
+        color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
-        if let Some(ref target_view) = self.target_view {
-            let VERTICES: Vec<ColorVertex> = vertices.iter().map(|&point| ColorVertex {
-                pos: [ point.x, point.y], color: *color
-            }).collect();
+        let VERTICES: Vec<ColorVertex> = vertices.iter().map(|&point| ColorVertex {
+            pos: [ point.x, point.y], color: *color
+        }).collect();
 
-            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
 
-            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-                [transform.m21, transform.m22, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [transform.m31, transform.m32, 0.0, 1.0]];
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
-            let mut data = ColorPipeline::Data {
-                vbuf: vertex_buffer,
-                locals: self.factory.create_constant_buffer(1),
-                out: target_view.clone()
-            };
+        let mut data = ColorPipeline::Data {
+            vbuf: vertex_buffer,
+            locals: self.factory.create_constant_buffer(1),
+            out: target.clone()
+        };
 
-            let locals = Locals { transform: transform };
-            self.encoder.update_constant_buffer(&data.locals, &locals);
+        let locals = Locals { transform: transform };
+        self.encoder.update_constant_buffer(&data.locals, &locals);
 
-            self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
-        }
+        self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
     }
 
-    fn triangles_textured(&mut self, color: &Color, texture: &Self::Texture,
+    fn triangles_textured(&mut self, target: &Self::RenderTarget,
+        color: &Color, texture: &Self::Texture,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
-        if let Some(ref target_view) = self.target_view {
-            let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
-                pos: [ point.x, point.y], tex_coord: [uv.x, uv.y]
-            }).collect();
+        let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
+            pos: [ point.x, point.y], tex_coord: [uv.x, uv.y]
+        }).collect();
 
-            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&VERTICES, ());
 
-            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-                [transform.m21, transform.m22, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [transform.m31, transform.m32, 0.0, 1.0]];
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
-            let mut data = TexturedPipeline::Data {
-                vbuf: vertex_buffer,
-                locals: self.factory.create_constant_buffer(1),
-                texture: (texture.srv.clone(), texture.sampler.clone()),
-                out: target_view.clone()
-            };
+        let mut data = TexturedPipeline::Data {
+            vbuf: vertex_buffer,
+            locals: self.factory.create_constant_buffer(1),
+            texture: (texture.srv.clone(), texture.sampler.clone()),
+            out: target.clone()
+        };
 
-            let locals = Locals { transform: transform };
-            self.encoder.update_constant_buffer(&data.locals, &locals);
+        let locals = Locals { transform: transform };
+        self.encoder.update_constant_buffer(&data.locals, &locals);
 
-            self.encoder.draw(&slice, &self.textured_pipeline_triangles, &data);
-        }
+        self.encoder.draw(&slice, &self.textured_pipeline_triangles, &data);
     }
 
-    fn line(&mut self, color: &Color, thickness: DeviceThickness,
+    fn line(&mut self, target: &Self::RenderTarget,
+        color: &Color, thickness: DeviceThickness,
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
         // TODO:
 		//if thickness == 1.0f32 {
-            self.line_native(color, start_point, end_point, transform);
+            self.line_native(target, color, start_point, end_point, transform);
         //} else {
             //self.line_triangulated(color, thickness, start_point, end_point, transform);
         //} 
@@ -292,79 +296,77 @@ impl drawing::backend::Backend for GfxBackend {
 }
 
 impl GfxBackend {
-	fn line_native(&mut self, color: &Color, start_point: Point, end_point: Point,
+	fn line_native(&mut self, target: &Self::RenderTarget,
+        color: &Color, start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
-        if let Some(ref target_view) = self.target_view {
-            let LINE: [ColorVertex; 2] = [
-                ColorVertex { pos: [ start_point.x, start_point.y ], color: *color },
-                ColorVertex { pos: [ end_point.x, end_point.y ], color: *color },
-            ];
-            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&LINE, ());
+        let LINE: [ColorVertex; 2] = [
+            ColorVertex { pos: [ start_point.x, start_point.y ], color: *color },
+            ColorVertex { pos: [ end_point.x, end_point.y ], color: *color },
+        ];
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&LINE, ());
 
-            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-                [transform.m21, transform.m22, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [transform.m31, transform.m32, 0.0, 1.0]];
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
-            let mut data = ColorPipeline::Data {
-                vbuf: vertex_buffer,
-                locals: self.factory.create_constant_buffer(1),
-                out: target_view.clone()
-            };
+        let mut data = ColorPipeline::Data {
+            vbuf: vertex_buffer,
+            locals: self.factory.create_constant_buffer(1),
+            out: target.clone()
+        };
 
-            let locals = Locals { transform: transform };
-            self.encoder.update_constant_buffer(&data.locals, &locals);
+        let locals = Locals { transform: transform };
+        self.encoder.update_constant_buffer(&data.locals, &locals);
 
-            self.encoder.draw(&slice, &self.color_pipeline_lines, &data);
-        }
+        self.encoder.draw(&slice, &self.color_pipeline_lines, &data);
     }
 
-    fn line_triangulated(&mut self, color: &Color, thickness: DeviceThickness,
+    fn line_triangulated(&mut self, target: &Self::RenderTarget,
+        color: &Color, thickness: DeviceThickness,
         start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
-        if let Some(ref target_view) = self.target_view {
-            let len = (((start_point.x - end_point.x)*(start_point.x - end_point.x) +
-                (start_point.y - end_point.y)*(start_point.y - start_point.y))  as f32).sqrt();
-            let normal_x = (end_point.y - start_point.y) / len;
-            let normal_y = -(start_point.x - end_point.x) / len;
+        let len = (((start_point.x - end_point.x)*(start_point.x - end_point.x) +
+            (start_point.y - end_point.y)*(start_point.y - start_point.y))  as f32).sqrt();
+        let normal_x = (end_point.y - start_point.y) / len;
+        let normal_y = -(start_point.x - end_point.x) / len;
 
-            let diff_x = normal_x * thickness.get() * 0.5f32;
-            let diff_y = normal_y * thickness.get() * 0.5f32;
-            let p1a_x = start_point.x - diff_x;
-            let p1a_y = start_point.y - diff_y;
-            let p1b_x = start_point.x + diff_x;
-            let p1b_y = start_point.y + diff_y;
-            let p2a_x = end_point.x - diff_x;
-            let p2a_y = end_point.y - diff_y;
-            let p2b_x = end_point.x + diff_x;
-            let p2b_y = end_point.y + diff_y;;
+        let diff_x = normal_x * thickness.get() * 0.5f32;
+        let diff_y = normal_y * thickness.get() * 0.5f32;
+        let p1a_x = start_point.x - diff_x;
+        let p1a_y = start_point.y - diff_y;
+        let p1b_x = start_point.x + diff_x;
+        let p1b_y = start_point.y + diff_y;
+        let p2a_x = end_point.x - diff_x;
+        let p2a_y = end_point.y - diff_y;
+        let p2b_x = end_point.x + diff_x;
+        let p2b_y = end_point.y + diff_y;;
 
-            let TRIANGLE: [ColorVertex; 6] = [
-                ColorVertex { pos: [ p1a_x, p1a_y ], color: *color },
-                ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
-                ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
-                ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
-                ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
-                ColorVertex { pos: [ p2b_x, p2b_y ], color: *color },
-            ];
-            let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
+        let TRIANGLE: [ColorVertex; 6] = [
+            ColorVertex { pos: [ p1a_x, p1a_y ], color: *color },
+            ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
+            ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
+            ColorVertex { pos: [ p1b_x, p1b_y ], color: *color },
+            ColorVertex { pos: [ p2a_x, p2a_y ], color: *color },
+            ColorVertex { pos: [ p2b_x, p2b_y ], color: *color },
+        ];
+        let (vertex_buffer, slice) = self.factory.create_vertex_buffer_with_slice(&TRIANGLE, ());
 
-            let transform = [[transform.m11, transform.m12, 0.0, 0.0],
-                [transform.m21, transform.m22, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [transform.m31, transform.m32, 0.0, 1.0]];
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
 
-            let mut data = ColorPipeline::Data {
-                vbuf: vertex_buffer,
-                locals: self.factory.create_constant_buffer(1),
-                out: target_view.clone()
-            };
+        let mut data = ColorPipeline::Data {
+            vbuf: vertex_buffer,
+            locals: self.factory.create_constant_buffer(1),
+            out: target.clone()
+        };
 
-            let locals = Locals { transform: transform };
-            self.encoder.update_constant_buffer(&data.locals, &locals);
+        let locals = Locals { transform: transform };
+        self.encoder.update_constant_buffer(&data.locals, &locals);
 
-            self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
-        }
+        self.encoder.draw(&slice, &self.color_pipeline_triangles, &data);
     }
 }
 
