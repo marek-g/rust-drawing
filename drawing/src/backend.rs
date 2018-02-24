@@ -13,6 +13,8 @@ pub trait Backend {
 
 	fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget;
 
+	fn get_render_target(&mut self)-> Self::RenderTarget;
+
 	fn begin(&mut self);
 
 	fn clear(&mut self, color: &Color);

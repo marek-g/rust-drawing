@@ -154,6 +154,10 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.create_render_target_for_texture(texture)
     }
 
+    fn get_render_target(&mut self)-> Self::RenderTarget {
+        self.gfx_backend.get_render_target()
+    }
+
     fn begin(&mut self) {
         self.gfx_backend.begin()
     }
@@ -202,6 +206,10 @@ impl drawing::backend::Backend for GfxBackend {
 
     fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget {
         self.factory.view_texture_as_render_target(&texture.surface, 0, None).unwrap()
+    }
+
+    fn get_render_target(&mut self)-> Self::RenderTarget {
+        self.target_view.clone()
     }
 
 	fn begin(&mut self) {
