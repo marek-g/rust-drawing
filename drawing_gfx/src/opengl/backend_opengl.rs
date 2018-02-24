@@ -18,7 +18,7 @@ use backend::drawing::backend::Texture;
 pub struct GfxTexture {
     pub surface: gfx::handle::Texture<gfx_device_gl::Resources, gfx::format::R8_G8_B8_A8>,
     pub sampler: gfx::handle::Sampler<gfx_device_gl::Resources>,
-    pub view: gfx::handle::ShaderResourceView<gfx_device_gl::Resources, [f32; 4]>
+    pub srv: gfx::handle::ShaderResourceView<gfx_device_gl::Resources, [f32; 4]>
 }
 
 impl drawing::backend::Texture for GfxTexture {
@@ -30,13 +30,13 @@ impl drawing::backend::Texture for GfxTexture {
 	fn create(factory: &mut Self::Factory, memory: &[u8],
 		width: u16, height: u16) -> Result<Self, Self::Error> {
         let kind = gfx::texture::Kind::D2(width, height, gfx::texture::AaMode::Single);
-        let (surface, view) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
+        let (surface, srv) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
             kind, gfx::texture::Mipmap::Provided, &[&memory])?;
         let sampler = factory.create_sampler_linear();
         Ok(GfxTexture {
             surface: surface,
             sampler: sampler,
-            view: view
+            srv: srv
         })
     }
 
@@ -140,6 +140,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
 
 impl drawing::backend::Backend for GfxWindowBackend {
     type Texture = GfxTexture;
+    type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GfxBackend::get_device_transform(size)
@@ -147,6 +148,10 @@ impl drawing::backend::Backend for GfxWindowBackend {
 
     fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
         self.gfx_backend.create_texture(memory, width, height)
+    }
+
+    fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget {
+        self.gfx_backend.create_render_target_for_texture(texture)
     }
 
     fn begin(&mut self) {
@@ -178,6 +183,7 @@ impl drawing::backend::Backend for GfxWindowBackend {
 
 impl drawing::backend::Backend for GfxBackend {
     type Texture = GfxTexture;
+    type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
@@ -188,6 +194,10 @@ impl drawing::backend::Backend for GfxBackend {
 
     fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
         Self::Texture::create(&mut self.factory, memory, width, height).unwrap()
+    }
+
+    fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget {
+        self.factory.view_texture_as_render_target(&texture.surface, 0, None).unwrap()
     }
 
 	fn begin(&mut self) {
@@ -236,7 +246,7 @@ impl drawing::backend::Backend for GfxBackend {
         let mut data = TexturedPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
-            texture: (texture.view.clone(), texture.sampler.clone()),
+            texture: (texture.srv.clone(), texture.sampler.clone()),
             out: self.target_view.clone()
         };
 

@@ -5,10 +5,13 @@ use units::*;
 
 pub trait Backend {
 	type Texture: Texture;
+	type RenderTarget;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
 	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture;
+
+	fn create_render_target_for_texture(&mut self, texture: &Self::Texture) -> Self::RenderTarget;
 
 	fn begin(&mut self);
 
