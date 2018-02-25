@@ -74,7 +74,7 @@ impl<B: WindowBackend> Renderer<B> {
 						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, false,
 						rect.to_untyped(), unknown_to_device_transform);
 
-					let (texture2, texture2_view) = self.backend.create_render_target(w as u16, h as u16);
+					/*let (texture2, texture2_view) = self.backend.create_render_target(w as u16, h as u16);
 					/*self.backend.line(&texture_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32],
 						DeviceThickness::new(1.0f), )*/
 					self.backend.clear(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 0.2f32]);
@@ -82,7 +82,7 @@ impl<B: WindowBackend> Renderer<B> {
 						unknown_to_device_transform);
 					self.backend.rect_textured(&target_view,
 						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture2, false,
-						rect.to_untyped(), unknown_to_device_transform);
+						rect.to_untyped(), unknown_to_device_transform);*/
 				},
 
 				&Primitive::PushLayer { .. } => {

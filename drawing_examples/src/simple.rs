@@ -52,12 +52,46 @@ fn main() {
                     UserPixelSize::new(200.0f32, 50.0f32)) },
             Primitive::Line { color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 thickness: UserPixelThickness::new(1.0f32),
-                start_point: UserPixelPoint::new(100.5f32, 100.5f32),
+                start_point: UserPixelPoint::new(100.0f32, 100.0f32),
                 end_point: UserPixelPoint::new(300.5f32, 100.5f32) },
+            
             Primitive::Image { path: &image_path, rect: UserPixelRect::new(
                 UserPixelPoint::new(100.0f32, 150.0f32),
-                UserPixelSize::new(200.0f32, 200.0f32)
-            )}
+                UserPixelSize::new(200.0f32, 200.0f32),
+            )},
+            Primitive::Line { color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                thickness: UserPixelThickness::new(1.0f32),
+                start_point: UserPixelPoint::new(100.0f32, 350.0f32),
+                end_point: UserPixelPoint::new(300.0f32, 150.0f32) },
+            Primitive::Line { color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                thickness: UserPixelThickness::new(1.0f32),
+                start_point: UserPixelPoint::new(100.0f32, 150.0f32),
+                end_point: UserPixelPoint::new(300.0f32, 350.0f32) },
+
+            Primitive::Image { path: &image_path, rect: UserPixelRect::new(
+                UserPixelPoint::new(0.0f32, 0.0f32),
+                UserPixelSize::new(4.0f32, 4.0f32),
+            )},
+            Primitive::Line { color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                thickness: UserPixelThickness::new(1.0f32),
+                start_point: UserPixelPoint::new(0.0f32, 0.0f32),
+                end_point: UserPixelPoint::new(4.0f32, 4.0f32) },
+            Primitive::Image { path: &image_path, rect: UserPixelRect::new(
+                UserPixelPoint::new(width as f32 - 4.0f32, 0.0f32),
+                UserPixelSize::new(4.0f32, 4.0f32),
+            )},
+            Primitive::Line { color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                thickness: UserPixelThickness::new(1.0f32),
+                start_point: UserPixelPoint::new(width as f32, 0.0f32),
+                end_point: UserPixelPoint::new(width as f32 - 4.0f32, 4.0f32) },
+            Primitive::Image { path: &image_path, rect: UserPixelRect::new(
+                UserPixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
+                UserPixelSize::new(4.0f32, 4.0f32),
+            )},
+            Primitive::Image { path: &image_path, rect: UserPixelRect::new(
+                UserPixelPoint::new(0.0f32, height as f32 - 4.0f32),
+                UserPixelSize::new(4.0f32, 4.0f32),
+            )},
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
     }
