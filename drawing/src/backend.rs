@@ -24,6 +24,7 @@ pub trait Backend {
 
 	fn triangles_textured(&mut self, target: &Self::RenderTarget,
 		color: &Color, texture: &Self::Texture,
+		filtering: bool,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform);
 
@@ -50,12 +51,13 @@ pub trait Backend {
 
 	fn rect_textured(&mut self, target: &Self::RenderTarget,
 		color: &Color, texture: &Self::Texture,
+		filtering: bool,
 		rect: Rect, transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
 		self.triangles_textured(target,
-			color, texture,
+			color, texture, filtering,
 			&[
 				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
 				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),

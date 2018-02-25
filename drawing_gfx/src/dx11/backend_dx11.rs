@@ -15,7 +15,6 @@ use backend::drawing::backend::Texture;
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
     pub surface: gfx::handle::Texture<gfx_device_dx11::Resources, gfx::format::R8_G8_B8_A8>,
-    pub sampler: gfx::handle::Sampler<gfx_device_dx11::Resources>,
     pub srv: gfx::handle::ShaderResourceView<gfx_device_dx11::Resources, [f32; 4]>
 }
 
@@ -30,10 +29,8 @@ impl drawing::backend::Texture for GfxTexture {
         let kind = gfx::texture::Kind::D2(width, height, gfx::texture::AaMode::Single);
         let (surface, srv) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
             kind, gfx::texture::Mipmap::Provided, &[&memory])?;
-        let sampler = factory.create_sampler_linear();
         Ok(GfxTexture {
             surface: surface,
-            sampler: sampler,
             srv: srv
         })
     }
@@ -172,9 +169,10 @@ impl drawing::backend::Backend for GfxWindowBackend {
 
     fn triangles_textured(&mut self, target: &Self::RenderTarget,
         color: &Color, texture: &Self::Texture,
+        filtering: bool,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
-        self.gfx_backend.triangles_textured(target, color, texture, vertices, uv, transform)
+        self.gfx_backend.triangles_textured(target, color, texture, filtering, vertices, uv, transform)
     }
 
     fn line(&mut self, target: &Self::RenderTarget,
@@ -211,8 +209,7 @@ impl drawing::backend::Backend for GfxBackend {
 
     fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
         let (texture, srv, render_target) = self.factory.create_render_target(width, height).unwrap();
-        let sampler = self.factory.create_sampler_linear();
-        (GfxTexture { surface: texture, sampler: sampler, srv: srv }, render_target)
+        (GfxTexture { surface: texture, srv: srv }, render_target)
     }
 
     fn begin(&mut self) {
@@ -251,6 +248,7 @@ impl drawing::backend::Backend for GfxBackend {
 
     fn triangles_textured(&mut self, target: &Self::RenderTarget,
         color: &Color, texture: &Self::Texture,
+        filtering: bool,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
         let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
@@ -264,10 +262,15 @@ impl drawing::backend::Backend for GfxBackend {
             [0.0, 0.0, 1.0, 0.0],
             [transform.m31, transform.m32, 0.0, 1.0]];
 
+        let sampler = self.factory.create_sampler(gfx::texture::SamplerInfo::new(
+            if filtering { gfx::texture::FilterMethod::Trilinear }
+            else { gfx::texture::FilterMethod::Scale },
+            gfx::texture::WrapMode::Tile));
+
         let mut data = TexturedPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
-            texture: (texture.srv.clone(), texture.sampler.clone()),
+            texture: (texture.srv.clone(), sampler),
             out: target.clone()
         };
 

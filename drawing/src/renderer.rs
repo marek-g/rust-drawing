@@ -51,13 +51,28 @@ impl<B: WindowBackend> Renderer<B> {
 				},
 
 				&Primitive::Image { rect, path } => {
-					let img = image::open(path).unwrap().to_rgba();
+					/*let img = image::open(path).unwrap().to_rgba();
 					let (w, h) = img.dimensions();
-					let data: &[u8] = &img;
-					let texture = self.backend.create_texture(data, w as u16, h as u16);
+					let data: &[u8] = &img;*/
+
+					let w = rect.to_untyped().size.width as usize;
+					let h = rect.to_untyped().size.height as usize;
+					let mut data: Vec<u8> = Vec::with_capacity(w*h*4);
+					for y in 0..h {
+						for x in 0..w {
+							let color: u8 = if ((x + y)/1 % 2) == 0 { 255 } else { 0 };
+							data.push(color);
+							data.push(color);
+							data.push(color);
+							data.push(255);
+						}
+					}
+
+
+					let texture = self.backend.create_texture(&data, w as u16, h as u16);
 					self.backend.rect_textured(&target_view,
-						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, rect.to_untyped(),
-						unknown_to_device_transform);
+						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, false,
+						rect.to_untyped(), unknown_to_device_transform);
 
 					let (texture2, texture2_view) = self.backend.create_render_target(w as u16, h as u16);
 					/*self.backend.line(&texture_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32],
@@ -66,8 +81,8 @@ impl<B: WindowBackend> Renderer<B> {
 					self.backend.rect_colored(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32], rect.to_untyped(),
 						unknown_to_device_transform);
 					self.backend.rect_textured(&target_view,
-						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture2, rect.to_untyped(),
-						unknown_to_device_transform);
+						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture2, false,
+						rect.to_untyped(), unknown_to_device_transform);
 				},
 
 				&Primitive::PushLayer { .. } => {

@@ -55,7 +55,7 @@ fn main() {
                 start_point: UserPixelPoint::new(100.5f32, 100.5f32),
                 end_point: UserPixelPoint::new(300.5f32, 100.5f32) },
             Primitive::Image { path: &image_path, rect: UserPixelRect::new(
-                UserPixelPoint::new(100.5f32, 150.0f32),
+                UserPixelPoint::new(100.0f32, 150.0f32),
                 UserPixelSize::new(200.0f32, 200.0f32)
             )}
         ];
