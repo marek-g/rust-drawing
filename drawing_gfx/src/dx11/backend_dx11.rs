@@ -204,7 +204,7 @@ impl drawing::backend::Backend for GfxBackend {
     }
 
     fn get_main_render_target(&mut self)-> Self::RenderTarget {
-        self.target_view.unwrap().clone()
+        self.target_view.clone().unwrap()
     }
 
     fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
@@ -299,7 +299,7 @@ impl drawing::backend::Backend for GfxBackend {
 }
 
 impl GfxBackend {
-	fn line_native(&mut self, target: &Self::RenderTarget,
+	fn line_native(&mut self, target: &gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>,
         color: &Color, start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
         let LINE: [ColorVertex; 2] = [
@@ -325,7 +325,7 @@ impl GfxBackend {
         self.encoder.draw(&slice, &self.color_pipeline_lines, &data);
     }
 
-    fn line_triangulated(&mut self, target: &Self::RenderTarget,
+    fn line_triangulated(&mut self, target: &gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>,
         color: &Color, thickness: DeviceThickness,
         start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
