@@ -9,7 +9,10 @@ winit = "*"
 glutin = "*"
 gfx = "*"
 gfx_core = "*"
-pathfinder = { git = "https://github.com/pcwalton/pathfinder" }
+pathfinder_font_renderer = { git = "https://github.com/pcwalton/pathfinder", path="font-renderer" }
+pathfinder_partitioner = { git = "https://github.com/pcwalton/pathfinder", path="partitioner" }
+pathfinder_path_utils = { git = "https://github.com/pcwalton/pathfinder", path="path-utils" }
+app_units = "*"
 
 [target.'cfg(windows)'.dependencies]
 gfx_device_dx11 = "*"
