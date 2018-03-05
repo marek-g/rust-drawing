@@ -1,11 +1,13 @@
 extern crate winit;
 
 use color::*;
+use font::*;
 use units::*;
 
 pub trait Backend {
 	type Texture: Texture;
 	type RenderTarget;
+	type Font: Font;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
@@ -68,6 +70,16 @@ pub trait Backend {
 			],
 			transform);
 	}
+
+	// font related
+
+	fn create_font(&mut self, memory: &[u8]) -> Self::Font;
+
+	fn draw_font(&mut self, font: &Self::Font,
+		color: &Color, params: FontParams,
+		text: &str,
+		pos: Point,
+		transform: UnknownToDeviceTransform);
 }
 
 pub trait WindowBackend : Backend {
@@ -90,4 +102,10 @@ pub trait Texture : Sized {
 		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2>;
 
 	fn get_size(&self) -> (u16, u16);
+}
+
+pub trait Font : Sized {
+	fn create(bytes: &[u8]) -> Self;
+
+	fn get_dimensions(&mut self, font_params: FontParams, text: &str) -> (u16, u16);
 }

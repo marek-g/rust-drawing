@@ -7,12 +7,15 @@ extern crate gfx_window_glutin;
 extern crate glutin;
 
 use self::drawing::color::*;
+use self::drawing::font::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
 use gfx::Factory;
 use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
+use backend::drawing::backend::Font;
+use font_pathfinder::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
@@ -138,6 +141,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
 impl drawing::backend::Backend for GfxWindowBackend {
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
+    type Font = PathfinderFont;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GfxBackend::get_device_transform(size)
@@ -189,11 +193,24 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.end();
         self.window.swap_buffers().unwrap();
     }
+
+    fn create_font(&mut self, memory: &[u8]) -> Self::Font {
+        self.gfx_backend.create_font(memory)
+    }
+
+	fn draw_font(&mut self, font: &Self::Font,
+		color: &Color, params: FontParams,
+		text: &str,
+		pos: Point,
+		transform: UnknownToDeviceTransform) {
+        self.gfx_backend.draw_font(font, color, params, text, pos, transform)
+    }
 }
 
 impl drawing::backend::Backend for GfxBackend {
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
+    type Font = PathfinderFont;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
@@ -298,6 +315,18 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.flush(&mut self.device);
         self.device.cleanup();
 	}
+
+    fn create_font(&mut self, memory: &[u8]) -> Self::Font {
+        Self::Font::create(memory)
+    }
+
+	fn draw_font(&mut self, font: &Self::Font,
+		color: &Color, params: FontParams,
+		text: &str,
+		pos: Point,
+		transform: UnknownToDeviceTransform) {
+        // TODO:
+    }
 }
 
 impl GfxBackend {
