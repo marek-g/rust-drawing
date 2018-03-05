@@ -13,6 +13,7 @@ pub enum Primitive<'a> {
         rect: UserPixelRect
     },
     Text {
+        font_path: &'a str,
         color: Color,
         position: UserPixelPoint,
         size: UserPixelThickness,

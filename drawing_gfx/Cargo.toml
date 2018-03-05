@@ -9,6 +9,7 @@ winit = "*"
 glutin = "*"
 gfx = "*"
 gfx_core = "*"
+pathfinder = { git = "https://github.com/pcwalton/pathfinder" }
 
 [target.'cfg(windows)'.dependencies]
 gfx_device_dx11 = "*"

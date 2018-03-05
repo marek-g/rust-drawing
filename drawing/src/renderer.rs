@@ -4,6 +4,10 @@ use backend::WindowBackend;
 use primitive::Primitive;
 use units::*;
 
+use std::io;
+use std::io::prelude::*;
+use std::fs::File;
+
 pub struct Renderer<B: WindowBackend> {
 	backend: B
 }
@@ -46,8 +50,12 @@ impl<B: WindowBackend> Renderer<B> {
 						unknown_to_device_transform)
 				},
 
-				&Primitive::Text { .. } => {
+				&Primitive::Text { font_path, ref color, position, size, text } => {
+					let mut file = File::open(font_path).unwrap();
+					let mut buffer = Vec::new();
+					file.read_to_end(&mut buffer);
 
+					let font = self.backend.create_font(&buffer);
 				},
 
 				&Primitive::Image { rect, path } => {

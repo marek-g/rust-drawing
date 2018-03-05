@@ -20,6 +20,7 @@ fn main() {
 
     let mut renderer = Renderer::new(GfxWindowBackend::create_window_backend(window_builder, &events_loop));
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
+    let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
 
     // main loop
     let mut running = true;
@@ -92,6 +93,12 @@ fn main() {
                 UserPixelPoint::new(0.0f32, height as f32 - 4.0f32),
                 UserPixelSize::new(4.0f32, 4.0f32),
             )},
+
+            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+                position: UserPixelPoint::new(100.0f32, 200.0f32),
+                size: UserPixelThickness::new(24.0f32),
+                text: "Hello World!",
+            },
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
     }
