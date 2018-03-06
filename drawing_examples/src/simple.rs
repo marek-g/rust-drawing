@@ -95,8 +95,8 @@ fn main() {
             )},
 
             Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(100.0f32, 200.0f32),
-                size: UserPixelThickness::new(24.0f32),
+                position: UserPixelPoint::new(350.0f32, 200.0f32),
+                size: UserPixelThickness::new(16.0f32),
                 text: "Hello World!",
             },
         ];

@@ -5,11 +5,15 @@ use font::*;
 use units::*;
 
 pub trait Backend {
+	type Factory;
 	type Texture: Texture;
 	type RenderTarget;
 	type Font: Font;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
+
+	/// Device specific factory. Can be used by extensions to create shaders etc.
+	fn get_factory(&mut self) -> Self::Factory;
 
 	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture;
 
@@ -73,13 +77,8 @@ pub trait Backend {
 
 	// font related
 
-	fn create_font(&mut self, memory: &[u8]) -> Self::Font;
-
-	fn draw_font(&mut self, font: &Self::Font,
-		color: &Color, params: FontParams,
-		text: &str,
-		pos: Point,
-		transform: UnknownToDeviceTransform);
+	fn create_font(&mut self, memory: &[u8], params: FontParams) -> Self::Font;
+	fn draw_font(&mut self, font: &mut Self::Font, target: &Self::RenderTarget);
 }
 
 pub trait WindowBackend : Backend {
@@ -102,10 +101,4 @@ pub trait Texture : Sized {
 		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2>;
 
 	fn get_size(&self) -> (u16, u16);
-}
-
-pub trait Font : Sized {
-	fn create(bytes: &[u8]) -> Self;
-
-	fn get_dimensions(&mut self, font_params: FontParams, text: &str) -> (u16, u16);
 }

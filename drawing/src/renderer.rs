@@ -3,8 +3,8 @@ extern crate image;
 use backend::WindowBackend;
 use primitive::Primitive;
 use units::*;
+use font::*;
 
-use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 
@@ -55,7 +55,17 @@ impl<B: WindowBackend> Renderer<B> {
 					let mut buffer = Vec::new();
 					file.read_to_end(&mut buffer);
 
-					let font = self.backend.create_font(&buffer);
+					let mut font = self.backend.create_font(&buffer, FontParams { size: size });
+					font.add_text(color, text, position.to_untyped(), unknown_to_device_transform);
+					self.backend.draw_font(&mut font, &target_view);
+					
+					let dims = font.get_dimensions(text);
+					self.backend.rect_colored(&target_view, &[0.0f32, 0.0f32, 0.0f32, 0.5f32],
+						UserPixelRect::new(
+							UserPixelPoint::new(position.to_untyped().x, position.to_untyped().y),
+							UserPixelSize::new(dims.0 as f32, dims.1 as f32),
+						).to_untyped(),
+						unknown_to_device_transform);
 				},
 
 				&Primitive::Image { rect, path } => {

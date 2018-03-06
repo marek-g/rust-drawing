@@ -14,7 +14,6 @@ use gfx::Factory;
 use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
-use backend::drawing::backend::Font;
 use font_gfx_text::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -139,12 +138,17 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
 }
 
 impl drawing::backend::Backend for GfxWindowBackend {
+    type Factory = gfx_device_gl::Factory;
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
-    type Font = GfxTextFont;
+    type Font = GfxTextFont<gfx_device_gl::Resources, gfx_device_gl::Factory>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GfxBackend::get_device_transform(size)
+    }
+
+    fn get_factory(&mut self) -> Self::Factory {
+        self.gfx_backend.get_factory()
     }
 
     fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
@@ -194,29 +198,30 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.window.swap_buffers().unwrap();
     }
 
-    fn create_font(&mut self, memory: &[u8]) -> Self::Font {
-        self.gfx_backend.create_font(memory)
+    fn create_font(&mut self, memory: &[u8], params: FontParams) -> Self::Font {
+        self.gfx_backend.create_font(memory, params)
     }
 
-	fn draw_font(&mut self, font: &Self::Font,
-		color: &Color, params: FontParams,
-		text: &str,
-		pos: Point,
-		transform: UnknownToDeviceTransform) {
-        self.gfx_backend.draw_font(font, color, params, text, pos, transform)
+    fn draw_font(&mut self, font: &mut Self::Font, target: &Self::RenderTarget) {
+        self.gfx_backend.draw_font(font, target)
     }
 }
 
 impl drawing::backend::Backend for GfxBackend {
+    type Factory = gfx_device_gl::Factory;
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColorFormat>;
-    type Font = GfxTextFont;
+    type Font = GfxTextFont<gfx_device_gl::Resources, gfx_device_gl::Factory>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
             2.0f32 / size.width, 0.0f32, -1.0f32,
             0.0f32, -2.0f32 / size.height, 1.0f32,
         )
+    }
+
+    fn get_factory(&mut self) -> Self::Factory {
+        self.factory.clone()
     }
 
     fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
@@ -316,16 +321,12 @@ impl drawing::backend::Backend for GfxBackend {
         self.device.cleanup();
 	}
 
-    fn create_font(&mut self, memory: &[u8]) -> Self::Font {
-        Self::Font::create(memory)
+    fn create_font(&mut self, memory: &[u8], params: FontParams) -> Self::Font {
+        Self::Font::create(self.factory.clone(), memory, params)
     }
 
-	fn draw_font(&mut self, font: &Self::Font,
-		color: &Color, params: FontParams,
-		text: &str,
-		pos: Point,
-		transform: UnknownToDeviceTransform) {
-        // TODO:
+    fn draw_font(&mut self, font: &mut Self::Font, target: &Self::RenderTarget) {
+        font.draw(&mut self.encoder, target)
     }
 }
 
