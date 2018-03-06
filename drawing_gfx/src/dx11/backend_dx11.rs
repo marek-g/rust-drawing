@@ -13,7 +13,7 @@ use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
 use backend::drawing::backend::Font;
-use font_pathfinder::*;
+use font_gfx_text::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
@@ -138,7 +138,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
 impl drawing::backend::Backend for GfxWindowBackend {
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>;
-    type Font = PathfinderFont;
+    type Font = GfxTextFont;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GfxBackend::get_device_transform(size)
@@ -207,7 +207,7 @@ impl drawing::backend::Backend for GfxWindowBackend {
 impl drawing::backend::Backend for GfxBackend {
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>;
-    type Font = PathfinderFont;
+    type Font = GfxTextFont;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(

@@ -1,3 +1,18 @@
+/*#[cfg(feature = "pathfinder")]
+
+// not completed work - partitioning is working
+// it outputs buffors with vertices and path data
+// there is still huge work to do with passing them to shaders
+// shaders also needs to be converted to OpenGL from OpenGL ES
+
+// crates to add to Cargo.toml:
+//
+// pathfinder_font_renderer = { git = "https://github.com/pcwalton/pathfinder", path="font-renderer" }
+// pathfinder_partitioner = { git = "https://github.com/pcwalton/pathfinder", path="partitioner" }
+// pathfinder_path_utils = { git = "https://github.com/pcwalton/pathfinder", path="path-utils" }
+// app_units = "*"
+// lyon_path = "*"
+
 extern crate drawing;
 extern crate app_units;
 extern crate pathfinder_font_renderer;
@@ -69,13 +84,9 @@ impl self::drawing::backend::Font for PathfinderFont {
         }
         partitioner.library_mut().optimize();
 
-        let mut data_buffer = Cursor::new(vec![]);
-        drop(partitioner.library().serialize_into(&mut data_buffer));
-
         let i = 1;
 
-        //info!("endpoints: {:#?}", glyph_outline_buffer.endpoints);
-        //info!("control points: {:#?}", glyph_outline_buffer.control_points);
+        // partitioner.library() contains all the glyph data
 
         PathfinderFont {}
     }
@@ -84,3 +95,4 @@ impl self::drawing::backend::Font for PathfinderFont {
         (10, 10)
     }
 }
+*/

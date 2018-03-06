@@ -9,4 +9,4 @@ pub mod backend;
 #[path="opengl/backend_opengl.rs"]
 pub mod backend;
 
-pub mod font_pathfinder;
+pub mod font_gfx_text;
