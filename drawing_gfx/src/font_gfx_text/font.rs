@@ -18,6 +18,7 @@ pub struct BitmapFont {
     height: u16,
     chars: HashMap<char, BitmapChar>,
     image: Vec<u8>,
+    font_height: u16
 }
 
 #[derive(Debug)]
@@ -169,7 +170,7 @@ impl BitmapFont {
             let ch_height = bitmap.rows();
             let ch_x_offset = glyph.bitmap_left();
             let ch_y_offset = font_size as i32 - glyph.bitmap_top();
-            let ch_x_advance = (glyph.advance().x >> 6) as i32;
+            let ch_x_advance = ((glyph.advance().x + 32) >> 6) as i32;
             let buffer = bitmap.buffer();
             let ch_data = Vec::from(buffer);
 
@@ -279,6 +280,7 @@ impl BitmapFont {
             height: image_height as u16,
             chars: chars_info,
             image: image,
+            font_height: ((face.size_metrics().unwrap().height + 32) >> 6) as u16
         })
     }
 
@@ -293,6 +295,10 @@ impl BitmapFont {
     /// Return 8-bit texture raw data (grayscale).
     pub fn get_image(&self) -> &[u8] {
         &self.image
+    }
+
+    pub fn get_font_height(&self) -> u16 {
+        self.font_height
     }
 
     pub fn find_char(&self, ch: char) -> Option<&BitmapChar> {

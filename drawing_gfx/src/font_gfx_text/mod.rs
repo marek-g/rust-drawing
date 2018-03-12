@@ -45,6 +45,6 @@ impl<R: gfx::Resources, F: gfx::Factory<R>> Font for GfxTextFont<R, F> {
 
     fn get_dimensions(&mut self,  text: &str) -> (u16, u16) {
         let dims = self.renderer.measure(text);
-        (dims.0 as u16, self.size as u16)
+        (dims.0 as u16, dims.1 as u16)
     }
 }
