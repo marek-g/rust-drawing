@@ -9,7 +9,7 @@ winit = "*"
 glutin = "*"
 gfx = "*"
 gfx_core = "*"
-gfx_text = "*"
+freetype-rs = "*"
 
 [target.'cfg(windows)'.dependencies]
 gfx_device_dx11 = "*"

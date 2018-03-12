@@ -1,6 +1,8 @@
 extern crate drawing;
 extern crate gfx;
-extern crate gfx_text;
+
+mod gfx_text;
+mod font;
 
 use self::drawing::font::*;
 use self::drawing::color::*;
