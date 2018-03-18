@@ -1,8 +1,9 @@
 use units::*;
 use color::*;
 
+#[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct FontParams {
-    pub size: UserPixelThickness
+    pub size: u16
 }
 
 pub trait Font {

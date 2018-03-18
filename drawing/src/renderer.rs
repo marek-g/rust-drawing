@@ -2,6 +2,7 @@ extern crate image;
 
 use backend::WindowBackend;
 use primitive::Primitive;
+use resources::*;
 use units::*;
 use font::*;
 
@@ -9,12 +10,16 @@ use std::io::prelude::*;
 use std::fs::File;
 
 pub struct Renderer<B: WindowBackend> {
-	backend: B
+	backend: B,
+	resources: Resources<'static, B::Texture, B::Font>
 }
 
 impl<B: WindowBackend> Renderer<B> {
 	pub fn new(backend: B) -> Renderer<B> {
-		Renderer { backend: backend }
+		Renderer {
+			backend: backend,
+			resources: Resources::new()
+		}
 	}
 
 	pub fn update_window_size(&mut self, width: u16, height: u16) {

@@ -16,7 +16,7 @@ pub enum Primitive<'a> {
         font_path: &'a str,
         color: Color,
         position: UserPixelPoint,
-        size: UserPixelThickness,
+        size: u16,
         text: &'a str,
     },
     Image {

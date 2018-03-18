@@ -15,7 +15,7 @@ pub struct GfxTextFont<R: gfx::Resources, F: gfx::Factory<R>> {
 
 impl<R: gfx::Resources, F: gfx::Factory<R>> GfxTextFont<R, F> {
     pub fn create(factory: F, bytes: &[u8], font_params: FontParams) -> Self {
-        let size: u8 = font_params.size.get().trunc() as u8;
+        let size: u8 = font_params.size as u8;
         let renderer = gfx_text::new(factory)
             .with_font_data(bytes)
             .with_size(size)
