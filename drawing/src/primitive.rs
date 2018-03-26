@@ -20,7 +20,7 @@ pub enum Primitive<'a> {
         text: &'a str,
     },
     Image {
-        path: &'a str,
+        resource_key: i32,
         rect: UserPixelRect,
     },
     PushLayer {
