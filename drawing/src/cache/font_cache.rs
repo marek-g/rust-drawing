@@ -1,22 +1,21 @@
-use font::FontParams;
 use std::collections::HashMap;
 
-pub struct FontCache<'a, F> {
-    hash_map: HashMap<(&'a str, FontParams), F>
+pub struct FontCache<F> {
+    hash_map: HashMap<String, F>
 }
 
-impl<'a, F> FontCache<'a, F> {
-    pub fn new() -> FontCache<'a, F> {
+impl<F> FontCache<F> {
+    pub fn new() -> FontCache<F> {
         FontCache {
             hash_map: HashMap::new()
         }
     }
 
-    pub fn insert(&mut self, key: &'a str, params: FontParams, font: F) {
-        self.hash_map.insert((key, params), font);
+    pub fn insert(&mut self, key: String, font: F) {
+        self.hash_map.insert(key, font);
     }
 
-    pub fn get(&self, key: &'a str, params: FontParams) -> Option<&F> {
-        self.hash_map.get(&(key, params))
+    pub fn get_mut(&mut self, key: &String) -> Option<&mut F> {
+        self.hash_map.get_mut(key)
     }
 }

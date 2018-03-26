@@ -5,11 +5,18 @@ extern crate shared_library;
 extern crate find_folder;
 
 use drawing::backend::WindowBackend;
+use drawing::font::Font;
+use drawing::font::FontParams;
 use drawing::renderer::Renderer;
+use drawing::resources::Resources;
 use drawing::primitive::Primitive;
 use drawing::units::*;
 use drawing_gfx::backend::GfxBackend;
 use drawing_gfx::backend::GfxWindowBackend;
+use drawing_gfx::font_gfx_text::GfxTextFont;
+
+use std::fs::File;
+use std::io::Read;
 
 fn main() {
     set_process_high_dpi_aware();
@@ -19,8 +26,21 @@ fn main() {
 
 
     let mut renderer = Renderer::new(GfxWindowBackend::create_window_backend(window_builder, &events_loop));
+
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
     let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
+
+
+    // create resources
+    let mut resources = Resources::new();
+
+    let mut file = File::open(font_path).unwrap();
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer);
+
+    let mut font = GfxTextFont::create(renderer.backend(), buffer);
+
+    resources.fonts_mut().insert("F1".to_string(), font);
 
     // main loop
     let mut running = true;
@@ -94,33 +114,33 @@ fn main() {
                 UserPixelSize::new(4.0f32, 4.0f32),
             )},
 
-            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 200.0f32),
                 size: 10,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 220.0f32),
                 size: 12,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 240.0f32),
                 size: 14,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 260.0f32),
                 size: 16,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { font_path: &font_path, color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 280.0f32),
                 size: 18,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
         ];
-        renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives);
+        renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
     }
 }
 

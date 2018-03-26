@@ -30,7 +30,6 @@
 extern crate gfx;
 extern crate freetype;
 
-use std::cmp::max;
 use std::collections::hash_map::{Entry, HashMap};
 use std::marker::PhantomData;
 use gfx::{CombinedError, CommandBuffer, Encoder, Factory, PipelineStateError, Resources, UpdateError};

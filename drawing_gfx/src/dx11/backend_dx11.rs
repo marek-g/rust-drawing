@@ -6,13 +6,11 @@ extern crate gfx_device_dx11;
 extern crate gfx_window_dxgi;
 
 use self::drawing::color::*;
-use self::drawing::font::*;
 use self::drawing::units::*;
 use gfx::Factory;
 use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
-use font_gfx_text::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
@@ -72,6 +70,26 @@ pub struct GfxBackend {
 pub struct GfxWindowBackend {
     window: gfx_window_dxgi::Window,
     gfx_backend: GfxBackend
+}
+
+pub trait GfxBackendExt<R> where
+    R: gfx::Resources {
+    type CommandBuffer: gfx::CommandBuffer<R>;
+    fn get_encoder(&mut self) -> &mut gfx::Encoder<R, Self::CommandBuffer>;
+}
+
+impl GfxBackendExt<gfx_device_dx11::Resources> for GfxBackend {
+    type CommandBuffer = gfx_device_dx11::CommandBuffer<gfx_device_dx11::CommandList>;
+    fn get_encoder(&mut self) -> &mut gfx::Encoder<gfx_device_dx11::Resources, Self::CommandBuffer> {
+        &mut self.encoder
+    }
+}
+
+impl GfxBackendExt<gfx_device_dx11::Resources> for GfxWindowBackend {
+    type CommandBuffer = gfx_device_dx11::CommandBuffer<gfx_device_dx11::CommandList>;
+    fn get_encoder(&mut self) -> &mut gfx::Encoder<gfx_device_dx11::Resources, Self::CommandBuffer> {
+        self.gfx_backend.get_encoder()
+    }
 }
 
 impl drawing::backend::WindowBackend for GfxWindowBackend {
@@ -138,13 +156,12 @@ impl drawing::backend::Backend for GfxWindowBackend {
     type Factory = gfx_device_dx11::Factory;
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>;
-    type Font = GfxTextFont<gfx_device_dx11::Resources, gfx_device_dx11::Factory>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GfxBackend::get_device_transform(size)
     }
 
-    fn get_factory(&mut self) -> Self::Factory {
+    fn get_factory(&self) -> Self::Factory {
         self.gfx_backend.get_factory()
     }
 
@@ -194,21 +211,12 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.end();
         self.window.swap_buffers(1);
     }
-
-    fn create_font(&mut self, memory: &[u8], params: FontParams) -> Self::Font {
-        self.gfx_backend.create_font(memory, params)
-    }
-
-    fn draw_font(&mut self, font: &mut Self::Font, target: &Self::RenderTarget) {
-        self.gfx_backend.draw_font(font, target)
-    }
 }
 
 impl drawing::backend::Backend for GfxBackend {
     type Factory = gfx_device_dx11::Factory;
     type Texture = GfxTexture;
     type RenderTarget = gfx::handle::RenderTargetView<gfx_device_dx11::Resources, ColorFormat>;
-    type Font = GfxTextFont<gfx_device_dx11::Resources, gfx_device_dx11::Factory>;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
@@ -217,7 +225,7 @@ impl drawing::backend::Backend for GfxBackend {
         )
     }
 
-    fn get_factory(&mut self) -> Self::Factory {
+    fn get_factory(&self) -> Self::Factory {
         self.factory.clone()
     }
 
@@ -318,14 +326,6 @@ impl drawing::backend::Backend for GfxBackend {
         self.encoder.flush(&mut self.device);
         self.device.cleanup();
 	}
-
-    fn create_font(&mut self, memory: &[u8], params: FontParams) -> Self::Font {
-        Self::Font::create(memory, params)
-    }
-
-    fn draw_font(&mut self, font: &mut Self::Font, target: &Self::RenderTarget) {
-        font.draw(self.encoder, target)
-    }
 }
 
 impl GfxBackend {

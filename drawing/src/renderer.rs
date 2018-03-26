@@ -1,32 +1,34 @@
 extern crate image;
 
+use font::FontParams;
 use backend::WindowBackend;
+use font::Font;
 use primitive::Primitive;
 use resources::*;
 use units::*;
-use font::*;
-
-use std::io::prelude::*;
-use std::fs::File;
 
 pub struct Renderer<B: WindowBackend> {
-	backend: B,
-	resources: Resources<'static, B::Texture, B::Font>
+	backend: B
 }
 
 impl<B: WindowBackend> Renderer<B> {
 	pub fn new(backend: B) -> Renderer<B> {
 		Renderer {
-			backend: backend,
-			resources: Resources::new()
+			backend: backend
 		}
+	}
+
+	pub fn backend(&mut self) -> &mut B {
+		&mut self.backend
 	}
 
 	pub fn update_window_size(&mut self, width: u16, height: u16) {
 		self.backend.update_window_size(width, height)
 	}
 
-	pub fn draw(&mut self, size: PhysPixelSize, primitives: Vec<Primitive>) {
+	pub fn draw<F: Font<B>>(&mut self, size: PhysPixelSize,
+		primitives: Vec<Primitive>,
+		resources: &mut Resources<B::Texture, F>) {
 		let physical_pixel_to_device_transform = B::get_device_transform(size);
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
 		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
@@ -55,23 +57,19 @@ impl<B: WindowBackend> Renderer<B> {
 						unknown_to_device_transform)
 				},
 
-				&Primitive::Text { font_path, ref color, position, size, text } => {
-					let mut file = File::open(font_path).unwrap();
-					let mut buffer = Vec::new();
-					file.read_to_end(&mut buffer);
-
-					let mut font = self.backend.create_font(&buffer, FontParams { size: size });
-					font.add_text(color, text, position.to_untyped(), unknown_to_device_transform);
-
-					let dims = font.get_dimensions(text);
-					self.backend.rect_colored(&target_view, &[0.0f32, 0.0f32, 0.0f32, 0.5f32],
+				&Primitive::Text { resource_key, ref color, position, size, text } => {
+					if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
+						let dims = font.get_dimensions(&mut self.backend, FontParams { size: size as u8}, text);
+						self.backend.rect_colored(&target_view, &[0.0f32, 0.0f32, 0.0f32, 0.5f32],
 						UserPixelRect::new(
 							UserPixelPoint::new(position.to_untyped().x, position.to_untyped().y),
 							UserPixelSize::new(dims.0 as f32, dims.1 as f32),
 						).to_untyped(),
 						unknown_to_device_transform);
 
-					self.backend.draw_font(&mut font, &target_view);
+						font.draw(&mut self.backend, &target_view, color, text,
+							position.to_untyped(), FontParams { size: size as u8 }, unknown_to_device_transform);
+					}
 				},
 
 				&Primitive::Image { rect, path } => {
