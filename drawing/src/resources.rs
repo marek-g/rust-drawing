@@ -1,32 +1,24 @@
 use backend::Texture;
-use cache::*;
+use std::collections::HashMap;
 
 pub struct Resources<T: Texture, Font> {
-    fonts: FontCache<Font>,
-    textures: IdCache<T> 
+    fonts: HashMap<String, Font>,
+    textures: HashMap<i32, T> 
 }
 
-impl<'a, T: Texture, Font> Resources<T, Font> {
+impl<T: Texture, Font> Resources<T, Font> {
     pub fn new() -> Resources<T, Font> {
         Resources {
-            fonts: FontCache::new(),
-            textures: IdCache::new()
+            fonts: HashMap::new(),
+            textures: HashMap::new()
         }
     }
 
-    pub fn fonts(&self) -> &FontCache<Font> {
-        &self.fonts
-    }
-
-    pub fn fonts_mut(&mut self) -> &mut FontCache<Font> {
+    pub fn fonts_mut(&mut self) -> &mut HashMap<String, Font> {
         &mut self.fonts
     }
 
-    pub fn textures(&self) -> &IdCache<T> {
-        &self.textures
-    }
-
-    pub fn textures_mut(&mut self) -> &mut IdCache<T> {
+    pub fn textures_mut(&mut self) -> &mut HashMap<i32, T> {
         &mut self.textures
     }
 }
