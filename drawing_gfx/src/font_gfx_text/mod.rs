@@ -57,15 +57,13 @@ impl<R, F, B, ColorFormat> Font<B> for GfxTextFont<R, F> where
 		pos: Point,
 		font_params: FontParams,
 		transform: UnknownToDeviceTransform) {
-        //let renderer = self.get_or_create_font_renderer(backend.get_factory(), font_params.size);
-        let mut renderer = self.create_font_renderer(backend.get_factory(), font_params.size);
+        let mut renderer = self.get_or_create_font_renderer(backend.get_factory(), font_params.size);
         renderer.add(text, [pos.x as i32, pos.y as i32], *color);
         renderer.draw(backend.get_encoder(), target);
     }
 
     fn get_dimensions(&mut self, backend: &mut B, params: FontParams, text: &str) -> (u16, u16) {
-        //let renderer = self.get_or_create_font_renderer(backend.get_factory(), params.size);
-        let renderer = self.create_font_renderer(backend.get_factory(), params.size);
+        let mut renderer = self.get_or_create_font_renderer(backend.get_factory(), params.size);
         let dims = renderer.measure(text);
         (dims.0 as u16, dims.1 as u16)
     }
