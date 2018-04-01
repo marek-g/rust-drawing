@@ -12,6 +12,9 @@ use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
 
+pub type GfxResources = gfx_device_dx11::Resources;
+pub type GfxFactory = gfx_device_dx11::Factory;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
     pub surface: gfx::handle::Texture<gfx_device_dx11::Resources, gfx::format::R8_G8_B8_A8>,

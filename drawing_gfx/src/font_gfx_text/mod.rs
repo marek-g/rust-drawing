@@ -8,7 +8,6 @@ use self::drawing::backend::*;
 use self::drawing::font::*;
 use self::drawing::color::*;
 use self::drawing::units::*;
-use ::backend::GfxBackend;
 use ::backend::GfxBackendExt;
 
 use std::collections::HashMap;
@@ -44,7 +43,7 @@ impl<R, F, B, ColorFormat> Font<B> for GfxTextFont<R, F> where
     ColorFormat: gfx::format::Formatted,
     <ColorFormat as gfx::format::Formatted>::Surface: gfx::format::RenderSurface,
     <ColorFormat as gfx::format::Formatted>::Channel: gfx::format::RenderChannel {
-    fn create(backend: &mut B, bytes: Vec<u8>) -> Self {
+    fn create(_backend: &mut B, bytes: Vec<u8>) -> Self {
         GfxTextFont {
             bytes: bytes,
             font_renderers: HashMap::new()
@@ -57,13 +56,13 @@ impl<R, F, B, ColorFormat> Font<B> for GfxTextFont<R, F> where
 		pos: Point,
 		font_params: FontParams,
 		transform: UnknownToDeviceTransform) {
-        let mut renderer = self.get_or_create_font_renderer(backend.get_factory(), font_params.size);
+        let renderer = self.get_or_create_font_renderer(backend.get_factory(), font_params.size);
         renderer.add(text, [pos.x as i32, pos.y as i32], *color);
         renderer.draw(backend.get_encoder(), target);
     }
 
     fn get_dimensions(&mut self, backend: &mut B, params: FontParams, text: &str) -> (u16, u16) {
-        let mut renderer = self.get_or_create_font_renderer(backend.get_factory(), params.size);
+        let renderer = self.get_or_create_font_renderer(backend.get_factory(), params.size);
         let dims = renderer.measure(text);
         (dims.0 as u16, dims.1 as u16)
     }

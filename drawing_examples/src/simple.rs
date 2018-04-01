@@ -7,12 +7,10 @@ extern crate find_folder;
 use drawing::backend::Backend;
 use drawing::backend::WindowBackend;
 use drawing::font::Font;
-use drawing::font::FontParams;
 use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::primitive::Primitive;
 use drawing::units::*;
-use drawing_gfx::backend::GfxBackend;
 use drawing_gfx::backend::GfxWindowBackend;
 use drawing_gfx::font_gfx_text::GfxTextFont;
 
@@ -42,7 +40,7 @@ fn main() {
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer);
 
-    let mut font = GfxTextFont::create(renderer.backend(), buffer);
+    let font = GfxTextFont::create(renderer.backend(), buffer);
 
     resources.fonts_mut().insert("F1".to_string(), font);
 

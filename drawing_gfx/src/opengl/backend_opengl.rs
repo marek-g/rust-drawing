@@ -14,6 +14,9 @@ use gfx::traits::FactoryExt;
 use backend::gfx_core::Device;
 use backend::drawing::backend::Texture;
 
+pub type GfxResources = gfx_device_gl::Resources;
+pub type GfxFactory = gfx_device_gl::Factory;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct GfxTexture {
     pub surface: gfx::handle::Texture<gfx_device_gl::Resources, gfx::format::R8_G8_B8_A8>,
@@ -101,7 +104,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
             .with_vsync(true);
-		let (window, mut device, mut factory, target_view, mut depth_stencil_view) =
+		let (window, device, mut factory, target_view, depth_stencil_view) =
             gfx_window_glutin::init::<ColorFormat, DepthFormat>(window_builder, context, &events_loop);
 
 		let colored_vertex_shader = include_bytes!("shader/colored.glslv");
@@ -133,7 +136,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
 			TexturedPipeline::new()
 		).unwrap();
 
-        let mut encoder = gfx::Encoder::from(factory.create_command_buffer());
+        let encoder = gfx::Encoder::from(factory.create_command_buffer());
 
 		GfxWindowBackend {
             window: window,
@@ -149,7 +152,7 @@ impl drawing::backend::WindowBackend for GfxWindowBackend {
         }
 	}
 
-    fn update_window_size(&mut self, width: u16, height: u16) {
+    fn update_window_size(&mut self, _width: u16, _height: u16) {
         gfx_window_glutin::update_views(&self.window,
             &mut self.gfx_backend.target_view, &mut self.gfx_backend.stencil_view);
     }
@@ -266,7 +269,7 @@ impl drawing::backend::Backend for GfxBackend {
             [0.0, 0.0, 1.0, 0.0],
             [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
+        let data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
             out: target.clone()
@@ -299,7 +302,7 @@ impl drawing::backend::Backend for GfxBackend {
             else { gfx::texture::FilterMethod::Scale },
             gfx::texture::WrapMode::Tile));
 
-        let mut data = TexturedPipeline::Data {
+        let data = TexturedPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
             texture: (texture.srv.clone(), sampler),
@@ -345,7 +348,7 @@ impl GfxBackend {
             [0.0, 0.0, 1.0, 0.0],
             [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
+        let data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
             out: target.clone()
@@ -392,7 +395,7 @@ impl GfxBackend {
             [0.0, 0.0, 1.0, 0.0],
             [transform.m31, transform.m32, 0.0, 1.0]];
 
-        let mut data = ColorPipeline::Data {
+        let data = ColorPipeline::Data {
             vbuf: vertex_buffer,
             locals: self.factory.create_constant_buffer(1),
             out: target.clone()
