@@ -66,7 +66,10 @@ fn main() {
     let mut running = true;
     let mut width = 0;
     let mut height = 0;
+    let mut pos_y = 0.0f32;
     while running {
+        pos_y += 1.0f32;
+
         events_loop.poll_events(|event| {
             if let winit::Event::WindowEvent { event, .. } = event {
                 match event {
@@ -135,27 +138,27 @@ fn main() {
             )},
 
             Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(350.0f32, 200.0f32),
+                position: UserPixelPoint::new(350.0f32 + pos_y, 200.0f32),
                 size: 10,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
             Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(350.0f32, 220.0f32),
+                position: UserPixelPoint::new(350.0f32, 220.0f32 - pos_y),
                 size: 12,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
             Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(350.0f32, 240.0f32),
+                position: UserPixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y*2.0f32),
                 size: 14,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
             Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(350.0f32, 260.0f32),
+                position: UserPixelPoint::new(350.0f32 - pos_y, 260.0f32),
                 size: 16,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
             Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                position: UserPixelPoint::new(350.0f32, 280.0f32),
+                position: UserPixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
                 size: 18,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
