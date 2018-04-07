@@ -1,3 +1,4 @@
+#![windows_subsystem="windows"]
 extern crate winit;
 extern crate drawing;
 extern crate drawing_gfx;
