@@ -89,6 +89,8 @@ fn main() {
 
         if width <= 0 || height <= 0 { continue }
 
+        if running == false { return }
+
         let primitives = vec![
             Primitive::Rectangle { color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
                 rect: UserPixelRect::new(UserPixelPoint::new(100.5f32, 101.5f32),
@@ -170,7 +172,7 @@ pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::
     let mut data: Vec<u8> = Vec::with_capacity(w*h*4);
     for y in 0..h {
         for x in 0..w {
-            let color: u8 = if ((x + y)/1 % 2) == 0 { 255 } else { 0 };
+            let color: u8 = if ((x + y)/1 % 2) == 0 { 255 - x as u8 } else { 0 };
             data.push(color);
             data.push(color);
             data.push(color);

@@ -32,7 +32,7 @@ impl drawing::backend::Texture for GfxTexture {
 	fn create(factory: &mut Self::Factory, memory: &[u8],
 		width: u16, height: u16) -> Result<Self, Self::Error> {
         let kind = gfx::texture::Kind::D2(width, height, gfx::texture::AaMode::Single);
-        let (surface, srv) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
+        let (surface, srv) = factory.create_texture_immutable_u8::<gfx::format::Srgba8>(
             kind, gfx::texture::Mipmap::Provided, &[&memory])?;
         Ok(GfxTexture {
             surface: surface,
@@ -53,7 +53,7 @@ impl drawing::backend::Texture for GfxTexture {
             mipmap: 0,
         };
         let data = gfx::memory::cast_slice(memory);
-        encoder.update_texture::<_, gfx::format::Rgba8>(&self.surface, None, img_info, data).map_err(Into::into)
+        encoder.update_texture::<_, gfx::format::Srgba8>(&self.surface, None, img_info, data).map_err(Into::into)
     }
 
     fn get_size(&self) -> (u16, u16) {
