@@ -59,14 +59,6 @@ impl<B: WindowBackend> Renderer<B> {
 
 				&Primitive::Text { resource_key, ref color, position, size, text } => {
 					if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
-						let dims = font.get_dimensions(&mut self.backend, FontParams { size: size as u8}, text);
-						self.backend.rect_colored(&target_view, &[0.0f32, 0.0f32, 0.0f32, 0.5f32],
-						UserPixelRect::new(
-							UserPixelPoint::new(position.to_untyped().x, position.to_untyped().y),
-							UserPixelSize::new(dims.0 as f32, dims.1 as f32),
-						).to_untyped(),
-						unknown_to_device_transform);
-
 						font.draw(&mut self.backend, &target_view, color, text,
 							position.to_untyped(), FontParams { size: size as u8 }, unknown_to_device_transform);
 					}
