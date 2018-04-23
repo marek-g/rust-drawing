@@ -43,8 +43,7 @@ fn main() {
 
     let font = GfxTextFont::create(renderer.backend(), buffer);
 
-    let font_resource_id = "F1".to_string();
-    resources.fonts_mut().insert(font_resource_id.clone(), font);
+    resources.fonts_mut().insert("F1".to_string(), font);
 
     // image
     let image1_resource_id = resources.get_next_texture_id();
@@ -139,30 +138,30 @@ fn main() {
                 UserPixelSize::new(4.0f32, 4.0f32),
             )},
 
-            Primitive::Text { resource_key: font_resource_id.clone(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32 + pos_y, 200.0f32),
                 size: 10,
-                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
+                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { resource_key: font_resource_id.clone(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32, 220.0f32 - pos_y),
                 size: 12,
-                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
+                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { resource_key: font_resource_id.clone(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y*2.0f32),
                 size: 14,
-                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
+                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { resource_key: font_resource_id.clone(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32 - pos_y, 260.0f32),
                 size: 16,
-                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
+                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
-            Primitive::Text { resource_key: font_resource_id.clone(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            Primitive::Text { resource_key: "F1", color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                 position: UserPixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
                 size: 18,
-                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
+                text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz",
             },
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
