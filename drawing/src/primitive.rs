@@ -1,7 +1,7 @@
 use color::*;
 use units::*;
 
-pub enum Primitive<'a> {
+pub enum Primitive {
     Line {
         color: Color,
         thickness: UserPixelThickness,
@@ -13,11 +13,11 @@ pub enum Primitive<'a> {
         rect: UserPixelRect
     },
     Text {
-        resource_key: &'a str,
+        resource_key: String,
         size: u16,
         color: Color,
         position: UserPixelPoint,
-        text: &'a str,
+        text: String,
     },
     Image {
         resource_key: i32,
