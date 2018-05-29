@@ -17,7 +17,7 @@ pub enum Primitive<'a> {
         size: u16,
         color: Color,
         position: UserPixelPoint,
-        text: &'a str,
+        text: String,
     },
     Image {
         resource_key: i32,

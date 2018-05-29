@@ -57,7 +57,7 @@ impl<B: WindowBackend> Renderer<B> {
 						unknown_to_device_transform)
 				},
 
-				&Primitive::Text { resource_key, ref color, position, size, text } => {
+				&Primitive::Text { resource_key, ref color, position, size, ref text } => {
 					if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
 						font.draw(&mut self.backend, &target_view, color, text,
 							position.to_untyped(), FontParams { size: size as u8 }, unknown_to_device_transform);
