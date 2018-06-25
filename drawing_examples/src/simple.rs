@@ -77,7 +77,7 @@ fn main() {
                             virtual_keycode: Some(winit::VirtualKeyCode::Escape),
                             .. },
                         ..
-                    } | winit::WindowEvent::Closed => running = false,
+                    } | winit::WindowEvent::CloseRequested => running = false,
                     winit::WindowEvent::Resized(w, h) => {
                         width = w; height = h;
                         renderer.update_window_size(w as u16, h as u16)
