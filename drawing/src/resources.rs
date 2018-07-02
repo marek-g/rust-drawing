@@ -25,6 +25,10 @@ impl<T: Texture, Font> Resources<T, Font> {
         self.last_texture_id
     }
 
+    pub fn textures(&self) -> &HashMap<i32, T> {
+        &self.textures
+    }
+
     pub fn textures_mut(&mut self) -> &mut HashMap<i32, T> {
         &mut self.textures
     }
