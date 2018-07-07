@@ -180,7 +180,7 @@ pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::
         }
     }
 
-    backend.create_texture(&data, w as u16, h as u16)
+    backend.create_texture(&data, w as u16, h as u16, false)
 }
 
 type Result = std::result::Result<(), ()>;

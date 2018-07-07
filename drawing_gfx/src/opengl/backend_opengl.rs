@@ -30,10 +30,25 @@ impl drawing::backend::Texture for GfxTexture {
     type Error2 = gfx::UpdateError<[u16; 3]>;
 
 	fn create(factory: &mut Self::Factory, memory: &[u8],
-		width: u16, height: u16) -> Result<Self, Self::Error> {
+		width: u16, height: u16, updatable: bool) -> Result<Self, Self::Error> {
         let kind = gfx::texture::Kind::D2(width, height, gfx::texture::AaMode::Single);
-        let (surface, srv) = factory.create_texture_immutable_u8::<gfx::format::Srgba8>(
-            kind, gfx::texture::Mipmap::Provided, &[&memory])?;
+        let surface;
+        let srv;
+        if updatable {
+            let levels = 1;
+            let cty = <<gfx::format::Srgba8 as gfx::format::Formatted>::Channel as gfx::format::ChannelTyped>::get_channel_type();
+            surface = factory.create_texture(kind, levels,
+                gfx::memory::Bind::SHADER_RESOURCE,
+                gfx::memory::Usage::Dynamic,
+                Some(cty))?;
+            srv = factory.view_texture_as_shader_resource::<gfx::format::Srgba8>(&surface, (0, levels-1),
+                gfx::format::Swizzle::new())?;
+        } else {
+            let (surface_res, srv_res) = factory.create_texture_immutable_u8::<gfx::format::Srgba8>(
+                kind, gfx::texture::Mipmap::Provided, &[&memory])?;
+            surface = surface_res;
+            srv = srv_res;
+        }
         Ok(GfxTexture {
             surface: surface,
             srv: srv
@@ -171,8 +186,8 @@ impl drawing::backend::Backend for GfxWindowBackend {
         self.gfx_backend.get_factory()
     }
 
-    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
-        self.gfx_backend.create_texture(memory, width, height)
+    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, updatable: bool) -> Self::Texture {
+        self.gfx_backend.create_texture(memory, width, height, updatable)
     }
 
     fn get_main_render_target(&mut self)-> Self::RenderTarget {
@@ -235,8 +250,8 @@ impl drawing::backend::Backend for GfxBackend {
         self.factory.clone()
     }
 
-    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16) -> Self::Texture {
-        Self::Texture::create(&mut self.factory, memory, width, height).unwrap()
+    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, updatable: bool) -> Self::Texture {
+        Self::Texture::create(&mut self.factory, memory, width, height, updatable).unwrap()
     }
 
     fn get_main_render_target(&mut self)-> Self::RenderTarget {
