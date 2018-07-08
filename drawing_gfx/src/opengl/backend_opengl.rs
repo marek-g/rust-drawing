@@ -35,12 +35,18 @@ impl drawing::backend::Texture for GfxTexture {
         let surface;
         let srv;
         if updatable {
-            let levels = 1;
             let cty = <<gfx::format::Srgba8 as gfx::format::Formatted>::Channel as gfx::format::ChannelTyped>::get_channel_type();
-            surface = factory.create_texture(kind, levels,
-                gfx::memory::Bind::SHADER_RESOURCE,
-                gfx::memory::Usage::Dynamic,
-                Some(cty))?;
+            let format = <<gfx::format::Srgba8 as gfx::format::Formatted>::Surface as gfx::format::SurfaceTyped>::get_surface_type();
+            let levels = 1u8;
+            let desc = gfx::texture::Info {
+                kind: kind,
+                levels: levels as gfx::texture::Level,
+                format: format,
+                bind: gfx::memory::Bind::SHADER_RESOURCE,
+                usage: gfx::memory::Usage::Dynamic,
+            };
+            let raw = factory.create_texture_raw(desc, Some(cty), Some((&[&memory], gfx::texture::Mipmap::Provided)))?;
+            surface = gfx::memory::Typed::new(raw);
             srv = factory.view_texture_as_shader_resource::<gfx::format::Srgba8>(&surface, (0, levels-1),
                 gfx::format::Swizzle::new())?;
         } else {
