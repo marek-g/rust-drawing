@@ -1,7 +1,7 @@
 extern crate gl;
 extern crate std;
 
-use std::ffi::CStr;
+use std::ffi::{ CStr, CString };
 
 pub struct Shader {
     id: gl::types::GLuint,
@@ -16,12 +16,12 @@ impl Shader {
         Ok(Shader { id })
     }
 
-    pub fn from_vert_source(source: &CStr) -> Result<Shader, String> {
-        Shader::from_source(source, gl::VERTEX_SHADER)
+    pub fn from_vert_str(src: &str) -> Result<Shader, String> {
+        Shader::from_source(&CString::new(src).unwrap(), gl::VERTEX_SHADER)
     }
 
-    pub fn from_frag_source(source: &CStr) -> Result<Shader, String> {
-        Shader::from_source(source, gl::FRAGMENT_SHADER)
+    pub fn from_frag_str(src: &str) -> Result<Shader, String> {
+        Shader::from_source(&CString::new(src).unwrap(), gl::FRAGMENT_SHADER)
     }
 
     pub fn id(&self) -> gl::types::GLuint {
@@ -47,12 +47,12 @@ fn shader_from_source(
         gl::CompileShader(id);
     }
 
-    let mut success: gl::types::GLint = 1;
+    let mut success: gl::types::GLint = gl::FALSE as gl::types::GLint;
     unsafe {
         gl::GetShaderiv(id, gl::COMPILE_STATUS, &mut success);
     }
 
-    if success == 0 {
+    if success != (gl::TRUE as gl::types::GLint) {
         let mut len: gl::types::GLint = 0;
         unsafe {
             gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);

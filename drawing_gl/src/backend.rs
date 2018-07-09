@@ -3,11 +3,12 @@ extern crate winit;
 extern crate glutin;
 extern crate gl;
 
-use std::ffi::CString;
-
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
+use ::utils::Program;
+use ::utils::Shader;
+use ::pipelines::*;
 use backend::drawing::backend::Texture;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -38,6 +39,7 @@ impl drawing::backend::Texture for GlTexture {
 
 pub struct GlBackend {
     factory: (),
+    colored_pipeline: ColoredPipeline,
 }
 
 pub struct GlWindowBackend {
@@ -68,28 +70,17 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
             gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         }
 
-        let colored_vertex_shader = ::utils::Shader::from_vert_source(
-            &CString::new(include_str!("shaders/colored.glslv")).unwrap()
-        ).unwrap();
-		let colored_pixel_shader = ::utils::Shader::from_frag_source(
-            &CString::new(include_str!("shaders/colored.glslf")).unwrap()
-        ).unwrap();
-        let textured_vertex_shader = ::utils::Shader::from_vert_source(
-            &CString::new(include_str!("shaders/textured.glslv")).unwrap()
-        ).unwrap();
-		let textured_pixel_shader = ::utils::Shader::from_frag_source(
-            &CString::new(include_str!("shaders/textured.glslf")).unwrap()
-        ).unwrap();
+        let colored_pipeline = ColoredPipeline::new();
 
-		let colored_shaderset = ::utils::Program::from_shaders(&[colored_vertex_shader, colored_pixel_shader]).unwrap();
-		let textured_shaderset = ::utils::Program::from_shaders(&[textured_vertex_shader, textured_pixel_shader]).unwrap();
-
-        colored_shaderset.set_used();
+        //let textured_vertex_shader = Shader::from_vert_str(include_str!("shaders/textured.glslv")).unwrap();
+		//let textured_pixel_shader = Shader::from_frag_str(include_str!("shaders/textured.glslf")).unwrap();
+		//let textured_shaderset = Program::from_shaders(&[textured_vertex_shader, textured_pixel_shader]).unwrap();
 
 		GlWindowBackend {
             window: gl_window,
             gl_backend: GlBackend {
                 factory: (),
+                colored_pipeline,
             }
         }
 	}
@@ -198,6 +189,17 @@ impl drawing::backend::Backend for GlBackend {
     fn triangles_colored(&mut self, target: &Self::RenderTarget,
         color: &Color, vertices: &[Point],
         transform: UnknownToDeviceTransform) {
+        let VERTICES: Vec<ColoredVertex> = vertices.iter().map(|&point| ColoredVertex {
+            pos: [ point.x, point.y], color: *color
+        }).collect();
+
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
+
+        self.colored_pipeline.apply();
+        self.colored_pipeline.draw(&VERTICES, &ColoredLocals { transform: transform });
     }
 
     fn triangles_textured(&mut self, target: &Self::RenderTarget,

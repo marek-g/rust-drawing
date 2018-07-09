@@ -17,12 +17,12 @@ impl Program {
 
         unsafe { gl::LinkProgram(program_id); }
 
-        let mut success: gl::types::GLint = 1;
+        let mut success: gl::types::GLint = gl::FALSE as gl::types::GLint;
         unsafe {
             gl::GetProgramiv(program_id, gl::LINK_STATUS, &mut success);
         }
 
-        if success == 0 {
+        if success != gl::TRUE as gl::types::GLint {
             let mut len: gl::types::GLint = 0;
             unsafe {
                 gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut len);
