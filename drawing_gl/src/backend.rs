@@ -3,6 +3,8 @@ extern crate winit;
 extern crate glutin;
 extern crate gl;
 
+use std::ffi::CString;
+
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
@@ -65,6 +67,24 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
         unsafe {
             gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         }
+
+        let colored_vertex_shader = ::utils::Shader::from_vert_source(
+            &CString::new(include_str!("shaders/colored.glslv")).unwrap()
+        ).unwrap();
+		let colored_pixel_shader = ::utils::Shader::from_frag_source(
+            &CString::new(include_str!("shaders/colored.glslf")).unwrap()
+        ).unwrap();
+        let textured_vertex_shader = ::utils::Shader::from_vert_source(
+            &CString::new(include_str!("shaders/textured.glslv")).unwrap()
+        ).unwrap();
+		let textured_pixel_shader = ::utils::Shader::from_frag_source(
+            &CString::new(include_str!("shaders/textured.glslf")).unwrap()
+        ).unwrap();
+
+		let colored_shaderset = ::utils::Program::from_shaders(&[colored_vertex_shader, colored_pixel_shader]).unwrap();
+		let textured_shaderset = ::utils::Program::from_shaders(&[textured_vertex_shader, textured_pixel_shader]).unwrap();
+
+        colored_shaderset.set_used();
 
 		GlWindowBackend {
             window: gl_window,
