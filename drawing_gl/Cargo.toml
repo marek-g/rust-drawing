@@ -7,10 +7,5 @@ authors = ["Marek G <no@mail.com>"]
 drawing = { path = "../drawing", version = "*" }
 winit = "*"
 glutin = "*"
+gl="*"
 freetype-rs = "*"
-
-#[target.'cfg(windows)'.dependencies]
-#gfx_device_dx11 = "*"
-#gfx_window_dxgi = "*"
-
-#[target.'cfg(not(windows))'.dependencies]

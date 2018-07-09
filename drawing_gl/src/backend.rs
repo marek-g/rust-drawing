@@ -1,6 +1,7 @@
 extern crate drawing;
 extern crate winit;
 extern crate glutin;
+extern crate gl;
 
 use self::drawing::color::*;
 use self::drawing::units::*;
@@ -46,12 +47,24 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
     fn create_window_backend(window_builder: winit::WindowBuilder,
 		events_loop: &winit::EventsLoop) -> Self {
 
-        let window = glutin::WindowBuilder::new()
-            .with_title("Hello, world!")
-            .with_dimensions(1024, 768);
+        // create OpenGl context
+        // context can be shared between windows (doesn't have to)
+        // cannot be shared between threads (until shared with other context)
         let context = glutin::ContextBuilder::new()
+            .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
             .with_vsync(true);
-        let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
+
+        let gl_window = glutin::GlWindow::new(window_builder, context, &events_loop).unwrap();
+
+        // make context current
+        unsafe {
+            gl_window.make_current().unwrap();
+        }
+
+        // tell gl crate how to forward gl function calls to the driver
+        unsafe {
+            gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
+        }
 
 		GlWindowBackend {
             window: gl_window,
@@ -156,6 +169,10 @@ impl drawing::backend::Backend for GlBackend {
 	}
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
+        unsafe {
+            gl::ClearColor(color[0], color[1], color[2], color[3]);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
     }
 
     fn triangles_colored(&mut self, target: &Self::RenderTarget,
