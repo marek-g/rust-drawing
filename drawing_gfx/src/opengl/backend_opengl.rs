@@ -74,7 +74,7 @@ impl drawing::backend::Texture for GfxTexture {
             mipmap: 0,
         };
         let data = gfx::memory::cast_slice(memory);
-        encoder.update_texture::<_, gfx::format::Srgba8>(&self.surface, None, img_info, data).map_err(Into::into)
+        encoder.update_texture::<gfx::format::R8_G8_B8_A8, gfx::format::Srgba8>(&self.surface, None, img_info, data).map_err(Into::into)
     }
 
     fn get_size(&self) -> (u16, u16) {

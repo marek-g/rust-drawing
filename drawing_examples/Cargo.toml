@@ -5,7 +5,8 @@ authors = ["Marek G <no@mail.com>"]
 
 [dependencies]
 drawing = { path = "../drawing", version = "*" }
-drawing_gfx = { path = "../drawing_gfx", version = "*" }
+#drawing_gfx = { path = "../drawing_gfx", version = "*" }
+drawing_gl = { path = "../drawing_gl", version = "*" }
 winit = "*"
 shared_library = "*"
 find_folder = "*"

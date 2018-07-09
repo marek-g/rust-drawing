@@ -1,7 +1,8 @@
 #![windows_subsystem="windows"]
 extern crate winit;
 extern crate drawing;
-extern crate drawing_gfx;
+//extern crate drawing_gfx;
+extern crate drawing_gl;
 extern crate shared_library;
 extern crate find_folder;
 
@@ -12,8 +13,11 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::primitive::Primitive;
 use drawing::units::*;
-use drawing_gfx::backend::GfxWindowBackend;
-use drawing_gfx::font_gfx_text::GfxTextFont;
+
+//type DrawingWindowBackend = drawing_gfx::backend::GfxWindowBackend;
+//type DrawingFont = drawing_gfx::font_gfx_text::GfxTextFont;
+type DrawingWindowBackend = drawing_gl::GlWindowBackend;
+type DrawingFont = drawing_gl::GlFont;
 
 use std::fs::File;
 use std::io::Read;
@@ -25,7 +29,7 @@ fn main() {
     let mut events_loop = winit::EventsLoop::new(); 
 
 
-    let mut renderer = Renderer::new(GfxWindowBackend::create_window_backend(window_builder, &events_loop));
+    let mut renderer = Renderer::new(DrawingWindowBackend::create_window_backend(window_builder, &events_loop));
 
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
     let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
@@ -41,7 +45,7 @@ fn main() {
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer);
 
-    let font = GfxTextFont::create(renderer.backend(), buffer);
+    let font = DrawingFont::create(renderer.backend(), buffer);
 
     resources.fonts_mut().insert("F1".to_string(), font);
 

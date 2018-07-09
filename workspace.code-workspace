@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "drawing_examples"
+		},
+		{
+			"path": "drawing_gl"
 		}
 	],
 	"settings": {}
