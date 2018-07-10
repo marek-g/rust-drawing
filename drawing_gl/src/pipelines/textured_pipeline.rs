@@ -1,16 +1,12 @@
 extern crate gl;
 extern crate std;
+extern crate drawing;
 
 use ::utils::*;
 
 use self::gl::types::*;
 use std::ffi::CString;
-
-#[repr(C, packed)]
-pub struct TexturedVertex {
-    pub pos: [f32; 2], // "in_position"
-    pub tex_coords: [f32; 2], // "in_tex_coords"
-}
+use self::drawing::backend::TexturedVertex;
 
 #[repr(C, packed)]
 pub struct TexturedLocals {

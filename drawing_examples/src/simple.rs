@@ -8,6 +8,7 @@ extern crate find_folder;
 
 use drawing::backend::Backend;
 use drawing::backend::WindowBackend;
+use drawing::color::*;
 use drawing::font::Font;
 use drawing::renderer::Renderer;
 use drawing::resources::Resources;
@@ -184,7 +185,7 @@ pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::
         }
     }
 
-    backend.create_texture(&data, w as u16, h as u16, false)
+    backend.create_texture(&data, w as u16, h as u16, ColorFormat::RGBA, false)
 }
 
 type Result = std::result::Result<(), ()>;

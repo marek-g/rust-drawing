@@ -3,6 +3,43 @@ extern crate winit;
 use color::*;
 use units::*;
 
+#[repr(C, packed)]
+pub struct ColoredVertex {
+    pub pos: [f32; 2],
+    pub color: [f32; 4],
+}
+
+impl ColoredVertex {
+	pub fn new(pos: [f32; 2], color: [f32; 4]) -> Self {
+		ColoredVertex { pos, color }
+	}
+}
+
+#[repr(C, packed)]
+pub struct TexturedVertex {
+    pub pos: [f32; 2],
+    pub tex_coords: [f32; 2],
+}
+
+impl TexturedVertex {
+	pub fn new(pos: [f32; 2], tex_coords: [f32; 2]) -> Self {
+		TexturedVertex { pos, tex_coords }
+	}
+}
+
+#[repr(C, packed)]
+pub struct TexturedY8Vertex {
+    pub pos: [f32; 2],
+    pub tex_coords: [f32; 2],
+    pub color: [f32; 4],
+}
+
+impl TexturedY8Vertex {
+	pub fn new(pos: [f32; 2], tex_coords: [f32; 2], color: [f32; 4]) -> Self {
+		TexturedY8Vertex { pos, tex_coords, color }
+	}
+}
+
 pub trait Backend {
 	type Factory;
 	type Texture: Texture;
@@ -13,7 +50,7 @@ pub trait Backend {
 	/// Device specific factory. Can be used by extensions to create shaders etc.
 	fn get_factory(&self) -> Self::Factory;
 
-	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, updatable: bool) -> Self::Texture;
+	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture;
 
 	fn get_main_render_target(&mut self)-> Self::RenderTarget;
 	fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget);
@@ -23,13 +60,17 @@ pub trait Backend {
 	fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 
 	fn triangles_colored(&mut self, target: &Self::RenderTarget,
-		color: &Color, vertices: &[Point],
+		vertices: &[ColoredVertex],
 		transform: UnknownToDeviceTransform);
 
 	fn triangles_textured(&mut self, target: &Self::RenderTarget,
-		color: &Color, texture: &Self::Texture,
-		filtering: bool,
-		vertices: &[Point], uv: &[Point],
+		texture: &Self::Texture, filtering: bool,
+		vertices: &[TexturedVertex],
+		transform: UnknownToDeviceTransform);
+
+	fn triangles_textured_y8(&mut self, target: &Self::RenderTarget,
+		texture: &Self::Texture, filtering: bool,
+		vertices: &[TexturedY8Vertex],
 		transform: UnknownToDeviceTransform);
 
 	fn end(&mut self);
@@ -46,29 +87,68 @@ pub trait Backend {
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
 		self.triangles_colored(target,
-			color,
 			&[
-				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
-				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
+				ColoredVertex::new([p1[0], p1[1]], *color),
+				ColoredVertex::new([p2[0], p1[1]], *color),
+				ColoredVertex::new([p1[0], p2[1]], *color),
+
+				ColoredVertex::new([p2[0], p1[1]], *color),
+				ColoredVertex::new([p2[0], p2[1]], *color),
+				ColoredVertex::new([p1[0], p2[1]], *color),
 			], transform);
 	}
 
 	fn rect_textured(&mut self, target: &Self::RenderTarget,
-		color: &Color, texture: &Self::Texture,
-		filtering: bool,
+		texture: &Self::Texture, filtering: bool,
 		rect: Rect, transform: UnknownToDeviceTransform) {
+        self.rect_textured_sub(target, texture, filtering, rect, &[0.0, 0.0], &[1.0, 1.0], transform)
+	}
+
+	fn rect_textured_sub(&mut self, target: &Self::RenderTarget,
+		texture: &Self::Texture, filtering: bool,
+		rect: Rect, uv1: &[f32; 2], uv2: &[f32; 2],
+		transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
         let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
 
 		self.triangles_textured(target,
-			color, texture, filtering,
+			texture, filtering,
 			&[
-				Point::new(p1[0], p1[1]), Point::new(p2[0], p1[1]), Point::new(p1[0], p2[1]),
-				Point::new(p2[0], p1[1]), Point::new(p2[0], p2[1]), Point::new(p1[0], p2[1]),
+				TexturedVertex::new([p1[0], p1[1]], [uv1[0], uv1[1]]),
+				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]]),
+				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]]),
+
+				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]]),
+				TexturedVertex::new([p2[0], p2[1]], [uv2[0], uv2[1]]),
+				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]]),
 			],
+			transform);
+	}
+
+	fn rect_textured_y8(&mut self, target: &Self::RenderTarget,
+		texture: &Self::Texture, filtering: bool, color: &Color,
+		rect: Rect,
+		transform: UnknownToDeviceTransform) {
+        self.rect_textured_y8_sub(target, texture, filtering, color, rect, &[0.0, 0.0], &[1.0, 1.0], transform)
+	}
+
+	fn rect_textured_y8_sub(&mut self, target: &Self::RenderTarget,
+		texture: &Self::Texture, filtering: bool, color: &Color,
+		rect: Rect, uv1: &[f32; 2], uv2: &[f32; 2],
+		transform: UnknownToDeviceTransform) {
+        let p1 = [ rect.origin.x, rect.origin.y ];
+        let p2 = [ rect.origin.x + rect.size.width, rect.origin.y + rect.size.height ];
+
+		self.triangles_textured_y8(target,
+			texture, filtering,
 			&[
-				Point::new(0.0, 0.0), Point::new(1.0, 0.0), Point::new(0.0, 1.0),
-				Point::new(1.0, 0.0), Point::new(1.0, 1.0), Point::new(0.0, 1.0),
+				TexturedY8Vertex::new([p1[0], p1[1]], [uv1[0], uv1[1]], *color),
+				TexturedY8Vertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
+				TexturedY8Vertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
+
+				TexturedY8Vertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
+				TexturedY8Vertex::new([p2[0], p2[1]], [uv2[0], uv2[1]], *color),
+				TexturedY8Vertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
 			],
 			transform);
 	}
@@ -88,7 +168,7 @@ pub trait Texture : Sized {
 	type Error2;
 
 	fn create(factory: &mut Self::Factory, memory: &[u8],
-		width: u16, height: u16, updatable: bool) -> Result<Self, Self::Error>;
+		width: u16, height: u16, format: ColorFormat, updatable: bool) -> Result<Self, Self::Error>;
 
 	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
 		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2>;

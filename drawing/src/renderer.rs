@@ -67,7 +67,7 @@ impl<B: WindowBackend> Renderer<B> {
 				&Primitive::Image { resource_key, rect } => {
 					if let Some(texture) = resources.textures_mut().get(&resource_key) {
 						self.backend.rect_textured(&target_view,
-							&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture, false,
+							&texture, false,
 							rect.to_untyped(), unknown_to_device_transform);
 					}
 				},
