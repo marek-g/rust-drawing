@@ -1,12 +1,13 @@
 #version 150 core
 
-in vec2 a_Pos;
-in vec2 a_TexCoord;
-out vec2 v_TexCoord;
+uniform mat4 transform;
 
-uniform mat4 u_Transform;
+in vec2 in_position;
+in vec2 in_tex_coords;
+
+out vec2 vert_tex_coords;
 
 void main() {
-    v_TexCoord = a_TexCoord;
-    gl_Position = u_Transform * vec4(a_Pos, 0.0, 1.0);
+    vert_tex_coords = in_tex_coords;
+    gl_Position = transform * vec4(in_position, 0.0, 1.0);
 }

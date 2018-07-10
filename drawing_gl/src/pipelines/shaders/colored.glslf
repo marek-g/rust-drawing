@@ -1,8 +1,9 @@
 #version 150 core
 
-in vec4 v_Color;
-out vec4 Target0;
+in vec4 vert_color;
+
+out vec4 frag_color;
 
 void main() {
-    Target0 = v_Color;
+    frag_color = vert_color;
 }

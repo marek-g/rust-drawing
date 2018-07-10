@@ -7,37 +7,38 @@ use self::gl::types::*;
 use std::ffi::CString;
 
 #[repr(C, packed)]
-pub struct ColoredVertex {
+pub struct TextVertex {
     pub pos: [f32; 2], // "in_position"
+    pub tex_coords: [f32; 2], // "in_tex_coords"
     pub color: [f32; 4], // "in_color"
 }
 
 #[repr(C, packed)]
-pub struct ColoredLocals {
+pub struct TextLocals {
     pub transform: [[f32; 4]; 4], // "transform"
 }
 
-pub struct ColoredPipeline {
+pub struct TextPipeline {
     program: Program,
     vbo: GLuint,
     vao: GLuint,
     transform_location: GLint,
 }
 
-impl ColoredPipeline {
+impl TextPipeline {
     pub fn new() -> Self {
-        let vertex_shader = Shader::from_vert_str(include_str!("shaders/colored.glslv")).unwrap();
-		let pixel_shader = Shader::from_frag_str(include_str!("shaders/colored.glslf")).unwrap();
+        let vertex_shader = Shader::from_vert_str(include_str!("shaders/text.glslv")).unwrap();
+		let pixel_shader = Shader::from_frag_str(include_str!("shaders/text.glslf")).unwrap();
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
-        let (vbo, vao) = ColoredPipeline::create_vbo_and_vao();
-        ColoredPipeline::specify_layout(program.id(), vbo, vao);
+        let (vbo, vao) = TextPipeline::create_vbo_and_vao();
+        TextPipeline::specify_layout(program.id(), vbo, vao);
 
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
         };
 
-        ColoredPipeline {
+        TextPipeline {
             program, vbo, vao, transform_location,
         }
     }
@@ -46,7 +47,7 @@ impl ColoredPipeline {
         self.program.set_used();
     }
 
-    pub fn draw(&mut self, array: &[ColoredVertex], locals: &ColoredLocals) {
+    pub fn draw(&mut self, array: &[TextVertex], locals: &TextLocals) {
         self.apply_array(array);
         self.apply_locals(locals);
         unsafe {
@@ -55,12 +56,12 @@ impl ColoredPipeline {
         }
     }
 
-    fn apply_array(&mut self, array: &[ColoredVertex]) {
+    fn apply_array(&mut self, array: &[TextVertex]) {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER, // target
-                (array.len() * std::mem::size_of::<ColoredVertex>()) as GLsizeiptr, // size of data in bytes
+                (array.len() * std::mem::size_of::<TextVertex>()) as GLsizeiptr, // size of data in bytes
                 array.as_ptr() as *const GLvoid, // pointer to data
                 gl::STREAM_DRAW, // usage
             );
@@ -68,7 +69,7 @@ impl ColoredPipeline {
         }
     }
 
-    fn apply_locals(&mut self, locals: &ColoredLocals) {
+    fn apply_locals(&mut self, locals: &TextLocals) {
         unsafe {
             let ptr: *const f32 = std::mem::transmute(&locals.transform);
             gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
@@ -97,21 +98,27 @@ impl ColoredPipeline {
             let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean,
-                (6 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
                 std::ptr::null()); // offset of the first component
+
+            let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_tex_coords").unwrap().as_ptr());
+            gl::EnableVertexAttribArray(pos_attr as GLuint);
+            gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean,
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (2 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
 
             let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(pos_attr as GLuint, 4, gl::FLOAT, gl::FALSE as GLboolean,
-                (6 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
-                (2 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (4 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
 
             gl::BindVertexArray(0);
         }
     }
 }
 
-impl Drop for ColoredPipeline {
+impl Drop for TextPipeline {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteVertexArrays(1, &mut self.vao);

@@ -40,6 +40,8 @@ impl drawing::backend::Texture for GlTexture {
 pub struct GlBackend {
     factory: (),
     colored_pipeline: ColoredPipeline,
+    text_pipeline: TextPipeline,
+    textured_pipeline: TexturedPipeline,
 }
 
 pub struct GlWindowBackend {
@@ -70,17 +72,13 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
             gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         }
 
-        let colored_pipeline = ColoredPipeline::new();
-
-        //let textured_vertex_shader = Shader::from_vert_str(include_str!("shaders/textured.glslv")).unwrap();
-		//let textured_pixel_shader = Shader::from_frag_str(include_str!("shaders/textured.glslf")).unwrap();
-		//let textured_shaderset = Program::from_shaders(&[textured_vertex_shader, textured_pixel_shader]).unwrap();
-
 		GlWindowBackend {
             window: gl_window,
             gl_backend: GlBackend {
                 factory: (),
-                colored_pipeline,
+                colored_pipeline: ColoredPipeline::new(),
+                text_pipeline: TextPipeline::new(),
+                textured_pipeline: TexturedPipeline::new(),
             }
         }
 	}
@@ -207,6 +205,23 @@ impl drawing::backend::Backend for GlBackend {
         filtering: bool,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
+        let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
+            pos: [ point.x, point.y], tex_coords: [uv.x, uv.y]
+        }).collect();
+
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
+
+        /*let sampler = self.factory.create_sampler(gfx::texture::SamplerInfo::new(
+            if filtering { gfx::texture::FilterMethod::Trilinear }
+            else { gfx::texture::FilterMethod::Scale },
+            gfx::texture::WrapMode::Tile));*/
+        //texture: (texture.srv.clone(), sampler),
+
+        self.textured_pipeline.apply();
+        self.textured_pipeline.draw(&VERTICES, &TexturedLocals { transform: transform});
     }
 
     fn line(&mut self, target: &Self::RenderTarget,
