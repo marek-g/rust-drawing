@@ -18,7 +18,7 @@ use drawing::units::*;
 //type DrawingWindowBackend = drawing_gfx::backend::GfxWindowBackend;
 //type DrawingFont = drawing_gfx::font_gfx_text::GfxTextFont;
 type DrawingWindowBackend = drawing_gl::GlWindowBackend;
-type DrawingFont = drawing_gl::GlFont;
+type DrawingFont = drawing::TextureFont<DrawingWindowBackend>;
 
 use std::fs::File;
 use std::io::Read;

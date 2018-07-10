@@ -8,3 +8,6 @@ pub mod primitive_extensions;
 pub mod renderer;
 pub mod resources;
 pub mod units;
+
+mod texture_font;
+pub use texture_font::TextureFont;

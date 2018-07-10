@@ -35,9 +35,9 @@ impl drawing::backend::Texture for GlTexture {
             gl::BindTexture(gl::TEXTURE_2D, texture_id);
         }
 
-        let (gl_format, gl_type) = match format {
-            ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_BYTE),
-            ColorFormat::Y8 => (gl::R8, gl::UNSIGNED_BYTE),
+        let (gl_internal_format, gl_type, gl_format) = match format {
+            ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_BYTE, gl::RGBA),
+            ColorFormat::Y8 => (gl::R8, gl::UNSIGNED_BYTE, gl::RED),
         };
 
         let mut texture = GlTexture {
@@ -47,7 +47,7 @@ impl drawing::backend::Texture for GlTexture {
         };
 
         unsafe {
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl_format as GLint,
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl_internal_format as GLint,
                 width as GLsizei, height as GLsizei, 0, gl_format, gl_type,
                 memory.as_ptr() as *const GLvoid);
         }
@@ -111,6 +111,11 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
         // tell gl crate how to forward gl function calls to the driver
         unsafe {
             gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
+        }
+
+        unsafe {
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         }
 
 		GlWindowBackend {
