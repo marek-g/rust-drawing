@@ -313,6 +313,17 @@ impl GlBackend {
 	fn line_native(&mut self, target: &(),
         color: &Color, start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
+        let transform = [[transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0]];
+
+        let v1 = ColoredVertex::new([start_point.x, start_point.y], *color);
+        let v2 = ColoredVertex::new([end_point.x, end_point.y], *color);
+        let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
+
+        self.colored_pipeline.apply();
+        self.colored_pipeline.draw_lines(&[v1, v2, v3], &ColoredLocals { transform: transform });
     }
 
     fn line_triangulated(&mut self, target: (),

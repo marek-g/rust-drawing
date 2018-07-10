@@ -51,6 +51,15 @@ impl ColoredPipeline {
         }
     }
 
+    pub fn draw_lines(&mut self, array: &[ColoredVertex], locals: &ColoredLocals) {
+        self.apply_array(array);
+        self.apply_locals(locals);
+        unsafe {
+            gl::BindVertexArray(self.vao);
+            gl::DrawArrays(gl::LINES, 0, array.len() as GLint);
+        }
+    }
+
     fn apply_array(&mut self, array: &[ColoredVertex]) {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
