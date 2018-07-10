@@ -6,6 +6,7 @@ extern crate gl;
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
+use self::gl::types::*;
 use ::utils::Program;
 use ::utils::Shader;
 use ::pipelines::*;
@@ -13,6 +14,7 @@ use backend::drawing::backend::Texture;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
+    pub id: GLuint,
 }
 
 impl drawing::backend::Texture for GlTexture {
@@ -23,17 +25,45 @@ impl drawing::backend::Texture for GlTexture {
 
 	fn create(factory: &mut Self::Factory, memory: &[u8],
 		width: u16, height: u16, updatable: bool) -> Result<Self, Self::Error> {
-        Ok(GlTexture {
-        })
+        let mut texture_id: GLuint = 0;
+        unsafe {
+            gl::GenTextures(1, &mut texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, texture_id);
+        }
+
+        let mut texture = GlTexture {
+            id: texture_id,
+        };
+
+        unsafe {
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as GLint,
+                width as GLsizei, height as GLsizei, 0, gl::RGBA, gl::UNSIGNED_BYTE,
+                memory.as_ptr() as *const GLvoid);
+        }
+
+        Ok(texture)
     }
 
 	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
 		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2> {
+        unsafe {
+            gl::TexSubImage2D(gl::TEXTURE_2D, 0, offset_x as GLint, offset_y as GLint,
+                width as GLsizei, height as GLsizei, gl::RGBA, gl::UNSIGNED_BYTE,
+                memory.as_ptr() as *const GLvoid);
+        }
         Ok(())
     }
 
     fn get_size(&self) -> (u16, u16) {
         (10, 10)
+    }
+}
+
+impl Drop for GlTexture {
+    fn drop(&mut self) {
+        if self.id > 0 {
+            unsafe { gl::DeleteTextures(1, &self.id); }
+        }
     }
 }
 
@@ -171,7 +201,7 @@ impl drawing::backend::Backend for GlBackend {
     }
 
     fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
-        (GlTexture { }, ())
+        (GlTexture { id: 0 }, ())
     }
 
 	fn begin(&mut self) {
@@ -205,6 +235,18 @@ impl drawing::backend::Backend for GlBackend {
         filtering: bool,
 		vertices: &[Point], uv: &[Point],
 		transform: UnknownToDeviceTransform) {
+        unsafe {
+            gl::Enable(gl::TEXTURE_2D);
+            gl::BindTexture (gl::TEXTURE_2D, texture.id);
+            if filtering {
+                gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+                gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+            } else {
+                gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+                gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
+            }
+        }
+
         let VERTICES: Vec<TexturedVertex> = vertices.iter().zip(uv.iter()).map(|(&point, &uv)| TexturedVertex {
             pos: [ point.x, point.y], tex_coords: [uv.x, uv.y]
         }).collect();
@@ -213,12 +255,6 @@ impl drawing::backend::Backend for GlBackend {
             [transform.m21, transform.m22, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
             [transform.m31, transform.m32, 0.0, 1.0]];
-
-        /*let sampler = self.factory.create_sampler(gfx::texture::SamplerInfo::new(
-            if filtering { gfx::texture::FilterMethod::Trilinear }
-            else { gfx::texture::FilterMethod::Scale },
-            gfx::texture::WrapMode::Tile));*/
-        //texture: (texture.srv.clone(), sampler),
 
         self.textured_pipeline.apply();
         self.textured_pipeline.draw(&VERTICES, &TexturedLocals { transform: transform});
