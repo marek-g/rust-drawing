@@ -14,7 +14,9 @@ use backend::drawing::backend::Texture;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
-    pub id: GLuint,
+    id: GLuint,
+    width: u16,
+    height: u16,
 }
 
 impl drawing::backend::Texture for GlTexture {
@@ -33,6 +35,7 @@ impl drawing::backend::Texture for GlTexture {
 
         let mut texture = GlTexture {
             id: texture_id,
+            width, height,
         };
 
         unsafe {
@@ -55,7 +58,7 @@ impl drawing::backend::Texture for GlTexture {
     }
 
     fn get_size(&self) -> (u16, u16) {
-        (10, 10)
+        (self.width, self.height)
     }
 }
 
@@ -70,8 +73,8 @@ impl Drop for GlTexture {
 pub struct GlBackend {
     factory: (),
     colored_pipeline: ColoredPipeline,
-    text_pipeline: TextPipeline,
     textured_pipeline: TexturedPipeline,
+    textured_y8_pipeline: TexturedY8Pipeline,
 }
 
 pub struct GlWindowBackend {
@@ -107,8 +110,8 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
             gl_backend: GlBackend {
                 factory: (),
                 colored_pipeline: ColoredPipeline::new(),
-                text_pipeline: TextPipeline::new(),
                 textured_pipeline: TexturedPipeline::new(),
+                textured_y8_pipeline: TexturedY8Pipeline::new(),
             }
         }
 	}
@@ -201,7 +204,7 @@ impl drawing::backend::Backend for GlBackend {
     }
 
     fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
-        (GlTexture { id: 0 }, ())
+        (GlTexture { id: 0, width, height }, ())
     }
 
 	fn begin(&mut self) {

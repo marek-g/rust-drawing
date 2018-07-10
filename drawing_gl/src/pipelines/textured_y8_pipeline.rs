@@ -7,38 +7,38 @@ use self::gl::types::*;
 use std::ffi::CString;
 
 #[repr(C, packed)]
-pub struct TextVertex {
+pub struct TexturedY8Vertex {
     pub pos: [f32; 2], // "in_position"
     pub tex_coords: [f32; 2], // "in_tex_coords"
     pub color: [f32; 4], // "in_color"
 }
 
 #[repr(C, packed)]
-pub struct TextLocals {
+pub struct TexturedY8Locals {
     pub transform: [[f32; 4]; 4], // "transform"
 }
 
-pub struct TextPipeline {
+pub struct TexturedY8Pipeline {
     program: Program,
     vbo: GLuint,
     vao: GLuint,
     transform_location: GLint,
 }
 
-impl TextPipeline {
+impl TexturedY8Pipeline {
     pub fn new() -> Self {
-        let vertex_shader = Shader::from_vert_str(include_str!("shaders/text.glslv")).unwrap();
-		let pixel_shader = Shader::from_frag_str(include_str!("shaders/text.glslf")).unwrap();
+        let vertex_shader = Shader::from_vert_str(include_str!("shaders/textured_y8.glslv")).unwrap();
+		let pixel_shader = Shader::from_frag_str(include_str!("shaders/textured_y8.glslf")).unwrap();
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
-        let (vbo, vao) = TextPipeline::create_vbo_and_vao();
-        TextPipeline::specify_layout(program.id(), vbo, vao);
+        let (vbo, vao) = TexturedY8Pipeline::create_vbo_and_vao();
+        TexturedY8Pipeline::specify_layout(program.id(), vbo, vao);
 
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
         };
 
-        TextPipeline {
+        TexturedY8Pipeline {
             program, vbo, vao, transform_location,
         }
     }
@@ -47,7 +47,7 @@ impl TextPipeline {
         self.program.set_used();
     }
 
-    pub fn draw(&mut self, array: &[TextVertex], locals: &TextLocals) {
+    pub fn draw(&mut self, array: &[TexturedY8Vertex], locals: &TexturedY8Locals) {
         self.apply_array(array);
         self.apply_locals(locals);
         unsafe {
@@ -56,12 +56,12 @@ impl TextPipeline {
         }
     }
 
-    fn apply_array(&mut self, array: &[TextVertex]) {
+    fn apply_array(&mut self, array: &[TexturedY8Vertex]) {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER, // target
-                (array.len() * std::mem::size_of::<TextVertex>()) as GLsizeiptr, // size of data in bytes
+                (array.len() * std::mem::size_of::<TexturedY8Vertex>()) as GLsizeiptr, // size of data in bytes
                 array.as_ptr() as *const GLvoid, // pointer to data
                 gl::STREAM_DRAW, // usage
             );
@@ -69,7 +69,7 @@ impl TextPipeline {
         }
     }
 
-    fn apply_locals(&mut self, locals: &TextLocals) {
+    fn apply_locals(&mut self, locals: &TexturedY8Locals) {
         unsafe {
             let ptr: *const f32 = std::mem::transmute(&locals.transform);
             gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
@@ -118,7 +118,7 @@ impl TextPipeline {
     }
 }
 
-impl Drop for TextPipeline {
+impl Drop for TexturedY8Pipeline {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteVertexArrays(1, &mut self.vao);
