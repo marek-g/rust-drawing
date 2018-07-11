@@ -130,7 +130,10 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
         }
 	}
 
-    fn update_window_size(&mut self, _width: u16, _height: u16) {
+    fn update_window_size(&mut self, width: u16, height: u16) {
+        unsafe {
+            gl::Viewport(0, 0, width as i32, height as i32);
+        }
     }
 }
 
@@ -233,7 +236,7 @@ impl drawing::backend::Backend for GlBackend {
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
         unsafe {
             gl::ClearColor(color[0], color[1], color[2], color[3]);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
     }
 

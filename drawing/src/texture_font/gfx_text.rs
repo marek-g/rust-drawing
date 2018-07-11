@@ -299,6 +299,7 @@ impl<B: Backend> Renderer<B> {
         transform: UnknownToDeviceTransform
     ) -> Result<(), Error> {
         backend.triangles_textured_y8(target, &self.texture, false, &self.vertex_data, transform);
+        self.vertex_data.clear();
         Ok(())
     }
 
