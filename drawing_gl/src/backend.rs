@@ -2,6 +2,7 @@ extern crate drawing;
 extern crate winit;
 extern crate glutin;
 extern crate gl;
+extern crate std;
 
 use self::drawing::color::*;
 use self::drawing::units::*;
@@ -11,6 +12,12 @@ use ::utils::Program;
 use ::utils::Shader;
 use ::pipelines::*;
 use backend::drawing::backend::*;
+
+pub struct GlRenderTarget {
+    framebuffer_id: GLuint,
+    width: u16,
+    height: u16,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
@@ -27,7 +34,7 @@ impl drawing::backend::Texture for GlTexture {
 	type Error = ();
     type Error2 = ();
 
-	fn create(factory: &mut Self::Factory, memory: &[u8],
+	fn create(factory: &mut Self::Factory, memory: Option<&[u8]>,
 		width: u16, height: u16, format: ColorFormat, updatable: bool) -> Result<Self, Self::Error> {
         let mut texture_id: GLuint = 0;
         unsafe {
@@ -50,7 +57,10 @@ impl drawing::backend::Texture for GlTexture {
         unsafe {
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl_internal_format as GLint,
                 width as GLsizei, height as GLsizei, 0, gl_format, gl_type,
-                memory.as_ptr() as *const GLvoid);
+                match memory {
+                    Some(memory) => memory.as_ptr() as *const GLvoid,
+                    None => std::ptr::null(),
+                });
         }
 
         Ok(texture)
@@ -81,6 +91,8 @@ impl Drop for GlTexture {
 
 pub struct GlBackend {
     factory: (),
+    width: u16,
+    height: u16,
     colored_pipeline: ColoredPipeline,
     textured_pipeline: TexturedPipeline,
     textured_y8_pipeline: TexturedY8Pipeline,
@@ -123,6 +135,7 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
             window: gl_window,
             gl_backend: GlBackend {
                 factory: (),
+                width: 0, height: 0,
                 colored_pipeline: ColoredPipeline::new(),
                 textured_pipeline: TexturedPipeline::new(),
                 textured_y8_pipeline: TexturedY8Pipeline::new(),
@@ -132,6 +145,8 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
 
     fn update_window_size(&mut self, width: u16, height: u16) {
         unsafe {
+            self.gl_backend.width = width;
+            self.gl_backend.height = height;
             gl::Viewport(0, 0, width as i32, height as i32);
         }
     }
@@ -140,7 +155,7 @@ impl drawing::backend::WindowBackend for GlWindowBackend {
 impl drawing::backend::Backend for GlWindowBackend {
     type Factory = ();
     type Texture = GlTexture;
-    type RenderTarget = ();
+    type RenderTarget = GlRenderTarget;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         GlBackend::get_device_transform(size)
@@ -150,7 +165,7 @@ impl drawing::backend::Backend for GlWindowBackend {
         self.gl_backend.get_factory()
     }
 
-    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture {
+    fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture {
         self.gl_backend.create_texture(memory, width, height, format, updatable)
     }
 
@@ -207,7 +222,7 @@ impl drawing::backend::Backend for GlWindowBackend {
 impl drawing::backend::Backend for GlBackend {
     type Factory = ();
     type Texture = GlTexture;
-    type RenderTarget = ();
+    type RenderTarget = GlRenderTarget;
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
         PhysPixelToDeviceTransform::column_major(
@@ -219,21 +234,33 @@ impl drawing::backend::Backend for GlBackend {
     fn get_factory(&self) -> Self::Factory {
     }
 
-    fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture {
+    fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture {
         Self::Texture::create(&mut self.factory, memory, width, height, format, updatable).unwrap()
     }
 
     fn get_main_render_target(&mut self)-> Self::RenderTarget {
+        GlRenderTarget {
+            framebuffer_id: 0,
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
-        (GlTexture { id: 0, width, height, gl_format: gl::RGBA, gl_type: gl::UNSIGNED_BYTE }, ())
+        let mut framebuffer_id: GLuint = 0;
+        unsafe {
+            gl::GenFramebuffers(1, &mut framebuffer_id);
+            gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
+        }
+        let texture = GlTexture::create(&mut (), None, width, height, ColorFormat::RGBA, false).unwrap();
+        (texture, GlRenderTarget { framebuffer_id, width, height })
     }
 
 	fn begin(&mut self) {
 	}
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
+        self.set_render_target(&target);
         unsafe {
             gl::ClearColor(color[0], color[1], color[2], color[3]);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
@@ -243,6 +270,7 @@ impl drawing::backend::Backend for GlBackend {
     fn triangles_colored(&mut self, target: &Self::RenderTarget,
         vertices: &[ColoredVertex],
         transform: UnknownToDeviceTransform) {
+        self.set_render_target(&target);
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
@@ -256,6 +284,7 @@ impl drawing::backend::Backend for GlBackend {
         texture: &Self::Texture, filtering: bool,
 		vertices: &[TexturedVertex],
 		transform: UnknownToDeviceTransform) {
+        self.set_render_target(&target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
             gl::BindTexture (gl::TEXTURE_2D, texture.id);
@@ -281,6 +310,7 @@ impl drawing::backend::Backend for GlBackend {
 		texture: &Self::Texture, filtering: bool,
 		vertices: &[TexturedY8Vertex],
 		transform: UnknownToDeviceTransform) {
+        self.set_render_target(&target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
             gl::BindTexture (gl::TEXTURE_2D, texture.id);
@@ -306,9 +336,10 @@ impl drawing::backend::Backend for GlBackend {
         color: &Color, thickness: DeviceThickness,
 		start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
+        self.set_render_target(&target);
         // TODO:
 		//if thickness == 1.0f32 {
-            self.line_native(target, color, start_point, end_point, transform);
+            self.line_native(color, start_point, end_point, transform);
         //} else {
             //self.line_triangulated(color, thickness, start_point, end_point, transform);
         //} 
@@ -319,7 +350,18 @@ impl drawing::backend::Backend for GlBackend {
 }
 
 impl GlBackend {
-	fn line_native(&mut self, target: &(),
+    fn set_render_target(&mut self, target: &GlRenderTarget) {
+        unsafe {
+            gl::BindFramebuffer(gl::FRAMEBUFFER, target.framebuffer_id);
+            if target.framebuffer_id == 0 {
+                gl::Viewport(0, 0, self.width as GLint, self.height as GLint);
+            } else {
+                gl::Viewport(0, 0, target.width as GLint, target.height as GLint);
+            }
+        }
+    }
+
+	fn line_native(&mut self,
         color: &Color, start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {
         let transform = [[transform.m11, transform.m12, 0.0, 0.0],
@@ -335,7 +377,7 @@ impl GlBackend {
         self.colored_pipeline.draw_lines(&[v1, v2, v3], &ColoredLocals { transform: transform });
     }
 
-    fn line_triangulated(&mut self, target: (),
+    fn line_triangulated(&mut self,
         color: &Color, thickness: DeviceThickness,
         start_point: Point, end_point: Point,
 		transform: UnknownToDeviceTransform) {

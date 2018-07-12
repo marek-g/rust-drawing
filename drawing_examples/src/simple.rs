@@ -168,6 +168,18 @@ fn main() {
                 size: 18,
                 text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz".to_string(),
             },
+
+            // render target test
+            Primitive::PushLayer { opacity: 0.5 },
+            Primitive::Rectangle { color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
+                rect: UserPixelRect::new(UserPixelPoint::new(200.5f32, 220.5f32),
+                    UserPixelSize::new(200.0f32, 50.0f32)) },
+            Primitive::Text { resource_key: "F1".to_string(), color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+                position: UserPixelPoint::new(207.0f32, 232.0f32),
+                size: 22,
+                text: "Render target test".to_string(),
+            },
+            Primitive::PopLayer {},
         ];
         renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
     }
@@ -185,7 +197,7 @@ pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::
         }
     }
 
-    backend.create_texture(&data, w as u16, h as u16, ColorFormat::RGBA, false)
+    backend.create_texture(Some(&data), w as u16, h as u16, ColorFormat::RGBA, false)
 }
 
 type Result = std::result::Result<(), ()>;

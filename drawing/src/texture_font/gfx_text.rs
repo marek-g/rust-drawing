@@ -180,7 +180,7 @@ impl<'r> RendererBuilder<'r> {
                 None => Err(FontError::NoFont),
             },
         });
-        let texture = backend.create_texture(font_bitmap.get_image(),
+        let texture = backend.create_texture(Some(font_bitmap.get_image()),
             font_bitmap.get_width(),
             font_bitmap.get_height(),
             ColorFormat::Y8,

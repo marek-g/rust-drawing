@@ -53,7 +53,7 @@ pub trait Backend {
 	/// Device specific factory. Can be used by extensions to create shaders etc.
 	fn get_factory(&self) -> Self::Factory;
 
-	fn create_texture(&mut self, memory: &[u8], width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture;
+	fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture;
 
 	fn get_main_render_target(&mut self)-> Self::RenderTarget;
 	fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget);
@@ -170,7 +170,7 @@ pub trait Texture : Sized {
 	type Error;
 	type Error2;
 
-	fn create(factory: &mut Self::Factory, memory: &[u8],
+	fn create(factory: &mut Self::Factory, memory: Option<&[u8]>,
 		width: u16, height: u16, format: ColorFormat, updatable: bool) -> Result<Self, Self::Error>;
 
 	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
