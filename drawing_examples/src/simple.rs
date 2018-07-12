@@ -170,7 +170,7 @@ fn main() {
             },
 
             // render target test
-            Primitive::PushLayer { opacity: 0.5 },
+            Primitive::PushLayer { color: [1.0f32, 1.0f32, 1.0f32, 0.5f32] },
             Primitive::Rectangle { color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
                 rect: UserPixelRect::new(UserPixelPoint::new(200.5f32, 220.5f32),
                     UserPixelSize::new(200.0f32, 50.0f32)) },

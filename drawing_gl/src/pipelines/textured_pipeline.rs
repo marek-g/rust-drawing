@@ -93,14 +93,20 @@ impl TexturedPipeline {
             let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean,
-                (4 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
                 std::ptr::null()); // offset of the first component
 
             let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_tex_coords").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean,
-                (4 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
                 (2 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
+
+            let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
+            gl::EnableVertexAttribArray(pos_attr as GLuint);
+            gl::VertexAttribPointer(pos_attr as GLuint, 4, gl::FLOAT, gl::FALSE as GLboolean,
+                (8 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
+                (4 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
 
             gl::BindVertexArray(0);
         }

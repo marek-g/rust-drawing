@@ -24,7 +24,7 @@ pub enum Primitive {
         rect: UserPixelRect,
     },
     PushLayer {
-        opacity: f32,
+        color: Color,
     },
     PopLayer
 }

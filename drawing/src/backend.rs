@@ -21,11 +21,12 @@ impl ColoredVertex {
 pub struct TexturedVertex {
     pub pos: [f32; 2],
     pub tex_coords: [f32; 2],
+	pub color: [f32; 4],
 }
 
 impl TexturedVertex {
-	pub fn new(pos: [f32; 2], tex_coords: [f32; 2]) -> Self {
-		TexturedVertex { pos, tex_coords }
+	pub fn new(pos: [f32; 2], tex_coords: [f32; 2], color: [f32; 4]) -> Self {
+		TexturedVertex { pos, tex_coords, color }
 	}
 }
 
@@ -102,13 +103,13 @@ pub trait Backend {
 	}
 
 	fn rect_textured(&mut self, target: &Self::RenderTarget,
-		texture: &Self::Texture, filtering: bool,
+		texture: &Self::Texture, filtering: bool, color: &Color,
 		rect: Rect, transform: UnknownToDeviceTransform) {
-        self.rect_textured_sub(target, texture, filtering, rect, &[0.0, 0.0], &[1.0, 1.0], transform)
+        self.rect_textured_sub(target, texture, filtering, color, rect, &[0.0, 0.0], &[1.0, 1.0], transform)
 	}
 
 	fn rect_textured_sub(&mut self, target: &Self::RenderTarget,
-		texture: &Self::Texture, filtering: bool,
+		texture: &Self::Texture, filtering: bool, color: &Color,
 		rect: Rect, uv1: &[f32; 2], uv2: &[f32; 2],
 		transform: UnknownToDeviceTransform) {
         let p1 = [ rect.origin.x, rect.origin.y ];
@@ -117,13 +118,13 @@ pub trait Backend {
 		self.triangles_textured(target,
 			texture, filtering,
 			&[
-				TexturedVertex::new([p1[0], p1[1]], [uv1[0], uv1[1]]),
-				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]]),
-				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]]),
+				TexturedVertex::new([p1[0], p1[1]], [uv1[0], uv1[1]], *color),
+				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
+				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
 
-				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]]),
-				TexturedVertex::new([p2[0], p2[1]], [uv2[0], uv2[1]]),
-				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]]),
+				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
+				TexturedVertex::new([p2[0], p2[1]], [uv2[0], uv2[1]], *color),
+				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
 			],
 			transform);
 	}
