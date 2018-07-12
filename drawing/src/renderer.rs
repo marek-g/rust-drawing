@@ -38,7 +38,8 @@ impl<B: WindowBackend> Renderer<B> {
 		);
 
 		self.backend.begin();
-		let target_view = self.backend.get_main_render_target();
+		let mut target_view = self.backend.get_main_render_target();
+		let mut target_texture: Option<B::Texture> = None;
 		self.backend.clear(&target_view, &[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
 
 		for primitive in &primitives {
@@ -73,19 +74,22 @@ impl<B: WindowBackend> Renderer<B> {
 				},
 
 				&Primitive::PushLayer { .. } => {
-					/*let (texture2, texture2_view) = self.backend.create_render_target(w as u16, h as u16);
-					/*self.backend.line(&texture_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32],
-						DeviceThickness::new(1.0f), )*/
-					self.backend.clear(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 0.2f32]);
-					self.backend.rect_colored(&texture2_view, &[1.0f32, 1.0f32, 0.3f32, 1.0f32], rect.to_untyped(),
-						unknown_to_device_transform);
-					self.backend.rect_textured(&target_view,
-						&[1.0f32, 1.0f32, 1.0f32, 1.0f32], &texture2, false,
-						rect.to_untyped(), unknown_to_device_transform);*/
+					let (texture2, texture2_view) = self.backend.create_render_target(size.width as u16, size.height as u16);
+					target_view = texture2_view;
+					target_texture = Some(texture2);
+					self.backend.clear(&target_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 				},
 
 				&Primitive::PopLayer { .. } => {
-
+					let main_view = self.backend.get_main_render_target();
+					if let Some(ref target_texture) = target_texture {
+						self.backend.rect_textured(&main_view,
+							&target_texture, false,
+							Rect::new(Point::new(0.0f32, 0.0f32), Size::new(size.width, size.height)),
+							unknown_to_device_transform);
+					}
+					target_view = main_view;
+					target_texture = None;
 				}
 			}
 		}

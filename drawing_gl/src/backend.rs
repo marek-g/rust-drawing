@@ -19,6 +19,16 @@ pub struct GlRenderTarget {
     height: u16,
 }
 
+impl Drop for GlRenderTarget {
+    fn drop(&mut self) {
+        if self.framebuffer_id > 0 {
+            unsafe {
+                gl::DeleteFramebuffers(1, &mut self.framebuffer_id);
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
     id: GLuint,
@@ -253,6 +263,11 @@ impl drawing::backend::Backend for GlBackend {
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
         let texture = GlTexture::create(&mut (), None, width, height, ColorFormat::RGBA, false).unwrap();
+        unsafe {
+            gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.id, 0);
+            let draw_buffers = gl::COLOR_ATTACHMENT0;
+            gl::DrawBuffers(1, &draw_buffers);
+        }
         (texture, GlRenderTarget { framebuffer_id, width, height })
     }
 
