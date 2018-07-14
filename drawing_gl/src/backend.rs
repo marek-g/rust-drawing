@@ -36,6 +36,7 @@ pub struct GlTexture {
     height: u16,
     gl_format: GLuint,
     gl_type: GLuint,
+    flipped_y: bool,
 }
 
 impl drawing::backend::Texture for GlTexture {
@@ -62,6 +63,7 @@ impl drawing::backend::Texture for GlTexture {
             id: texture_id,
             width, height,
             gl_format, gl_type,
+            flipped_y: false,
         };
 
         unsafe {
@@ -262,7 +264,8 @@ impl drawing::backend::Backend for GlBackend {
             gl::GenFramebuffers(1, &mut framebuffer_id);
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
-        let texture = GlTexture::create(&mut (), None, width, height, ColorFormat::RGBA, false).unwrap();
+        let mut texture = GlTexture::create(&mut (), None, width, height, ColorFormat::RGBA, false).unwrap();
+        texture.flipped_y = true;
         unsafe {
             gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.id, 0);
             let draw_buffers = gl::COLOR_ATTACHMENT0;
@@ -292,7 +295,8 @@ impl drawing::backend::Backend for GlBackend {
             [transform.m31, transform.m32, 0.0, 1.0]];
 
         self.colored_pipeline.apply();
-        self.colored_pipeline.draw(&vertices, &ColoredLocals { transform: transform });
+        self.colored_pipeline.set_transform(&transform);
+        self.colored_pipeline.draw(&vertices);
     }
 
     fn triangles_textured(&mut self, target: &Self::RenderTarget,
@@ -318,7 +322,9 @@ impl drawing::backend::Backend for GlBackend {
             [transform.m31, transform.m32, 0.0, 1.0]];
 
         self.textured_pipeline.apply();
-        self.textured_pipeline.draw(&vertices, &TexturedLocals { transform: transform});
+        self.textured_pipeline.set_transform(&transform);
+        self.textured_pipeline.set_flipped_y(texture.flipped_y);
+        self.textured_pipeline.draw(&vertices);
     }
 
     fn triangles_textured_y8(&mut self, target: &Self::RenderTarget,
@@ -344,7 +350,9 @@ impl drawing::backend::Backend for GlBackend {
             [transform.m31, transform.m32, 0.0, 1.0]];
 
         self.textured_y8_pipeline.apply();
-        self.textured_y8_pipeline.draw(&vertices, &TexturedY8Locals { transform: transform});
+        self.textured_y8_pipeline.set_transform(&transform);
+        self.textured_y8_pipeline.set_flipped_y(texture.flipped_y);
+        self.textured_y8_pipeline.draw(&vertices);
     }
 
     fn line(&mut self, target: &Self::RenderTarget,
@@ -389,7 +397,8 @@ impl GlBackend {
         let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
 
         self.colored_pipeline.apply();
-        self.colored_pipeline.draw_lines(&[v1, v2, v3], &ColoredLocals { transform: transform });
+        self.colored_pipeline.set_transform(&transform);
+        self.colored_pipeline.draw_lines(&[v1, v2, v3]);
     }
 
     fn line_triangulated(&mut self,

@@ -8,11 +8,6 @@ use self::gl::types::*;
 use std::ffi::CString;
 use self::drawing::backend::ColoredVertex;
 
-#[repr(C, packed)]
-pub struct ColoredLocals {
-    pub transform: [[f32; 4]; 4], // "transform"
-}
-
 pub struct ColoredPipeline {
     program: Program,
     vbo: GLuint,
@@ -34,7 +29,8 @@ impl ColoredPipeline {
         };
 
         ColoredPipeline {
-            program, vbo, vao, transform_location,
+            program, vbo, vao,
+            transform_location,
         }
     }
 
@@ -42,18 +38,23 @@ impl ColoredPipeline {
         self.program.set_used();
     }
 
-    pub fn draw(&mut self, array: &[ColoredVertex], locals: &ColoredLocals) {
+    pub fn set_transform(&mut self, transform: &[[f32; 4]; 4]) {
+        unsafe {
+            let ptr: *const f32 = std::mem::transmute(transform);
+            gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
+        }
+    }
+
+    pub fn draw(&mut self, array: &[ColoredVertex]) {
         self.apply_array(array);
-        self.apply_locals(locals);
         unsafe {
             gl::BindVertexArray(self.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, array.len() as GLint);
         }
     }
 
-    pub fn draw_lines(&mut self, array: &[ColoredVertex], locals: &ColoredLocals) {
+    pub fn draw_lines(&mut self, array: &[ColoredVertex]) {
         self.apply_array(array);
-        self.apply_locals(locals);
         unsafe {
             gl::BindVertexArray(self.vao);
             gl::DrawArrays(gl::LINES, 0, array.len() as GLint);
@@ -70,13 +71,6 @@ impl ColoredPipeline {
                 gl::STREAM_DRAW, // usage
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
-    }
-
-    fn apply_locals(&mut self, locals: &ColoredLocals) {
-        unsafe {
-            let ptr: *const f32 = std::mem::transmute(&locals.transform);
-            gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
         }
     }
 

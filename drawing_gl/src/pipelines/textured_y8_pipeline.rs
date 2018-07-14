@@ -8,16 +8,12 @@ use self::gl::types::*;
 use std::ffi::CString;
 use self::drawing::backend::TexturedY8Vertex;
 
-#[repr(C, packed)]
-pub struct TexturedY8Locals {
-    pub transform: [[f32; 4]; 4], // "transform"
-}
-
 pub struct TexturedY8Pipeline {
     program: Program,
     vbo: GLuint,
     vao: GLuint,
     transform_location: GLint,
+    flipped_y_location: GLint,
 }
 
 impl TexturedY8Pipeline {
@@ -32,9 +28,13 @@ impl TexturedY8Pipeline {
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
         };
+        let flipped_y_location = unsafe {
+            gl::GetUniformLocation(program.id(), CString::new("flipped_y").unwrap().as_ptr())
+        };
 
         TexturedY8Pipeline {
-            program, vbo, vao, transform_location,
+            program, vbo, vao,
+            transform_location, flipped_y_location,
         }
     }
 
@@ -42,9 +42,21 @@ impl TexturedY8Pipeline {
         self.program.set_used();
     }
 
-    pub fn draw(&mut self, array: &[TexturedY8Vertex], locals: &TexturedY8Locals) {
+    pub fn set_transform(&mut self, transform: &[[f32; 4]; 4]) {
+        unsafe {
+            let ptr: *const f32 = std::mem::transmute(transform);
+            gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
+        }
+    }
+
+    pub fn set_flipped_y(&mut self, flipped_y: bool) {
+        unsafe {
+            gl::Uniform1i(self.flipped_y_location, if flipped_y { 1 } else { 0 });
+        }
+    }
+
+    pub fn draw(&mut self, array: &[TexturedY8Vertex]) {
         self.apply_array(array);
-        self.apply_locals(locals);
         unsafe {
             gl::BindVertexArray(self.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, array.len() as GLint);
@@ -61,13 +73,6 @@ impl TexturedY8Pipeline {
                 gl::STREAM_DRAW, // usage
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
-    }
-
-    fn apply_locals(&mut self, locals: &TexturedY8Locals) {
-        unsafe {
-            let ptr: *const f32 = std::mem::transmute(&locals.transform);
-            gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
         }
     }
 
