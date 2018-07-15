@@ -280,7 +280,7 @@ impl drawing::backend::WindowTarget for GlWindowTarget {
         &mut self.gl_window.window()
     }
 
-	fn get_render_target(&mut self)-> &Self::RenderTarget {
+	fn get_render_target(&self)-> &Self::RenderTarget {
         &self.gl_render_target
     }
 
