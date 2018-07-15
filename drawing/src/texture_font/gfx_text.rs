@@ -1,4 +1,4 @@
-//! A library for drawing text for gfx-rs graphics API.
+//! A library for drawing text for drawing graphics API.
 //! Uses freetype-rs underneath to former the font bitmap texture and collect
 //! information about face glyphs.
 //!
@@ -8,7 +8,11 @@
 //!
 //! ```ignore
 //! // Initialize text renderer.
-//! let mut text = gfx_text::new(factory).build().unwrap();
+//! let mut text = RendererBuilder::new()
+//!                                .with_font_data(&self.bytes)
+//!                                .with_size(size)
+//!                                .build::<D>(device)
+//!                                .unwrap()
 //!
 //! // In render loop:
 //!
@@ -20,7 +24,7 @@
 //! );
 //!
 //! // Draw text.
-//! text.draw(&mut stream);
+//! text.draw_at(&mut device, &render_target, camera_projection).unwrap();
 //! ```
 
 #![deny(missing_docs)]
@@ -30,13 +34,11 @@ extern crate freetype;
 use units::UnknownToDeviceTransform;
 use backend::TexturedY8Vertex;
 use color::ColorFormat;
-use backend::Backend;
+use backend::Device;
 use texture_font::font::BitmapFont;
 pub use texture_font::font::FontError;
 
 const DEFAULT_FONT_SIZE: u8 = 16;
-const DEFAULT_BUFFER_SIZE: usize = 128;
-const DEFAULT_OUTLINE_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
 #[cfg(feature = "include-font")]
 const DEFAULT_FONT_DATA: Option<&'static [u8]> =
@@ -52,36 +54,15 @@ pub enum Error {
     FontError(FontError),
 }
 
-/// An anchor aligns text horizontally to its given x position.
-#[derive(PartialEq)]
-pub enum HorizontalAnchor {
-    /// Anchor the left edge of the text
-    Left,
-    /// Anchor the horizontal mid-point of the text
-    Center,
-    /// Anchor the right edge of the text
-    Right,
-}
-
-/// An anchor aligns text vertically to its given y position.
-#[derive(PartialEq)]
-pub enum VerticalAnchor {
-    /// Anchor the top edge of the text
-    Top,
-    /// Anchor the vertical mid-point of the text
-    Center,
-    /// Anchor the bottom edge of the text
-    Bottom,
-}
 
 impl From<FontError> for Error {
     fn from(e: FontError) -> Error { Error::FontError(e) }
 }
 
 /// Text renderer.
-pub struct Renderer<B: Backend> {
+pub struct Renderer<D: Device> {
     font_bitmap: BitmapFont,
-    texture: B::Texture,
+    texture: D::Texture,
     vertex_data: Vec<TexturedY8Vertex>,
 }
 
@@ -106,9 +87,6 @@ pub struct RendererBuilder<'r> {
     // just pass raw bytes.
     font_path: Option<&'r str>,
     font_data: Option<&'r [u8]>,
-    outline_width: Option<u8>,
-    outline_color: [f32; 4],
-    buffer_size: usize,
     chars: Option<&'r [char]>,
 }
 
@@ -120,9 +98,6 @@ impl<'r> RendererBuilder<'r> {
             font_size: DEFAULT_FONT_SIZE,
             font_path: None,  // Default font will be used
             font_data: DEFAULT_FONT_DATA,
-            outline_width: None,  // No outline by default
-            outline_color: DEFAULT_OUTLINE_COLOR,
-            buffer_size: DEFAULT_BUFFER_SIZE,
             chars: None,  // Place all available font chars into texture
         }
     }
@@ -145,20 +120,6 @@ impl<'r> RendererBuilder<'r> {
         self
     }
 
-    /// Specify outline width and color.
-    /// **Not implemented yet.**
-    pub fn with_outline(mut self, width: u8, color: [f32; 4]) -> Self {
-        self.outline_width = Some(width);
-        self.outline_color = color;
-        self
-    }
-
-    /// Specify custom initial buffer size.
-    pub fn with_buffer_size(mut self, size: usize) -> Self {
-        self.buffer_size = size;
-        self
-    }
-
     /// Make available only provided characters in font texture instead of
     /// loading all existing from the font face.
     pub fn with_chars(mut self, chars: &'r [char]) -> Self {
@@ -167,7 +128,7 @@ impl<'r> RendererBuilder<'r> {
     }
 
     /// Build a new text renderer instance using current settings.
-    pub fn build<B: Backend>(mut self, backend: &mut B) -> Result<Renderer<B>, Error> {
+    pub fn build<D: Device>(self, device: &mut D) -> Result<Renderer<D>, Error> {
         // Initialize bitmap font.
         // TODO(Kagami): Outline!
         // TODO(Kagami): More granulated font settings, e.g. antialiasing,
@@ -180,11 +141,11 @@ impl<'r> RendererBuilder<'r> {
                 None => Err(FontError::NoFont),
             },
         });
-        let texture = backend.create_texture(Some(font_bitmap.get_image()),
+        let texture = device.create_texture(Some(font_bitmap.get_image()),
             font_bitmap.get_width(),
             font_bitmap.get_height(),
             ColorFormat::Y8,
-            false);
+            false).unwrap();
 
         Ok(Renderer {
             font_bitmap,
@@ -194,48 +155,12 @@ impl<'r> RendererBuilder<'r> {
     }
 }
 
-impl<B: Backend> Renderer<B> {
+impl<D: Device> Renderer<D> {
     /// Add some text to the current draw scene relative to the top left corner
     /// of the screen using pixel coordinates.
     pub fn add(&mut self, text: &str, pos: [i32; 2], color: [f32; 4]) {
-        self.add_generic(text, Ok(pos), color)
-    }
-
-    /// Add text to the draw scene by anchoring an edge or mid-point to a
-    /// position defined in screen pixel coordinates.
-    pub fn add_anchored(&mut self, text: &str, pos: [i32; 2], horizontal: HorizontalAnchor, vertical: VerticalAnchor, color: [f32; 4]) {
-        if horizontal == HorizontalAnchor::Left && vertical == VerticalAnchor::Top {
-            self.add_generic(text, Ok(pos), color);
-            return
-        }
-
-        let (width, height) = self.measure(text);
-        let x = match horizontal {
-            HorizontalAnchor::Left => pos[0],
-            HorizontalAnchor::Center => pos[0] - width / 2,
-            HorizontalAnchor::Right => pos[0] - width,
-        };
-        let y = match vertical {
-            VerticalAnchor::Top => pos[1],
-            VerticalAnchor::Center => pos[1] - height / 2,
-            VerticalAnchor::Bottom => pos[1] - height,
-        };
-
-        self.add_generic(text, Ok([x, y]), color)
-    }
-
-    /// Add some text to the draw scene using absolute world coordinates.
-    pub fn add_at(&mut self, text: &str, pos: [f32; 3], color: [f32; 4]) {
-        self.add_generic(text, Err(pos), color)
-    }
-
-    fn add_generic(&mut self, text: &str, pos: Result<[i32; 2], [f32; 3]>, color: [f32; 4]) {
         // `Result` is used here as an `Either` analogue.
-        let (screen_pos, world_pos, screen_rel) = match pos {
-            Ok(screen_pos) => (screen_pos, [0.0, 0.0, 0.0], 1),
-            Err(world_pos) => ([0, 0], world_pos, 0),
-        };
-        let (mut x, y) = (screen_pos[0] as f32, screen_pos[1] as f32);
+        let (mut x, y) = (pos[0] as f32, pos[1] as f32);
         for ch in text.chars() {
             let ch_info = match self.font_bitmap.find_char(ch) {
                 Some(info) => info,
@@ -247,7 +172,6 @@ impl<B: Backend> Renderer<B> {
             let x_offset = x + ch_info.x_offset as f32;
             let y_offset = y + ch_info.y_offset as f32;
             let tex = ch_info.tex;
-            let index = self.vertex_data.len() as u32;
 
             // Top-left point, index + 0.
             let vert0 = TexturedY8Vertex::new([x_offset, y_offset],
@@ -290,15 +214,15 @@ impl<B: Backend> Renderer<B> {
     /// ```ignore
     /// text.add_at("Test1", [6.0, 0.0, 0.0], [1.0, 0.0, 0.0, 1.0]);
     /// text.add_at("Test2", [0.0, 5.0, 0.0], [0.0, 1.0, 0.0, 1.0]);
-    /// text.draw_at(&mut backend, &color_output, camera_projection).unwrap();
+    /// text.draw_at(&mut device, &render_target, camera_projection).unwrap();
     /// ```
     pub fn draw_at(
         &mut self,
-        backend: &mut B,
-        target: &B::RenderTarget,
+        device: &mut D,
+        target: &D::RenderTarget,
         transform: UnknownToDeviceTransform
     ) -> Result<(), Error> {
-        backend.triangles_textured_y8(target, &self.texture, false, &self.vertex_data, transform);
+        device.triangles_textured_y8(target, &self.texture, false, &self.vertex_data, transform);
         self.vertex_data.clear();
         Ok(())
     }
@@ -325,16 +249,4 @@ impl<B: Backend> Renderer<B> {
 
         (width, self.font_bitmap.get_font_height() as i32)
     }
-}
-
-// Some missing helpers.
-
-fn grow_buffer_size(mut current_size: usize, desired_size: usize) -> usize {
-    if current_size < 1 {
-        current_size = 1;
-    }
-    while current_size < desired_size {
-        current_size *= 2;
-    }
-    current_size
 }

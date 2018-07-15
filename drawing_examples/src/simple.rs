@@ -1,13 +1,12 @@
 #![windows_subsystem="windows"]
 extern crate winit;
 extern crate drawing;
-//extern crate drawing_gfx;
 extern crate drawing_gl;
 extern crate shared_library;
 extern crate find_folder;
 
-use drawing::backend::Backend;
-use drawing::backend::WindowBackend;
+use drawing::backend::Device;
+use drawing::backend::WindowTarget;
 use drawing::color::*;
 use drawing::font::Font;
 use drawing::renderer::Renderer;
@@ -15,10 +14,9 @@ use drawing::resources::Resources;
 use drawing::primitive::Primitive;
 use drawing::units::*;
 
-//type DrawingWindowBackend = drawing_gfx::backend::GfxWindowBackend;
-//type DrawingFont = drawing_gfx::font_gfx_text::GfxTextFont;
-type DrawingWindowBackend = drawing_gl::GlWindowBackend;
-type DrawingFont = drawing::TextureFont<DrawingWindowBackend>;
+type DrawingDevice = drawing_gl::GlDevice;
+type DrawingWindowTarget = drawing_gl::GlWindowTarget;
+type DrawingFont = drawing::TextureFont<DrawingDevice>;
 
 use std::fs::File;
 use std::io::Read;
@@ -29,8 +27,9 @@ fn main() {
         .with_title("Title");
     let mut events_loop = winit::EventsLoop::new(); 
 
-
-    let mut renderer = Renderer::new(DrawingWindowBackend::create_window_backend(window_builder, &events_loop));
+    let mut device = DrawingDevice::new();
+    let mut window = device.create_window_target(window_builder, &events_loop);
+    let mut renderer = Renderer::new();
 
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
     let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
@@ -46,17 +45,17 @@ fn main() {
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer);
 
-    let font = DrawingFont::create(renderer.backend(), buffer);
+    let font = DrawingFont::create(&mut device, buffer);
 
     resources.fonts_mut().insert("F1".to_string(), font);
 
     // image
     let image1_resource_id = resources.get_next_texture_id();
-    let texture = create_chessboard(renderer.backend(), 4, 4);
+    let texture = create_chessboard(&mut device, 4, 4);
     resources.textures_mut().insert(image1_resource_id, texture);
 
     let image2_resource_id = resources.get_next_texture_id();
-    let texture = create_chessboard(renderer.backend(), 200, 200);
+    let texture = create_chessboard(&mut device, 200, 200);
     resources.textures_mut().insert(image2_resource_id, texture);
 
     //let img = image::open(path).unwrap().to_rgba();
@@ -85,7 +84,7 @@ fn main() {
                     } | winit::WindowEvent::CloseRequested => running = false,
                     winit::WindowEvent::Resized(w, h) => {
                         width = w; height = h;
-                        renderer.update_window_size(w as u16, h as u16)
+                        window.update_window_size(w as u16, h as u16)
                     }
                     _ => (),
                 }
@@ -181,11 +180,13 @@ fn main() {
             },
             Primitive::PopLayer {},
         ];
-        renderer.draw(PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
+        renderer.draw(&mut device, window.get_render_target(),
+            PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
+        window.swap_buffers();
     }
 }
 
-pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::Texture {
+pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Texture {
     let mut data: Vec<u8> = Vec::with_capacity(w*h*4);
     for y in 0..h {
         for x in 0..w {
@@ -197,7 +198,7 @@ pub fn create_chessboard<B: Backend>(backend: &mut B, w: usize, h: usize) -> B::
         }
     }
 
-    backend.create_texture(Some(&data), w as u16, h as u16, ColorFormat::RGBA, false)
+    device.create_texture(Some(&data), w as u16, h as u16, ColorFormat::RGBA, false).unwrap()
 }
 
 type Result = std::result::Result<(), ()>;

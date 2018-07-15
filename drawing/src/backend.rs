@@ -44,22 +44,24 @@ impl TexturedY8Vertex {
 	}
 }
 
-pub trait Backend {
-	type Factory;
+pub trait Device {
 	type Texture: Texture;
 	type RenderTarget;
+	type WindowTarget: WindowTarget;
+
+	fn new() -> Self;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
-	/// Device specific factory. Can be used by extensions to create shaders etc.
-	fn get_factory(&self) -> Self::Factory;
+	fn create_window_target(&mut self, window_builder: winit::WindowBuilder,
+		events_loop: &winit::EventsLoop) -> Self::WindowTarget;
 
-	fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat, updatable: bool) -> Self::Texture;
+	fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat,
+		updatable: bool) -> Result<Self::Texture, ()>;
 
-	fn get_main_render_target(&mut self)-> Self::RenderTarget;
 	fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget);
 
-	fn begin(&mut self);
+	fn begin(&mut self, target: &Self::RenderTarget);
 
 	fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 
@@ -76,8 +78,6 @@ pub trait Backend {
 		texture: &Self::Texture, filtering: bool,
 		vertices: &[TexturedY8Vertex],
 		transform: UnknownToDeviceTransform);
-
-	fn end(&mut self);
 
 	fn line(&mut self, target: &Self::RenderTarget,
 		color: &Color, thickness: DeviceThickness,
@@ -156,26 +156,27 @@ pub trait Backend {
 			],
 			transform);
 	}
+
+	fn end(&mut self, target: &Self::RenderTarget);
 }
 
-pub trait WindowBackend : Backend {
-	fn create_window_backend(window_builder: winit::WindowBuilder,
-		events_loop: &winit::EventsLoop) -> Self;
+pub trait WindowTarget : Sized {
+	type RenderTarget;
+
+	fn get_window_id(&self) -> winit::WindowId;
+
+	fn get_render_target(&mut self)-> &Self::RenderTarget;
 
 	fn update_window_size(&mut self, width: u16, height: u16);
+
+	fn swap_buffers(&mut self);
 }
 
 pub trait Texture : Sized {
-	type Factory;
-	type Encoder;
 	type Error;
-	type Error2;
-
-	fn create(factory: &mut Self::Factory, memory: Option<&[u8]>,
-		width: u16, height: u16, format: ColorFormat, updatable: bool) -> Result<Self, Self::Error>;
-
-	fn update(&mut self, encoder: &mut Self::Encoder, memory: &[u8],
-		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error2>;
 
 	fn get_size(&self) -> (u16, u16);
+
+	fn update(&mut self, memory: &[u8],
+		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error>;
 }
