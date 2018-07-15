@@ -1,1 +1,0 @@
-Based on https://github.com/PistonDevelopers/gfx_text on MIT license.

@@ -4,7 +4,7 @@ use color::*;
 use units::*;
 
 #[repr(C, packed)]
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct ColoredVertex {
     pub pos: [f32; 2],
     pub color: [f32; 4],
@@ -17,7 +17,7 @@ impl ColoredVertex {
 }
 
 #[repr(C, packed)]
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct TexturedVertex {
     pub pos: [f32; 2],
     pub tex_coords: [f32; 2],
@@ -31,7 +31,7 @@ impl TexturedVertex {
 }
 
 #[repr(C, packed)]
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct TexturedY8Vertex {
     pub pos: [f32; 2],
     pub tex_coords: [f32; 2],
