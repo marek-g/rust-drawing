@@ -163,7 +163,7 @@ pub trait Device {
 pub trait WindowTarget : Sized {
 	type RenderTarget;
 
-	fn get_window(&mut self) -> &winit::Window;
+	fn get_window(&self) -> &winit::Window;
 
 	fn get_render_target(&mut self)-> &Self::RenderTarget;
 

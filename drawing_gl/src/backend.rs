@@ -276,7 +276,7 @@ pub struct GlWindowTarget {
 impl drawing::backend::WindowTarget for GlWindowTarget {
     type RenderTarget = GlRenderTarget;
 
-    fn get_window(&mut self) -> &winit::Window {
+    fn get_window(&self) -> &winit::Window {
         &mut self.gl_window.window()
     }
 
