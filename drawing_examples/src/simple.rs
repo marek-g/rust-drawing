@@ -28,7 +28,7 @@ fn main() {
     let mut events_loop = winit::EventsLoop::new(); 
 
     let mut device = DrawingDevice::new();
-    let mut window = device.create_window_target(window_builder, &events_loop);
+    let mut window_target = device.create_window_target(window_builder, &events_loop);
     let mut renderer = Renderer::new();
 
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
@@ -84,7 +84,7 @@ fn main() {
                     } | winit::WindowEvent::CloseRequested => running = false,
                     winit::WindowEvent::Resized(w, h) => {
                         width = w; height = h;
-                        window.update_window_size(w as u16, h as u16)
+                        window_target.update_size(w as u16, h as u16)
                     }
                     _ => (),
                 }
@@ -180,9 +180,9 @@ fn main() {
             },
             Primitive::PopLayer {},
         ];
-        renderer.draw(&mut device, window.get_render_target(),
+        renderer.draw(&mut device, window_target.get_render_target(),
             PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
-        window.swap_buffers();
+        window_target.swap_buffers();
     }
 }
 

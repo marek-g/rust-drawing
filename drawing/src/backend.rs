@@ -167,7 +167,7 @@ pub trait WindowTarget : Sized {
 
 	fn get_render_target(&self)-> &Self::RenderTarget;
 
-	fn update_window_size(&mut self, width: u16, height: u16);
+	fn update_size(&mut self, width: u16, height: u16);
 
 	fn swap_buffers(&mut self);
 }

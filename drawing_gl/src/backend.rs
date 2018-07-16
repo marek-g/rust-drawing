@@ -284,7 +284,7 @@ impl drawing::backend::WindowTarget for GlWindowTarget {
         &self.gl_render_target
     }
 
-	fn update_window_size(&mut self, width: u16, height: u16) {
+	fn update_size(&mut self, width: u16, height: u16) {
         unsafe {
             self.gl_render_target.width = width;
             self.gl_render_target.height = height;
