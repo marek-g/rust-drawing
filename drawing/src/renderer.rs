@@ -1,5 +1,6 @@
 extern crate image;
 
+use ::Result;
 use font::FontParams;
 use backend::Device;
 use color::Color;
@@ -20,7 +21,7 @@ impl Renderer {
 		render_target: &D::RenderTarget,
 		size: PhysPixelSize,
 		primitives: Vec<Primitive>,
-		resources: &mut Resources<D::Texture, F>) {
+		resources: &mut Resources<D::Texture, F>) -> Result<()> {
 		let physical_pixel_to_device_transform = D::get_device_transform(size);
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
 		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
@@ -75,7 +76,7 @@ impl Renderer {
 				},
 
 				&Primitive::PushLayer { ref color } => {
-					let (texture2, texture2_view) = device.create_render_target(size.width as u16, size.height as u16);
+					let (texture2, texture2_view) = device.create_render_target(size.width as u16, size.height as u16)?;
 					pushed_render_target = Some((texture2, texture2_view, *color));
 
 					if let Some(ref pushed_render_target) = pushed_render_target {
@@ -98,5 +99,7 @@ impl Renderer {
 		}
 
 		device.end(render_target);
+
+		Ok(())
 	}
 }

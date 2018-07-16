@@ -4,6 +4,7 @@ extern crate glutin;
 extern crate gl;
 extern crate std;
 
+use self::drawing::Result;
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::glutin::GlContext;
@@ -57,12 +58,12 @@ impl drawing::backend::Device for GlDevice {
     type RenderTarget = GlRenderTarget;
     type WindowTarget = GlWindowTarget;
 
-    fn new() -> Self {
-        GlDevice {
+    fn new() -> Result<Self> {
+        Ok(GlDevice {
             colored_pipeline: None,
             textured_pipeline: None,
             textured_y8_pipeline: None,
-        }
+        })
     }
 
     fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
@@ -73,7 +74,7 @@ impl drawing::backend::Device for GlDevice {
     }
 
     fn create_window_target(&mut self, window_builder: winit::WindowBuilder,
-		events_loop: &winit::EventsLoop) -> Self::WindowTarget {
+		events_loop: &winit::EventsLoop) -> Result<Self::WindowTarget> {
         // create OpenGl context
         // context can be shared between windows (doesn't have to)
         // cannot be shared between threads (until shared with other context)
@@ -109,14 +110,14 @@ impl drawing::backend::Device for GlDevice {
             self.textured_y8_pipeline = Some(TexturedY8Pipeline::new());
         }
 
-		GlWindowTarget {
+		Ok(GlWindowTarget {
             gl_window,
             gl_render_target: GlRenderTarget { framebuffer_id: 0, width: 0, height: 0, }
-        }
+        })
 	}
 
     fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat,
-        _updatable: bool) -> Result<Self::Texture, ()> {
+        _updatable: bool) -> Result<Self::Texture> {
         let mut texture_id: GLuint = 0;
         unsafe {
             gl::GenTextures(1, &mut texture_id);
@@ -148,7 +149,7 @@ impl drawing::backend::Device for GlDevice {
         Ok(texture)
     }
 
-    fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget) {
+    fn create_render_target(&mut self, width: u16, height: u16) -> Result<(Self::Texture, Self::RenderTarget)> {
         let mut framebuffer_id: GLuint = 0;
         unsafe {
             gl::GenFramebuffers(1, &mut framebuffer_id);
@@ -161,7 +162,7 @@ impl drawing::backend::Device for GlDevice {
             let draw_buffers = gl::COLOR_ATTACHMENT0;
             gl::DrawBuffers(1, &draw_buffers);
         }
-        (texture, GlRenderTarget { framebuffer_id, width, height })
+        Ok((texture, GlRenderTarget { framebuffer_id, width, height }))
     }
 
     fn begin(&mut self, _target: &Self::RenderTarget) {
@@ -324,10 +325,8 @@ pub struct GlTexture {
 }
 
 impl drawing::backend::Texture for GlTexture {
-	type Error = ();
-
 	fn update(&mut self, memory: &[u8],
-		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error> {
+		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<()> {
         unsafe {
             gl::TexSubImage2D(gl::TEXTURE_2D, 0, offset_x as GLint, offset_y as GLint,
                 width as GLsizei, height as GLsizei, self.gl_format, self.gl_type,

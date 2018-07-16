@@ -1,5 +1,6 @@
 extern crate winit;
 
+use ::Result;
 use color::*;
 use units::*;
 
@@ -49,17 +50,17 @@ pub trait Device {
 	type RenderTarget;
 	type WindowTarget: WindowTarget;
 
-	fn new() -> Self;
+	fn new() -> Result<Self> where Self: Sized;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
 	fn create_window_target(&mut self, window_builder: winit::WindowBuilder,
-		events_loop: &winit::EventsLoop) -> Self::WindowTarget;
+		events_loop: &winit::EventsLoop) -> Result<Self::WindowTarget>;
 
 	fn create_texture(&mut self, memory: Option<&[u8]>, width: u16, height: u16, format: ColorFormat,
-		updatable: bool) -> Result<Self::Texture, ()>;
+		updatable: bool) -> Result<Self::Texture>;
 
-	fn create_render_target(&mut self, width: u16, height: u16) -> (Self::Texture, Self::RenderTarget);
+	fn create_render_target(&mut self, width: u16, height: u16) -> Result<(Self::Texture, Self::RenderTarget)>;
 
 	fn begin(&mut self, target: &Self::RenderTarget);
 
@@ -173,10 +174,8 @@ pub trait WindowTarget : Sized {
 }
 
 pub trait Texture : Sized {
-	type Error;
-
 	fn get_size(&self) -> (u16, u16);
 
 	fn update(&mut self, memory: &[u8],
-		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<(), Self::Error>;
+		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<()>;
 }

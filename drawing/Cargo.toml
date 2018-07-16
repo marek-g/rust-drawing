@@ -5,6 +5,7 @@ authors = ["Marek G <no@mail.com>"]
 description = "Drawing library"
 
 [dependencies]
+failure = "*"
 winit = "*"
 euclid = "*"
 image = "*"

@@ -27,8 +27,8 @@ fn main() {
         .with_title("Title");
     let mut events_loop = winit::EventsLoop::new(); 
 
-    let mut device = DrawingDevice::new();
-    let mut window_target = device.create_window_target(window_builder, &events_loop);
+    let mut device = DrawingDevice::new().unwrap();
+    let mut window_target = device.create_window_target(window_builder, &events_loop).unwrap();
     let mut renderer = Renderer::new();
 
     let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
