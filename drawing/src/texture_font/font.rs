@@ -55,12 +55,6 @@ impl From<FreetypeError> for FontError {
 pub type FontResult = Result<BitmapFont, FontError>;
 
 impl BitmapFont {
-    pub fn from_path(path: &str, font_size: u8, chars: Option<&[char]>) -> FontResult {
-        let library = try!(ft::Library::init());
-        let face = try!(library.new_face(path, 0));
-        Self::new(face, font_size, chars)
-    }
-
     pub fn from_bytes(data: &[u8], font_size: u8, chars: Option<&[char]>) -> FontResult {
         use std::rc::Rc;
 

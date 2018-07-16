@@ -1,14 +1,15 @@
-use backend::Texture;
+use font::Font;
+use backend::Device;
 use std::collections::HashMap;
 
-pub struct Resources<T: Texture, Font> {
-    fonts: HashMap<String, Font>,
-    textures: HashMap<i32, T>,
-    last_texture_id: i32
+pub struct Resources<D: Device, F: Font<D>> {
+    fonts: HashMap<String, F>,
+    textures: HashMap<i32, D::Texture>,
+    last_texture_id: i32,
 }
 
-impl<T: Texture, Font> Resources<T, Font> {
-    pub fn new() -> Resources<T, Font> {
+impl<D: Device, F: Font<D>> Resources<D, F> {
+    pub fn new() -> Resources<D, F> {
         Resources {
             fonts: HashMap::new(),
             textures: HashMap::new(),
@@ -16,7 +17,7 @@ impl<T: Texture, Font> Resources<T, Font> {
         }
     }
 
-    pub fn fonts_mut(&mut self) -> &mut HashMap<String, Font> {
+    pub fn fonts_mut(&mut self) -> &mut HashMap<String, F> {
         &mut self.fonts
     }
 
@@ -25,11 +26,11 @@ impl<T: Texture, Font> Resources<T, Font> {
         self.last_texture_id
     }
 
-    pub fn textures(&self) -> &HashMap<i32, T> {
+    pub fn textures(&self) -> &HashMap<i32, D::Texture> {
         &self.textures
     }
 
-    pub fn textures_mut(&mut self) -> &mut HashMap<i32, T> {
+    pub fn textures_mut(&mut self) -> &mut HashMap<i32, D::Texture> {
         &mut self.textures
     }
 }

@@ -21,7 +21,7 @@ impl Renderer {
 		render_target: &D::RenderTarget,
 		size: PhysPixelSize,
 		primitives: Vec<Primitive>,
-		resources: &mut Resources<D::Texture, F>) -> Result<()> {
+		resources: &mut Resources<D, F>) -> Result<()> {
 		let physical_pixel_to_device_transform = D::get_device_transform(size);
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
 		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
@@ -61,7 +61,7 @@ impl Renderer {
 
 					if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
 						font.draw(device, &target_view, color, text,
-							position.to_untyped(), FontParams { size: size as u8 }, unknown_to_device_transform);
+							position.to_untyped(), FontParams { size: size as u8 }, unknown_to_device_transform)?;
 					}
 				},
 

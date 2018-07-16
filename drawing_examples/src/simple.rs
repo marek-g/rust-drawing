@@ -15,7 +15,6 @@ use drawing::primitive::Primitive;
 use drawing::units::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
-type DrawingWindowTarget = drawing_gl::GlWindowTarget;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
 
 use std::fs::File;
@@ -31,7 +30,7 @@ fn main() {
     let mut window_target = device.create_window_target(window_builder, &events_loop).unwrap();
     let mut renderer = Renderer::new();
 
-    let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
+    //let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
     let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
 
 
@@ -43,9 +42,9 @@ fn main() {
     // font
     let mut file = File::open(font_path).unwrap();
     let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer);
+    file.read_to_end(&mut buffer).unwrap();
 
-    let font = DrawingFont::create(&mut device, buffer);
+    let font = DrawingFont::create(&mut device, buffer).unwrap();
 
     resources.fonts_mut().insert("F1".to_string(), font);
 
@@ -181,7 +180,7 @@ fn main() {
             Primitive::PopLayer {},
         ];
         renderer.draw(&mut device, window_target.get_render_target(),
-            PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources);
+            PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources).unwrap();
         window_target.swap_buffers();
     }
 }
@@ -201,12 +200,10 @@ pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Te
     device.create_texture(Some(&data), w as u16, h as u16, ColorFormat::RGBA, false).unwrap()
 }
 
-type Result = std::result::Result<(), ()>;
-
 // Helper function to dynamically load a function pointer and call it.
 // The result of the callback is forwarded.
 #[cfg(windows)]
-fn try_get_function_pointer<F>(dll: &str, name: &str, callback: &Fn(&F) -> Result) -> Result {
+fn try_get_function_pointer<F>(dll: &str, name: &str, callback: &Fn(&F) -> Result) -> Result<()> {
     use shared_library::dynamic_library::DynamicLibrary;
     use std::path::Path;
 

@@ -82,11 +82,12 @@ impl drawing::backend::Device for GlDevice {
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
             .with_vsync(true);
 
-        let gl_window = glutin::GlWindow::new(window_builder, context, &events_loop).unwrap();
+        let gl_window = glutin::GlWindow::new(window_builder, context, &events_loop)
+            .map_err(|err| ::failure::err_msg(err.to_string()))?;
 
         // make context current
         unsafe {
-            gl_window.make_current().unwrap();
+            gl_window.make_current()?;
         }
 
         // tell gl crate how to forward gl function calls to the driver
@@ -155,7 +156,7 @@ impl drawing::backend::Device for GlDevice {
             gl::GenFramebuffers(1, &mut framebuffer_id);
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
-        let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA, false).unwrap();
+        let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA, false)?;
         texture.flipped_y = true;
         unsafe {
             gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.id, 0);

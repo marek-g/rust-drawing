@@ -30,6 +30,7 @@
 #![deny(missing_docs)]
 
 extern crate freetype;
+extern crate failure;
 
 use units::UnknownToDeviceTransform;
 use backend::TexturedY8Vertex;
@@ -48,15 +49,21 @@ const DEFAULT_FONT_DATA: Option<&'static [u8]> =
     None;
 
 /// General error type returned by the library. Wraps all other errors.
-#[derive(Debug)]
+#[derive(Fail, Debug)]
 pub enum Error {
     /// Font loading error
+    #[fail(display = "Font decoding error")]
     FontError(FontError),
+    #[fail(display = "Texture creation error")]
+    TextureError(failure::Error)
 }
-
 
 impl From<FontError> for Error {
     fn from(e: FontError) -> Error { Error::FontError(e) }
+}
+
+impl From<failure::Error> for Error {
+    fn from(e: failure::Error) -> Error { Error::TextureError(e) }
 }
 
 /// Text renderer.
@@ -72,22 +79,19 @@ pub struct Renderer<D: Device> {
 /// # Examples
 ///
 /// ```ignore
+/// let mut file = File::open(font_path).unwrap();
+/// let mut buffer = Vec::new();
+/// file.read_to_end(&mut buffer);
+///
 /// let mut text = gfx_text::RendererBuilder::new(factory)
 ///     .with_size(25)
-///     .with_font("/path/to/font.ttf")
-///     .with_chars(&['a', 'b', 'c'])
+///     .with_font_data(data)
 ///     .build()
 ///     .unwrap();
 /// ```
 pub struct RendererBuilder<'r> {
     font_size: u8,
-    // NOTE(Kagami): Better to use `P: AsRef<OsStr>` but since we store path in
-    // the intermediate builder structure, Rust will unable to infer type
-    // without manual annotation which is much worse. Anyway, it's possible to
-    // just pass raw bytes.
-    font_path: Option<&'r str>,
     font_data: Option<&'r [u8]>,
-    chars: Option<&'r [char]>,
 }
 
 impl<'r> RendererBuilder<'r> {
@@ -96,9 +100,7 @@ impl<'r> RendererBuilder<'r> {
         // Default renderer settings.
         RendererBuilder {
             font_size: DEFAULT_FONT_SIZE,
-            font_path: None,  // Default font will be used
             font_data: DEFAULT_FONT_DATA,
-            chars: None,  // Place all available font chars into texture
         }
     }
 
@@ -108,22 +110,9 @@ impl<'r> RendererBuilder<'r> {
         self
     }
 
-    /// Specify custom font by path.
-    pub fn with_font(mut self, path: &'r str) -> Self {
-        self.font_path = Some(path);
-        self
-    }
-
     /// Pass raw font data.
     pub fn with_font_data(mut self, data: &'r [u8]) -> Self {
         self.font_data = Some(data);
-        self
-    }
-
-    /// Make available only provided characters in font texture instead of
-    /// loading all existing from the font face.
-    pub fn with_chars(mut self, chars: &'r [char]) -> Self {
-        self.chars = Some(chars);
         self
     }
 
@@ -133,19 +122,15 @@ impl<'r> RendererBuilder<'r> {
         // TODO(Kagami): Outline!
         // TODO(Kagami): More granulated font settings, e.g. antialiasing,
         // hinting, kerning, etc.
-        let font_bitmap = try!(match self.font_path {
-            Some(path) =>
-                BitmapFont::from_path(path, self.font_size, self.chars),
-            None => match self.font_data {
-                Some(data) => BitmapFont::from_bytes(data, self.font_size, self.chars),
-                None => Err(FontError::NoFont),
-            },
-        });
+        let font_bitmap = match self.font_data {
+            Some(data) => BitmapFont::from_bytes(data, self.font_size, None),
+            None => Err(FontError::NoFont),
+        }?;
         let texture = device.create_texture(Some(font_bitmap.get_image()),
             font_bitmap.get_width(),
             font_bitmap.get_height(),
             ColorFormat::Y8,
-            false).unwrap();
+            false)?;
 
         Ok(Renderer {
             font_bitmap,
