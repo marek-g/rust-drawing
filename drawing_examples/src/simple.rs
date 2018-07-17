@@ -203,7 +203,7 @@ pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Te
 // Helper function to dynamically load a function pointer and call it.
 // The result of the callback is forwarded.
 #[cfg(windows)]
-fn try_get_function_pointer<F>(dll: &str, name: &str, callback: &Fn(&F) -> Result) -> Result<()> {
+fn try_get_function_pointer<F>(dll: &str, name: &str, callback: &Fn(&F) -> Result<(), ()>) -> Result<(), ()> {
     use shared_library::dynamic_library::DynamicLibrary;
     use std::path::Path;
 
