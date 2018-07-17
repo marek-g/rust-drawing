@@ -96,11 +96,11 @@ impl drawing::backend::Device for GlDevice {
             gl_window = Rc::new(glutin::GlWindow::new(window_builder, context, &events_loop)
                 .map_err(|err| ::failure::err_msg(err.to_string()))?);
             self.main_window = Some(gl_window.clone());    
-        }
 
-        // make context current
-        unsafe {
-            gl_window.make_current()?;
+            // make context current
+            unsafe {
+                gl_window.make_current()?;
+            }
         }
 
         // tell gl crate how to forward gl function calls to the driver
@@ -176,7 +176,11 @@ impl drawing::backend::Device for GlDevice {
         Ok((texture, GlRenderTarget { framebuffer_id, width, height }))
     }
 
-    fn begin(&mut self, _target: &Self::RenderTarget) {
+    fn begin(&mut self, window_target: &Self::WindowTarget) -> Result<()> {
+        unsafe {
+            window_target.gl_window.make_current()?;
+        }
+        Ok(())
     }
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
@@ -276,7 +280,7 @@ impl drawing::backend::Device for GlDevice {
         //} 
 	}
 
-	fn end(&mut self, _target: &Self::RenderTarget) {
+	fn end(&mut self, window_target: &Self::WindowTarget) {
 	}
 }
 

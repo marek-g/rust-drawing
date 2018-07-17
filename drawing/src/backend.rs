@@ -62,7 +62,7 @@ pub trait Device {
 
 	fn create_render_target(&mut self, width: u16, height: u16) -> Result<(Self::Texture, Self::RenderTarget)>;
 
-	fn begin(&mut self, target: &Self::RenderTarget);
+	fn begin(&mut self, window_target: &Self::WindowTarget) -> Result<()>;
 
 	fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 
@@ -158,7 +158,7 @@ pub trait Device {
 			transform);
 	}
 
-	fn end(&mut self, target: &Self::RenderTarget);
+	fn end(&mut self, window_target: &Self::WindowTarget);
 }
 
 pub trait WindowTarget : Sized {

@@ -32,9 +32,6 @@ impl Renderer {
 
 		let mut pushed_render_target: Option<(D::Texture, D::RenderTarget, Color)> = None;
 
-		device.begin(render_target);
-		device.clear(render_target, &[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
-
 		for primitive in &primitives {
             match primitive {
 				&Primitive::Line { ref color, thickness, start_point, end_point } => {
@@ -80,14 +77,12 @@ impl Renderer {
 					pushed_render_target = Some((texture2, texture2_view, *color));
 
 					if let Some(ref pushed_render_target) = pushed_render_target {
-						device.begin(&pushed_render_target.1);
 						device.clear(&pushed_render_target.1, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 					}
 				},
 
 				&Primitive::PopLayer { .. } => {
 					if let Some(ref pushed_render_target) = pushed_render_target {
-						device.end(&pushed_render_target.1);
 						device.rect_textured(render_target,
 							&pushed_render_target.0, false, &pushed_render_target.2,
 							Rect::new(Point::new(0.0f32, 0.0f32), Size::new(size.width, size.height)),
@@ -97,8 +92,6 @@ impl Renderer {
 				}
 			}
 		}
-
-		device.end(render_target);
 
 		Ok(())
 	}

@@ -179,8 +179,13 @@ fn main() {
             },
             Primitive::PopLayer {},
         ];
+
+        device.begin(&window_target);
+        device.clear(window_target.get_render_target(), &[0.5f32, 0.4f32, 0.3f32, 1.0f32]);
         renderer.draw(&mut device, window_target.get_render_target(),
             PhysPixelSize::new(width as f32, height as f32), primitives, &mut resources).unwrap();
+        device.end(&window_target);
+
         window_target.swap_buffers();
     }
 }
