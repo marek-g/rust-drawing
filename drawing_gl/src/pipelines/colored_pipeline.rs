@@ -21,17 +21,19 @@ impl ColoredPipeline {
 		let pixel_shader = Shader::from_frag_str(include_str!("shaders/colored.glslf")).unwrap();
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
-        let (vbo, vao) = ColoredPipeline::create_vbo_and_vao();
-        ColoredPipeline::specify_layout(program.id(), vbo, vao);
-
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
         };
 
         ColoredPipeline {
-            program, vbo, vao,
+            program, vbo: 0, vao: 0,
             transform_location,
         }
+    }
+
+    pub fn set_buffers(&mut self, buffers_vbo_vba: (GLuint, GLuint)) {
+        self.vbo = buffers_vbo_vba.0;
+        self.vao = buffers_vbo_vba.1;
     }
 
     pub fn apply(&mut self) {
@@ -74,7 +76,7 @@ impl ColoredPipeline {
         }
     }
 
-    fn create_vbo_and_vao() -> (GLuint, GLuint) {
+    pub fn create_vbo_and_vao(&self) -> (GLuint, GLuint) {
         let mut vbo: GLuint = 0;
         unsafe {
             gl::GenBuffers(1, &mut vbo);
@@ -84,6 +86,8 @@ impl ColoredPipeline {
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
         }
+
+        ColoredPipeline::specify_layout(self.program.id(), vbo, vao);
 
         (vbo, vao)
     }
@@ -110,11 +114,3 @@ impl ColoredPipeline {
     }
 }
 
-impl Drop for ColoredPipeline {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteVertexArrays(1, &mut self.vao);
-            gl::DeleteBuffers(1, &mut self.vbo);
-        }
-    }
-}

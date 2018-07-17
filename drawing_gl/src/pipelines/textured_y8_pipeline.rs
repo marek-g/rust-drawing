@@ -22,9 +22,6 @@ impl TexturedY8Pipeline {
 		let pixel_shader = Shader::from_frag_str(include_str!("shaders/textured_y8.glslf")).unwrap();
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
-        let (vbo, vao) = TexturedY8Pipeline::create_vbo_and_vao();
-        TexturedY8Pipeline::specify_layout(program.id(), vbo, vao);
-
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
         };
@@ -33,9 +30,14 @@ impl TexturedY8Pipeline {
         };
 
         TexturedY8Pipeline {
-            program, vbo, vao,
+            program, vbo: 0, vao: 0,
             transform_location, flipped_y_location,
         }
+    }
+
+    pub fn set_buffers(&mut self, buffers_vbo_vba: (GLuint, GLuint)) {
+        self.vbo = buffers_vbo_vba.0;
+        self.vao = buffers_vbo_vba.1;
     }
 
     pub fn apply(&mut self) {
@@ -76,7 +78,7 @@ impl TexturedY8Pipeline {
         }
     }
 
-    fn create_vbo_and_vao() -> (GLuint, GLuint) {
+    pub fn create_vbo_and_vao(&self) -> (GLuint, GLuint) {
         let mut vbo: GLuint = 0;
         unsafe {
             gl::GenBuffers(1, &mut vbo);
@@ -86,6 +88,8 @@ impl TexturedY8Pipeline {
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
         }
+
+        TexturedY8Pipeline::specify_layout(self.program.id(), vbo, vao);
 
         (vbo, vao)
     }
@@ -114,15 +118,6 @@ impl TexturedY8Pipeline {
                 (4 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
 
             gl::BindVertexArray(0);
-        }
-    }
-}
-
-impl Drop for TexturedY8Pipeline {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteVertexArrays(1, &mut self.vao);
-            gl::DeleteBuffers(1, &mut self.vbo);
         }
     }
 }

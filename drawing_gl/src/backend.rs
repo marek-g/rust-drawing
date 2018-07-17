@@ -96,11 +96,11 @@ impl drawing::backend::Device for GlDevice {
             gl_window = Rc::new(glutin::GlWindow::new(window_builder, context, &events_loop)
                 .map_err(|err| ::failure::err_msg(err.to_string()))?);
             self.main_window = Some(gl_window.clone());    
+        }
 
-            // make context current
-            unsafe {
-                gl_window.make_current()?;
-            }
+        // make context current
+        unsafe {
+            gl_window.make_current()?;
         }
 
         // tell gl crate how to forward gl function calls to the driver
@@ -123,7 +123,10 @@ impl drawing::backend::Device for GlDevice {
 
 		Ok(GlWindowTarget {
             gl_window,
-            gl_render_target: GlRenderTarget { framebuffer_id: 0, width: 0, height: 0, }
+            gl_render_target: GlRenderTarget { framebuffer_id: 0, width: 0, height: 0, },
+            colored_pipeline_buffers: self.colored_pipeline.as_ref().unwrap().create_vbo_and_vao(),
+            textured_pipeline_buffers: self.textured_pipeline.as_ref().unwrap().create_vbo_and_vao(),
+            textured_y8_pipeline_buffers: self.textured_y8_pipeline.as_ref().unwrap().create_vbo_and_vao(),
         })
 	}
 
@@ -180,6 +183,11 @@ impl drawing::backend::Device for GlDevice {
         unsafe {
             window_target.gl_window.make_current()?;
         }
+
+        self.colored_pipeline.as_mut().unwrap().set_buffers(window_target.colored_pipeline_buffers);
+        self.textured_pipeline.as_mut().unwrap().set_buffers(window_target.textured_pipeline_buffers);
+        self.textured_y8_pipeline.as_mut().unwrap().set_buffers(window_target.textured_y8_pipeline_buffers);
+
         Ok(())
     }
 
@@ -280,13 +288,35 @@ impl drawing::backend::Device for GlDevice {
         //} 
 	}
 
-	fn end(&mut self, window_target: &Self::WindowTarget) {
+	fn end(&mut self, _window_target: &Self::WindowTarget) {
 	}
 }
 
 pub struct GlWindowTarget {
     gl_window: Rc<glutin::GlWindow>,
     gl_render_target: GlRenderTarget,
+
+    colored_pipeline_buffers: (GLuint, GLuint),
+    textured_pipeline_buffers: (GLuint, GLuint),
+    textured_y8_pipeline_buffers: (GLuint, GLuint),
+}
+
+impl Drop for GlWindowTarget {
+    fn drop(&mut self) {
+        unsafe {
+            // TODO: investigate - unwrap fails when closing window in multiwindow example
+            self.gl_window.make_current().unwrap();
+
+            gl::DeleteVertexArrays(1, &mut self.colored_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &mut self.colored_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &mut self.textured_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &mut self.textured_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &mut self.textured_y8_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &mut self.textured_y8_pipeline_buffers.0);
+        }
+    }
 }
 
 impl drawing::backend::WindowTarget for GlWindowTarget {
