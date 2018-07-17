@@ -12,8 +12,10 @@ use self::gl::types::*;
 use ::pipelines::*;
 use backend::drawing::backend::*;
 
+use std::rc::Rc;
+
 pub struct GlDevice {
-    //context: glutin::Context,
+    main_window: Option<Rc<glutin::GlWindow>>,
     colored_pipeline: Option<ColoredPipeline>,
     textured_pipeline: Option<TexturedPipeline>,
     textured_y8_pipeline: Option<TexturedY8Pipeline>,
@@ -60,6 +62,7 @@ impl drawing::backend::Device for GlDevice {
 
     fn new() -> Result<Self> {
         Ok(GlDevice {
+            main_window: None,
             colored_pipeline: None,
             textured_pipeline: None,
             textured_y8_pipeline: None,
@@ -78,12 +81,22 @@ impl drawing::backend::Device for GlDevice {
         // create OpenGl context
         // context can be shared between windows (doesn't have to)
         // cannot be shared between threads (until shared with other context)
-        let context = glutin::ContextBuilder::new()
+        let mut context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
             .with_vsync(true);
 
-        let gl_window = glutin::GlWindow::new(window_builder, context, &events_loop)
-            .map_err(|err| ::failure::err_msg(err.to_string()))?;
+        let gl_window;
+        if let Some(ref main_window) = self.main_window {
+            context = context.with_shared_lists(main_window.context());
+
+            gl_window = Rc::new(glutin::GlWindow::new(window_builder, context, &events_loop)
+                .map_err(|err| ::failure::err_msg(err.to_string()))?);
+        }
+        else {
+            gl_window = Rc::new(glutin::GlWindow::new(window_builder, context, &events_loop)
+                .map_err(|err| ::failure::err_msg(err.to_string()))?);
+            self.main_window = Some(gl_window.clone());    
+        }
 
         // make context current
         unsafe {
@@ -100,9 +113,6 @@ impl drawing::backend::Device for GlDevice {
 
         if self.colored_pipeline.is_none() {
             self.colored_pipeline = Some(ColoredPipeline::new());
-        }
-        else {
-            panic!("Multiwindow mode for drawing_gl not supported by glutin yet!");
         }
         if self.textured_pipeline.is_none() {
             self.textured_pipeline = Some(TexturedPipeline::new());
@@ -271,7 +281,7 @@ impl drawing::backend::Device for GlDevice {
 }
 
 pub struct GlWindowTarget {
-    gl_window: glutin::GlWindow,
+    gl_window: Rc<glutin::GlWindow>,
     gl_render_target: GlRenderTarget,
 }
 
