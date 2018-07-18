@@ -81,9 +81,10 @@ fn main() {
                             .. },
                         ..
                     } | winit::WindowEvent::CloseRequested => running = false,
-                    winit::WindowEvent::Resized(w, h) => {
-                        width = w; height = h;
-                        window_target.update_size(w as u16, h as u16)
+                    winit::WindowEvent::Resized(logical_size) => {
+                        let physical_size = logical_size.to_physical(window_target.get_window().get_hidpi_factor());
+                        width = physical_size.width as u16; height = physical_size.height as u16;
+                        window_target.update_size(width, height)
                     }
                     _ => (),
                 }

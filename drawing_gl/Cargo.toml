@@ -7,6 +7,7 @@ authors = ["Marek G <no@mail.com>"]
 failure = "*"
 drawing = { path = "../drawing", version = "*" }
 winit = "*"
-glutin = "*"
+#glutin = "*"
+glutin = { git = "https://github.com/marek-g/glutin" }
 gl="*"
 freetype-rs = "*"
