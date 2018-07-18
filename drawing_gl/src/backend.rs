@@ -304,7 +304,6 @@ pub struct GlWindowTarget {
 impl Drop for GlWindowTarget {
     fn drop(&mut self) {
         unsafe {
-            // TODO: investigate - unwrap fails when closing window in multiwindow example
             self.gl_window.make_current().unwrap();
 
             gl::DeleteVertexArrays(1, &mut self.colored_pipeline_buffers.1);
