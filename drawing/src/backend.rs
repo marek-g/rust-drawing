@@ -179,3 +179,15 @@ pub trait Texture : Sized {
 	fn update(&mut self, memory: &[u8],
 		offset_x: u16, offset_y: u16, width: u16, height: u16) -> Result<()>;
 }
+
+///////////////////////////////////////////////////////////////////////
+//
+// backend specific extensions
+//
+///////////////////////////////////////////////////////////////////////
+
+pub trait WindowTargetExt : Sized {
+	type Context;
+
+	fn get_context(&self) -> &Self::Context;
+}

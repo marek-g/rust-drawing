@@ -391,3 +391,17 @@ impl Drop for GlTexture {
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////
+//
+// backend specific extensions
+//
+///////////////////////////////////////////////////////////////////////
+
+impl WindowTargetExt for GlWindowTarget {
+	type Context = glutin::Context;
+
+	fn get_context(&self) -> &Self::Context {
+        self.gl_window.context()
+    }
+}
