@@ -146,6 +146,7 @@ impl drawing::backend::Device for GlDevice {
 
         let texture = GlTexture {
             id: texture_id,
+            is_owned: true,
             width, height,
             gl_format, gl_type,
             flipped_y: false,
@@ -361,6 +362,7 @@ impl Drop for GlRenderTarget {
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
     id: GLuint,
+    is_owned: bool,
     width: u16,
     height: u16,
     gl_format: GLuint,
@@ -386,7 +388,7 @@ impl drawing::backend::Texture for GlTexture {
 
 impl Drop for GlTexture {
     fn drop(&mut self) {
-        if self.id > 0 {
+        if self.is_owned && self.id > 0 {
             unsafe { gl::DeleteTextures(1, &self.id); }
         }
     }
@@ -403,5 +405,17 @@ impl WindowTargetExt for GlWindowTarget {
 
 	fn get_context(&self) -> &Self::Context {
         self.gl_window.context()
+    }
+}
+
+impl GlTexture {
+    pub fn from_external(id: GLuint, width: u16, height: u16, format: ColorFormat) -> GlTexture {
+        let (gl_type, gl_format) = match format {
+            ColorFormat::RGBA => (gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
+            ColorFormat::Y8 => (gl::UNSIGNED_BYTE, gl::RED),
+        };
+        GlTexture {
+            id, is_owned: false, width, height, gl_format, gl_type, flipped_y: false
+        }
     }
 }
