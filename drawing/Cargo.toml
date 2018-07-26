@@ -6,7 +6,8 @@ description = "Drawing library"
 
 [dependencies]
 failure = "*"
-winit = "*"
+#winit = "*"
+winit = { git = "https://github.com/marek-g/winit" }
 euclid = "*"
 image = "*"
 freetype-rs = "*"
