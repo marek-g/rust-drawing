@@ -14,5 +14,10 @@
             "type": "shell",
             "command": "cargo build --bin simple"
         },
+        {
+            "taskName": "build_multiwindow",
+            "type": "shell",
+            "command": "cargo build --bin multiwindow"
+        },
     ]
 }

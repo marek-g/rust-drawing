@@ -4,6 +4,8 @@ use ::Result;
 use color::*;
 use units::*;
 
+use std::cell::Ref;
+
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
 pub struct ColoredVertex {
@@ -164,7 +166,7 @@ pub trait Device {
 pub trait WindowTarget : Sized {
 	type RenderTarget;
 
-	fn get_window(&self) -> &winit::Window;
+	fn get_window(&self) -> Ref<winit::Window>;
 
 	fn get_render_target(&self)-> &Self::RenderTarget;
 
@@ -189,5 +191,5 @@ pub trait Texture : Sized {
 pub trait WindowTargetExt : Sized {
 	type Context;
 
-	fn get_context(&self) -> &Self::Context;
+	fn get_context(&self) -> Ref<Self::Context>;
 }

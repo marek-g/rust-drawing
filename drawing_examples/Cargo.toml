@@ -15,3 +15,7 @@ find_folder = "*"
 [[bin]]
 name = "simple"
 path = "src/simple.rs"
+
+[[bin]]
+name = "multiwindow"
+path = "src/multiwindow.rs"
