@@ -1,17 +1,18 @@
 {
     "version": "0.2.0",
     "configurations": [
-    
         {
-            "name": "Debug",
+            "name": "simple",
             "request": "launch",
             "type": "lldb",
-            "sourceLanguages": ["rust"],
+            "sourceLanguages": [
+                "rust"
+            ],
             //"program": "${workspaceRoot}/target/debug/simple",
             "type": "gdb",
-            "target": "${workspaceRoot}/target/debug/simple.exe",
+            "target": "${workspaceRoot}/target/debug/simple",
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "build"
-        }
+            "preLaunchTask": "build_simple"
+        },
     ]
 }
