@@ -93,8 +93,8 @@ impl drawing::backend::Device for GlDevice {
 
     fn create_window_target(
         &mut self,
-        window_builder: winit::WindowBuilder,
-        events_loop: &winit::EventsLoop,
+        window_builder: winit::window::WindowBuilder,
+        events_loop: &winit::event_loop::EventLoop<()>,
     ) -> Result<Self::WindowTarget> {
         let windowed_context;
         if let Some(ref headless_context) = self.headless_context {
@@ -393,7 +393,7 @@ impl drawing::backend::Device for GlDevice {
 
 pub struct GlWindowTarget {
     gl_windowed_context:
-        RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::Window>>>,
+        RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
     gl_render_target: GlRenderTarget,
 
     colored_pipeline_buffers: (GLuint, GLuint),
@@ -423,7 +423,7 @@ impl Drop for GlWindowTarget {
 impl drawing::backend::WindowTarget for GlWindowTarget {
     type RenderTarget = GlRenderTarget;
 
-    fn get_window(&self) -> Ref<winit::Window> {
+    fn get_window(&self) -> Ref<winit::window::Window> {
         Ref::map(self.gl_windowed_context.borrow(), |context| {
             context.as_ref().unwrap().window()
         })
@@ -525,7 +525,7 @@ impl Drop for GlTexture {
 ///////////////////////////////////////////////////////////////////////
 
 impl WindowTargetExt for GlWindowTarget {
-    type Context = glutin::ContextWrapper<glutin::PossiblyCurrent, winit::Window>;
+    type Context = glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>;
 
     fn get_context(&self) -> Ref<Self::Context> {
         Ref::map(self.gl_windowed_context.borrow(), |context| {

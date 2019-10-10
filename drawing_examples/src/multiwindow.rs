@@ -25,16 +25,16 @@ use std::io::Read;
 fn main() {
     set_process_high_dpi_aware();
 
-    let mut events_loop = winit::EventsLoop::new(); 
+    let mut event_loop = winit::event_loop::EventLoop::new(); 
 
     let mut device = DrawingDevice::new().unwrap();
     let mut renderer = Renderer::new();
 
-    let window_builder1 = winit::WindowBuilder::new().with_title("Window 1");
-    let mut window_target1 = device.create_window_target(window_builder1, &events_loop).unwrap();
+    let window_builder1 = winit::window::WindowBuilder::new().with_title("Window 1");
+    let mut window_target1 = device.create_window_target(window_builder1, &event_loop).unwrap();
 
-    let window_builder2 = winit::WindowBuilder::new().with_title("Window 2");
-    let mut window_target2 = device.create_window_target(window_builder2, &events_loop).unwrap();
+    let window_builder2 = winit::window::WindowBuilder::new().with_title("Window 2");
+    let mut window_target2 = device.create_window_target(window_builder2, &event_loop).unwrap();
 
     let font_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("OpenSans-Regular.ttf").into_os_string().into_string().unwrap();
 
@@ -57,11 +57,16 @@ fn main() {
     //
     // main loop
     //
-    let mut running = true;
-    events_loop.run_forever(|event| {
-        let mut refresh = false;
+    event_loop.run(move |event, _, control_flow| {
+        if let winit::event::Event::EventsCleared = event {
+            // Application update code.
+    
+            // Queue a RedrawRequested event.
+            window_target1.get_window().request_redraw();
+            window_target2.get_window().request_redraw();
+        };
 
-        if let winit::Event::WindowEvent { ref window_id, ref event } = event {
+        if let winit::event::Event::WindowEvent { ref window_id, ref event } = event {
             let mut window_target = if window_id == &window_target1.get_window().id() {
                     &mut window_target1
                 } else {
@@ -69,43 +74,35 @@ fn main() {
                 };
 
             match event {
-                winit::WindowEvent::CloseRequested => {
-                    running = false;
+                winit::event::WindowEvent::CloseRequested => {
+                    *control_flow = winit::event_loop::ControlFlow::Exit;
                 },
 
-                winit::WindowEvent::Refresh => {
-                    refresh = true;
-                },
-
-                winit::WindowEvent::Resized(logical_size) => {
-                    let physical_size = logical_size.to_physical(window_target.get_window().get_hidpi_factor());
+                winit::event::WindowEvent::Resized(logical_size) => {
+                    let physical_size = logical_size.to_physical(window_target.get_window().hidpi_factor());
                     window_target.update_size(physical_size.width as u16, physical_size.height as u16)
                 },
+
+                winit::event::WindowEvent::RedrawRequested => {
+                    draw_window(&mut device, &mut renderer, &mut resources,
+                        &window_target1, "Window 1");
+                    draw_window(&mut device, &mut renderer, &mut resources,
+                        &window_target2, "Window 2");
+
+                    window_target1.swap_buffers();
+                    window_target2.swap_buffers();
+                },
                 
-                _ => ()
+                _ => (),
             }
         };
-
-        if running && refresh
-        {
-            // window 1
-            draw_window(&mut device, &mut renderer, &mut resources,
-                &window_target1, "Window 1");
-            draw_window(&mut device, &mut renderer, &mut resources,
-                &window_target2, "Window 2");
-
-            window_target1.swap_buffers();
-            window_target2.swap_buffers();
-        }
-
-        if running { winit::ControlFlow::Continue } else { winit::ControlFlow::Break }
     });
 }
 
 fn draw_window(device: &mut DrawingDevice, renderer: &mut Renderer, resources: &mut Resources<DrawingDevice, DrawingFont>,
     window_target: &<DrawingDevice as drawing::backend::Device>::WindowTarget, text: &str) {
-    let logical_size = window_target.get_window().get_inner_size().unwrap_or(LogicalSize::new(0.0, 0.0));
-    let physical_size = logical_size.to_physical(window_target.get_window().get_hidpi_factor());
+    let logical_size = window_target.get_window().inner_size();
+    let physical_size = logical_size.to_physical(window_target.get_window().hidpi_factor());
     let width = physical_size.width as f32;
     let height = physical_size.height as f32;
 

@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 failure = "0.1"
 drawing = { path = "../drawing", version = "*" }
-winit = "0.19"
-glutin = "0.21"
+winit = "0.20.0-alpha3"
+glutin = "0.22.0-alpha3"
 gl = "0.14"
 freetype-rs = "0.23"

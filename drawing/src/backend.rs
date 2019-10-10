@@ -68,8 +68,8 @@ pub trait Device {
 
 	fn create_window_target(
 		&mut self,
-		window_builder: winit::WindowBuilder,
-		events_loop: &winit::EventsLoop,
+		window_builder: winit::window::WindowBuilder,
+		events_loop: &winit::event_loop::EventLoop<()>,
 	) -> Result<Self::WindowTarget>;
 
 	fn create_texture(
@@ -267,7 +267,7 @@ pub trait Device {
 pub trait WindowTarget: Sized {
 	type RenderTarget;
 
-	fn get_window(&self) -> Ref<winit::Window>;
+	fn get_window(&self) -> Ref<winit::window::Window>;
 
 	fn get_render_target(&self) -> &Self::RenderTarget;
 
