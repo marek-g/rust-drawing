@@ -1,17 +1,14 @@
 extern crate gl;
 extern crate std;
 
-use std::ffi::{ CStr, CString };
+use std::ffi::{CStr, CString};
 
 pub struct Shader {
     id: gl::types::GLuint,
 }
 
 impl Shader {
-    pub fn from_source(
-        source: &CStr,
-        kind: gl::types::GLenum
-    ) -> Result<Shader, String> {
+    pub fn from_source(source: &CStr, kind: gl::types::GLenum) -> Result<Shader, String> {
         let id = shader_from_source(source, kind)?;
         Ok(Shader { id })
     }
@@ -37,10 +34,7 @@ impl Drop for Shader {
     }
 }
 
-fn shader_from_source(
-    source: &CStr,
-    kind: gl::types::GLenum
-) -> Result<gl::types::GLuint, String> {
+fn shader_from_source(source: &CStr, kind: gl::types::GLenum) -> Result<gl::types::GLuint, String> {
     let id = unsafe { gl::CreateShader(kind) };
     unsafe {
         gl::ShaderSource(id, 1, &source.as_ptr(), std::ptr::null());
@@ -58,14 +52,14 @@ fn shader_from_source(
             gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);
         }
 
-        let error = ::utils::ffi_utils::create_whitespace_cstring_with_len(len as usize);
+        let error = crate::utils::ffi_utils::create_whitespace_cstring_with_len(len as usize);
 
         unsafe {
             gl::GetShaderInfoLog(
                 id,
                 len,
                 std::ptr::null_mut(),
-                error.as_ptr() as *mut gl::types::GLchar
+                error.as_ptr() as *mut gl::types::GLchar,
             );
         }
 

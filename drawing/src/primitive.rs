@@ -1,5 +1,5 @@
-use color::*;
-use units::*;
+use crate::color::*;
+use crate::units::*;
 
 pub enum Primitive {
     Line {

@@ -4,13 +4,13 @@
 
 extern crate freetype;
 
-use std::cmp::max;
-use std::iter::{repeat, FromIterator};
-use std::collections::{HashMap, HashSet};
-use std::char::from_u32;
 use self::freetype as ft;
 use self::freetype::Error as FreetypeError;
 use self::freetype::Face;
+use std::char::from_u32;
+use std::cmp::max;
+use std::collections::{HashMap, HashSet};
+use std::iter::{repeat, FromIterator};
 
 #[derive(Debug)]
 pub struct BitmapFont {
@@ -18,7 +18,7 @@ pub struct BitmapFont {
     height: u16,
     chars: HashMap<char, BitmapChar>,
     image: Vec<u8>,
-    font_height: u16
+    font_height: u16,
 }
 
 #[derive(Debug)]
@@ -49,7 +49,9 @@ pub enum FontError {
 }
 
 impl From<FreetypeError> for FontError {
-    fn from(e: FreetypeError) -> FontError { FontError::FreetypeError(e) }
+    fn from(e: FreetypeError) -> FontError {
+        FontError::FreetypeError(e)
+    }
 }
 
 pub type FontResult = Result<BitmapFont, FontError>;
@@ -58,8 +60,8 @@ impl BitmapFont {
     pub fn from_bytes(data: &[u8], font_size: u8, chars: Option<&[char]>) -> FontResult {
         use std::rc::Rc;
 
-        let library = try!(ft::Library::init());
-        let face = try!(library.new_memory_face(Rc::new(data.into()), 0));
+        let library = ft::Library::init()?;
+        let face = library.new_memory_face(Rc::new(data.into()), 0)?;
         Self::new(face, font_size, chars)
     }
 
@@ -92,7 +94,7 @@ impl BitmapFont {
             return Err(FontError::EmptyFont);
         }
 
-        try!(face.set_pixel_sizes(0, font_size as u32));
+        face.set_pixel_sizes(0, font_size as u32)?;
 
         // FreeType representation of rendered glyph 'j':
         //
@@ -157,7 +159,7 @@ impl BitmapFont {
         // debug!("Start building the bitmap (chars: {})", chars_len);
 
         for ch in needed_chars {
-            try!(face.load_char(ch as usize, ft::face::LoadFlag::RENDER));
+            face.load_char(ch as usize, ft::face::LoadFlag::RENDER)?;
             let glyph = face.glyph();
             let bitmap = glyph.bitmap();
             let ch_width = bitmap.width();
@@ -168,18 +170,21 @@ impl BitmapFont {
             let buffer = bitmap.buffer();
             let ch_data = Vec::from(buffer);
 
-            chars_info.insert(ch, BitmapChar {
-                x_offset: ch_x_offset,
-                y_offset: ch_y_offset,
-                x_advance: ch_x_advance,
-                width: ch_width,
-                height: ch_height,
-                // We'll need to fix that fields later:
-                tex: [0.0, 0.0],
-                tex_width: 0.0,
-                tex_height: 0.0,
-                data: Some(ch_data),
-            });
+            chars_info.insert(
+                ch,
+                BitmapChar {
+                    x_offset: ch_x_offset,
+                    y_offset: ch_y_offset,
+                    x_advance: ch_x_advance,
+                    width: ch_width,
+                    height: ch_height,
+                    // We'll need to fix that fields later:
+                    tex: [0.0, 0.0],
+                    tex_width: 0.0,
+                    tex_height: 0.0,
+                    data: Some(ch_data),
+                },
+            );
 
             sum_image_width += ch_width;
             max_ch_width = max(max_ch_width, ch_width);
@@ -199,7 +204,7 @@ impl BitmapFont {
         let ideal_image_size = sum_image_width * ch_box_height;
         let ideal_image_width = (ideal_image_size as f32).sqrt() as i32;
         let image_width = max(max_ch_width, ideal_image_width);
-        let image_width = ((image_width + 3)/4)*4;
+        let image_width = ((image_width + 3) / 4) * 4;
         let assumed_size = ideal_image_size as f32 * 1.5;
         let assumed_ch_in_row = image_width as f32 / max_ch_width as f32;
         let mut image = Vec::with_capacity(assumed_size as usize);
@@ -224,15 +229,15 @@ impl BitmapFont {
             for i in 0..ch_box_height {
                 let mut x = 0;
                 for &(width, height, ref data) in chars_row {
-                   if i >= height {
-                       image.extend(repeat(0).take(width as usize));
-                   } else {
-                       let skip = i * width;
-                       debug_assert!(data.len() >= (skip + width) as usize);
-                       let line = data.iter().skip(skip as usize).take(width as usize);
-                       image.extend(line.cloned());
-                   };
-                   x += width;
+                    if i >= height {
+                        image.extend(repeat(0).take(width as usize));
+                    } else {
+                        let skip = i * width;
+                        debug_assert!(data.len() >= (skip + width) as usize);
+                        let line = data.iter().skip(skip as usize).take(width as usize);
+                        image.extend(line.cloned());
+                    };
+                    x += width;
                 }
                 let cols_to_fill = image_width - x;
                 image.extend(repeat(0).take(cols_to_fill as usize));
@@ -275,7 +280,7 @@ impl BitmapFont {
             height: image_height as u16,
             chars: chars_info,
             image: image,
-            font_height: ((face.size_metrics().unwrap().height + 32) >> 6) as u16
+            font_height: ((face.size_metrics().unwrap().height + 32) >> 6) as u16,
         })
     }
 

@@ -1,5 +1,5 @@
-use units::*;
-use primitive::*;
+use crate::units::*;
+use crate::primitive::*;
 
 pub trait PrimitiveTransformations {
     fn translate(&mut self, offset: UserPixelPoint);

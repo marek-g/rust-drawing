@@ -1,12 +1,12 @@
+extern crate drawing;
 extern crate gl;
 extern crate std;
-extern crate drawing;
 
-use ::utils::*;
+use crate::utils::*;
 
+use self::drawing::backend::ColoredVertex;
 use self::gl::types::*;
 use std::ffi::CString;
-use self::drawing::backend::ColoredVertex;
 
 pub struct ColoredPipeline {
     program: Program,
@@ -18,7 +18,7 @@ pub struct ColoredPipeline {
 impl ColoredPipeline {
     pub fn new() -> Self {
         let vertex_shader = Shader::from_vert_str(include_str!("shaders/colored.glslv")).unwrap();
-		let pixel_shader = Shader::from_frag_str(include_str!("shaders/colored.glslf")).unwrap();
+        let pixel_shader = Shader::from_frag_str(include_str!("shaders/colored.glslf")).unwrap();
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
         let transform_location = unsafe {
@@ -26,7 +26,9 @@ impl ColoredPipeline {
         };
 
         ColoredPipeline {
-            program, vbo: 0, vao: 0,
+            program,
+            vbo: 0,
+            vao: 0,
             transform_location,
         }
     }
@@ -67,10 +69,10 @@ impl ColoredPipeline {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
             gl::BufferData(
-                gl::ARRAY_BUFFER, // target
+                gl::ARRAY_BUFFER,                                                   // target
                 (array.len() * std::mem::size_of::<ColoredVertex>()) as GLsizeiptr, // size of data in bytes
                 array.as_ptr() as *const GLvoid, // pointer to data
-                gl::STREAM_DRAW, // usage
+                gl::STREAM_DRAW,                 // usage
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
@@ -97,20 +99,31 @@ impl ColoredPipeline {
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
-            let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
+            let pos_attr =
+                gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
-            gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean,
+            gl::VertexAttribPointer(
+                pos_attr as GLuint,
+                2,
+                gl::FLOAT,
+                gl::FALSE as GLboolean,
                 (6 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
-                std::ptr::null()); // offset of the first component
+                std::ptr::null(),
+            ); // offset of the first component
 
-            let pos_attr = gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
+            let pos_attr =
+                gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
-            gl::VertexAttribPointer(pos_attr as GLuint, 4, gl::FLOAT, gl::FALSE as GLboolean,
+            gl::VertexAttribPointer(
+                pos_attr as GLuint,
+                4,
+                gl::FLOAT,
+                gl::FALSE as GLboolean,
                 (6 * std::mem::size_of::<f32>()) as GLint, // stride (byte offset between consecutive attributes)
-                (2 * std::mem::size_of::<f32>()) as *const GLvoid); // offset of the first component
+                (2 * std::mem::size_of::<f32>()) as *const GLvoid,
+            ); // offset of the first component
 
             gl::BindVertexArray(0);
         }
     }
 }
-

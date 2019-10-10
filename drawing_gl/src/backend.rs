@@ -4,14 +4,14 @@ extern crate glutin;
 extern crate std;
 extern crate winit;
 
-use backend::winit::dpi::PhysicalSize;
+use crate::backend::winit::dpi::PhysicalSize;
 
 use self::drawing::color::*;
 use self::drawing::units::*;
 use self::drawing::Result;
 use self::gl::types::*;
-use backend::drawing::backend::*;
-use pipelines::*;
+use crate::backend::drawing::backend::*;
+use crate::pipelines::*;
 
 use std::cell::{Ref, RefCell};
 

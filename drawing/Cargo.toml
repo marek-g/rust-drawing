@@ -3,6 +3,7 @@ name = "drawing"
 version = "0.1.0"
 authors = ["Marek G <no@mail.com>"]
 description = "Drawing library"
+edition = "2018"
 
 [dependencies]
 failure = "*"

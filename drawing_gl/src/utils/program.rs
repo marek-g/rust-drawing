@@ -1,7 +1,7 @@
 extern crate gl;
 extern crate std;
 
-use utils::shader::*;
+use crate::utils::shader::*;
 
 pub struct Program {
     id: gl::types::GLuint,
@@ -12,10 +12,14 @@ impl Program {
         let program_id = unsafe { gl::CreateProgram() };
 
         for shader in shaders {
-            unsafe { gl::AttachShader(program_id, shader.id()); }
+            unsafe {
+                gl::AttachShader(program_id, shader.id());
+            }
         }
 
-        unsafe { gl::LinkProgram(program_id); }
+        unsafe {
+            gl::LinkProgram(program_id);
+        }
 
         let mut success: gl::types::GLint = gl::FALSE as gl::types::GLint;
         unsafe {
@@ -28,14 +32,14 @@ impl Program {
                 gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut len);
             }
 
-            let error = ::utils::ffi_utils::create_whitespace_cstring_with_len(len as usize);
+            let error = crate::utils::ffi_utils::create_whitespace_cstring_with_len(len as usize);
 
             unsafe {
                 gl::GetProgramInfoLog(
                     program_id,
                     len,
                     std::ptr::null_mut(),
-                    error.as_ptr() as *mut gl::types::GLchar
+                    error.as_ptr() as *mut gl::types::GLchar,
                 );
             }
 
@@ -43,7 +47,9 @@ impl Program {
         }
 
         for shader in shaders {
-            unsafe { gl::DetachShader(program_id, shader.id()); }
+            unsafe {
+                gl::DetachShader(program_id, shader.id());
+            }
         }
 
         Ok(Program { id: program_id })

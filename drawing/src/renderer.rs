@@ -1,13 +1,13 @@
 extern crate image;
 
-use ::Result;
-use font::FontParams;
-use backend::Device;
-use color::Color;
-use font::Font;
-use primitive::Primitive;
-use resources::*;
-use units::*;
+use crate::Result;
+use crate::font::FontParams;
+use crate::backend::Device;
+use crate::color::Color;
+use crate::font::Font;
+use crate::primitive::Primitive;
+use crate::resources::*;
+use crate::units::*;
 
 pub struct Renderer;
 

@@ -1,20 +1,24 @@
-use ::Result;
+use crate::Result;
 
-use backend::*;
-use font::*;
-use color::*;
-use units::*;
-use texture_font::gfx_text::{ Renderer, RendererBuilder };
+use crate::backend::*;
+use crate::color::*;
+use crate::font::*;
+use crate::texture_font::gfx_text::{Renderer, RendererBuilder};
+use crate::units::*;
 
 use std::collections::HashMap;
 
 pub struct TextureFont<D: Device> {
     bytes: Vec<u8>,
-    font_renderers: HashMap<u8, Renderer<D>>
+    font_renderers: HashMap<u8, Renderer<D>>,
 }
 
 impl<D: Device> TextureFont<D> {
-    fn get_or_create_font_renderer(&mut self, device: &mut D, size: u8) -> Result<&mut Renderer<D>> {
+    fn get_or_create_font_renderer(
+        &mut self,
+        device: &mut D,
+        size: u8,
+    ) -> Result<&mut Renderer<D>> {
         if !self.font_renderers.contains_key(&size) {
             let renderer = self.create_font_renderer(device, size)?;
             Ok(self.font_renderers.entry(size).or_insert(renderer))
@@ -35,23 +39,32 @@ impl<D: Device> Font<D> for TextureFont<D> {
     fn create(_device: &mut D, bytes: Vec<u8>) -> Result<Self> {
         Ok(TextureFont {
             bytes: bytes,
-            font_renderers: HashMap::new()
+            font_renderers: HashMap::new(),
         })
     }
 
-    fn draw(&mut self, device: &mut D, target: &D::RenderTarget,
-		color: &Color,
-		text: &str,
-		pos: Point,
-		font_params: FontParams,
-		transform: UnknownToDeviceTransform) -> Result<()> {
+    fn draw(
+        &mut self,
+        device: &mut D,
+        target: &D::RenderTarget,
+        color: &Color,
+        text: &str,
+        pos: Point,
+        font_params: FontParams,
+        transform: UnknownToDeviceTransform,
+    ) -> Result<()> {
         let renderer = self.get_or_create_font_renderer(device, font_params.size)?;
         renderer.add(text, [pos.x as i32, pos.y as i32], *color);
         renderer.draw_at(device, target, transform)?;
         Ok(())
     }
 
-    fn get_dimensions(&mut self, device: &mut D, params: FontParams, text: &str) -> Result<(u16, u16)> {
+    fn get_dimensions(
+        &mut self,
+        device: &mut D,
+        params: FontParams,
+        text: &str,
+    ) -> Result<(u16, u16)> {
         let renderer = self.get_or_create_font_renderer(device, params.size)?;
         let dims = renderer.measure(text);
         Ok((dims.0 as u16, dims.1 as u16))

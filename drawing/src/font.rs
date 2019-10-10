@@ -1,8 +1,8 @@
-use ::Result;
+use crate::Result;
 
-use units::*;
-use color::*;
-use backend::Device;
+use crate::units::*;
+use crate::color::*;
+use crate::backend::Device;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct FontParams {

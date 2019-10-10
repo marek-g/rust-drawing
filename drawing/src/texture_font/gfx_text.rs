@@ -32,12 +32,12 @@
 extern crate freetype;
 extern crate failure;
 
-use units::UnknownToDeviceTransform;
-use backend::TexturedY8Vertex;
-use color::ColorFormat;
-use backend::Device;
-use texture_font::font::BitmapFont;
-pub use texture_font::font::FontError;
+use crate::units::UnknownToDeviceTransform;
+use crate::backend::TexturedY8Vertex;
+use crate::color::ColorFormat;
+use crate::backend::Device;
+use crate::texture_font::font::BitmapFont;
+pub use crate::texture_font::font::FontError;
 
 const DEFAULT_FONT_SIZE: u8 = 16;
 
