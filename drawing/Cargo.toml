@@ -6,9 +6,8 @@ description = "Drawing library"
 edition = "2018"
 
 [dependencies]
-failure = "*"
-winit = "*"
-#winit = { git = "https://github.com/marek-g/winit" }
-euclid = "*"
-image = "*"
-freetype-rs = "*"
+failure = "0.1"
+winit = "0.19"
+euclid = "0.20"
+image = "0.22"
+freetype-rs = "0.23"

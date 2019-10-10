@@ -5,11 +5,9 @@ authors = ["Marek G <no@mail.com>"]
 edition = "2018"
 
 [dependencies]
-failure = "*"
+failure = "0.1"
 drawing = { path = "../drawing", version = "*" }
-winit = "*"
-#winit = { git = "https://github.com/marek-g/winit" }
-glutin = "*"
-#glutin = { git = "https://github.com/marek-g/glutin" }
-gl="*"
-freetype-rs = "*"
+winit = "0.19"
+glutin = "0.21"
+gl = "0.14"
+freetype-rs = "0.23"

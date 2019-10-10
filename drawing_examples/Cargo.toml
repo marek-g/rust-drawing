@@ -6,12 +6,10 @@ edition = "2018"
 
 [dependencies]
 drawing = { path = "../drawing", version = "*" }
-#drawing_gfx = { path = "../drawing_gfx", version = "*" }
 drawing_gl = { path = "../drawing_gl", version = "*" }
-winit = "*"
-#winit = { git = "https://github.com/marek-g/winit" }
-shared_library = "*"
-find_folder = "*"
+winit = "0.19"
+shared_library = "0.1"
+find_folder = "0.3"
 
 [[bin]]
 name = "simple"

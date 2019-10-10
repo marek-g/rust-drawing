@@ -70,8 +70,6 @@ fn main() {
     let mut height = 0;
     let mut pos_y = 0.0f32;
     while running {
-        pos_y += 1.0f32;
-
         events_loop.poll_events(|event| {
             if let winit::Event::WindowEvent { event, .. } = event {
                 match event {
@@ -94,6 +92,8 @@ fn main() {
         if width <= 0 || height <= 0 { continue }
 
         if running == false { return }
+
+        pos_y += 1.0f32;
 
         let primitives = vec![
             Primitive::Rectangle { color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],

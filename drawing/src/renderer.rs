@@ -25,7 +25,7 @@ impl Renderer {
 		let physical_pixel_to_device_transform = D::get_device_transform(size);
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
 		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
-			.post_mul(&physical_pixel_to_device_transform);
+			.post_transform(&physical_pixel_to_device_transform);
 		let unknown_to_device_transform = UnknownToDeviceTransform::from_row_major_array(
 			user_pixel_to_device_transform.to_row_major_array()
 		);
@@ -36,12 +36,12 @@ impl Renderer {
             match primitive {
 				&Primitive::Line { ref color, thickness, start_point, end_point } => {
 					let thickness = user_pixel_to_device_transform.transform_point(
-						&UserPixelPoint::new(thickness.get(), thickness.get())
-					).x_typed();
+						UserPixelPoint::new(thickness.get(), thickness.get())
+					).x;
 
 					let target_view = if let Some(ref pushed_render_target) = pushed_render_target { &pushed_render_target.1 } else { render_target };
 
-					device.line(&target_view, color, thickness,
+					device.line(&target_view, color, DeviceThickness::new(thickness),
 						start_point.to_untyped(), end_point.to_untyped(),
 						unknown_to_device_transform);
 				},
