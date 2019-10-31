@@ -95,6 +95,7 @@ impl drawing::backend::Device for GlDevice {
         &mut self,
         window_builder: winit::window::WindowBuilder,
         events_loop: &winit::event_loop::EventLoop<()>,
+        shared_window_target: Option<&Self::WindowTarget>,
     ) -> Result<Self::WindowTarget> {
         let windowed_context;
         if let Some(ref headless_context) = self.headless_context {
@@ -107,28 +108,28 @@ impl drawing::backend::Device for GlDevice {
                 .build_windowed(window_builder, &events_loop)
                 .unwrap();
         } else {
-            let headless_context = glutin::ContextBuilder::new()
-                .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-                .with_vsync(true)
-                .build_headless(&events_loop, PhysicalSize::new(1., 1.))
-                .unwrap();
-
-            {
-                let mut context_builder = glutin::ContextBuilder::new()
-                    .with_shared_lists(&headless_context)
-                    .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-                    .with_vsync(true);
-
-                windowed_context = context_builder
-                    .build_windowed(window_builder, &events_loop)
-                    .unwrap();
+            if let Some(ref shared_window_target) = shared_window_target {
+                if let Some(ref gl_windowed_context) = shared_window_target.gl_windowed_context
+                        .borrow()
+                        .as_ref() {
+                    let mut context_builder = glutin::ContextBuilder::new()
+                        .with_shared_lists(gl_windowed_context)
+                        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
+                        .with_vsync(true);
+                }  
             }
 
-            self.headless_context = Some(headless_context);
+            let mut context_builder = glutin::ContextBuilder::new()
+                .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
+                .with_vsync(true);
+
+            windowed_context = context_builder
+                .build_windowed(window_builder, &events_loop)
+                .unwrap();
         }
 
         // make context current
-        let windowed_context = unsafe { windowed_context.make_current().unwrap() };
+        let mut windowed_context = unsafe { windowed_context.make_current().unwrap() };
 
         // tell gl crate how to forward gl function calls to the driver
         gl::load_with(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);

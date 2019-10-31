@@ -70,6 +70,7 @@ pub trait Device {
 		&mut self,
 		window_builder: winit::window::WindowBuilder,
 		events_loop: &winit::event_loop::EventLoop<()>,
+		shared_window_target: Option<&Self::WindowTarget>,
 	) -> Result<Self::WindowTarget>;
 
 	fn create_texture(
