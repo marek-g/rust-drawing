@@ -16,7 +16,6 @@ use crate::pipelines::*;
 use std::cell::{Ref, RefCell};
 
 pub struct GlDevice {
-    headless_context: Option<glutin::Context<glutin::NotCurrent>>,
     colored_pipeline: Option<ColoredPipeline>,
     textured_pipeline: Option<TexturedPipeline>,
     textured_y8_pipeline: Option<TexturedY8Pipeline>,
@@ -73,7 +72,6 @@ impl drawing::backend::Device for GlDevice {
 
     fn new() -> Result<Self> {
         Ok(GlDevice {
-            headless_context: None,
             colored_pipeline: None,
             textured_pipeline: None,
             textured_y8_pipeline: None,
@@ -97,39 +95,40 @@ impl drawing::backend::Device for GlDevice {
         events_loop: &winit::event_loop::EventLoop<()>,
         shared_window_target: Option<&Self::WindowTarget>,
     ) -> Result<Self::WindowTarget> {
-        let windowed_context;
-        if let Some(ref headless_context) = self.headless_context {
-            let mut context_builder = glutin::ContextBuilder::new()
-                .with_shared_lists(&headless_context)
-                .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-                .with_vsync(true);
+        let context_builder = glutin::ContextBuilder::new()
+            .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
+            .with_vsync(true);
 
-            windowed_context = context_builder
-                .build_windowed(window_builder, &events_loop)
-                .unwrap();
-        } else {
-            if let Some(ref shared_window_target) = shared_window_target {
-                if let Some(ref gl_windowed_context) = shared_window_target.gl_windowed_context
-                        .borrow()
-                        .as_ref() {
-                    let mut context_builder = glutin::ContextBuilder::new()
-                        .with_shared_lists(gl_windowed_context)
-                        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-                        .with_vsync(true);
-                }  
+        let windowed_context = if let Some(ref shared_window_target) = shared_window_target {
+            if let Some(ref gl_windowed_context) =
+                shared_window_target.gl_windowed_context.borrow().as_ref()
+            {
+                unsafe {
+                    context_builder
+                        .with_shared_lists(gl_windowed_context.context())
+                        .build_windowed(window_builder, &events_loop)
+                        .unwrap()
+                        .make_current()
+                        .unwrap()
+                }
+            } else {
+                unsafe {
+                    context_builder
+                        .build_windowed(window_builder, &events_loop)
+                        .unwrap()
+                        .make_current()
+                        .unwrap()
+                }
             }
-
-            let mut context_builder = glutin::ContextBuilder::new()
-                .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-                .with_vsync(true);
-
-            windowed_context = context_builder
-                .build_windowed(window_builder, &events_loop)
-                .unwrap();
-        }
-
-        // make context current
-        let mut windowed_context = unsafe { windowed_context.make_current().unwrap() };
+        } else {
+            unsafe {
+                context_builder
+                    .build_windowed(window_builder, &events_loop)
+                    .unwrap()
+                    .make_current()
+                    .unwrap()
+            }
+        };
 
         // tell gl crate how to forward gl function calls to the driver
         gl::load_with(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);

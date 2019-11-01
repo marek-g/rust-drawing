@@ -27,7 +27,7 @@ fn main() {
 
     let mut device = DrawingDevice::new().unwrap();
     let mut window_target = device
-        .create_window_target(window_builder, &event_loop)
+        .create_window_target(window_builder, &event_loop, None)
         .unwrap();
     let mut renderer = Renderer::new();
 
