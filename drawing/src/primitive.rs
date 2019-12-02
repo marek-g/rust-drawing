@@ -6,25 +6,27 @@ pub enum Primitive {
         color: Color,
         thickness: UserPixelThickness,
         start_point: UserPixelPoint,
-        end_point: UserPixelPoint
+        end_point: UserPixelPoint,
     },
     Rectangle {
         color: Color,
-        rect: UserPixelRect
+        rect: UserPixelRect,
     },
     Text {
         resource_key: String,
         size: u16,
         color: Color,
         position: UserPixelPoint,
+        clipping_rect: UserPixelRect,
         text: String,
     },
     Image {
         resource_key: i32,
         rect: UserPixelRect,
+        uv: [f32; 4],
     },
     PushLayer {
         color: Color,
     },
-    PopLayer
+    PopLayer,
 }

@@ -138,6 +138,10 @@ fn draw_window(
             resource_key: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: UserPixelPoint::new(width / 2.0f32, height / 2.0f32),
+            clipping_rect: UserPixelRect::new(
+                UserPixelPoint::new(0.0f32, 0.0f32),
+                UserPixelSize::new(width, height),
+            ),
             size: 20,
             text: text.to_string(),
         }];

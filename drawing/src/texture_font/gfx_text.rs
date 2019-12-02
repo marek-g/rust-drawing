@@ -29,15 +29,16 @@
 
 #![deny(missing_docs)]
 
-extern crate freetype;
 extern crate failure;
+extern crate freetype;
 
-use crate::units::UnknownToDeviceTransform;
+use crate::backend::Device;
 use crate::backend::TexturedY8Vertex;
 use crate::color::ColorFormat;
-use crate::backend::Device;
 use crate::texture_font::font::BitmapFont;
 pub use crate::texture_font::font::FontError;
+use crate::units::UnknownToDeviceTransform;
+use crate::utils::clipping::clip_image;
 
 const DEFAULT_FONT_SIZE: u8 = 16;
 
@@ -45,8 +46,7 @@ const DEFAULT_FONT_SIZE: u8 = 16;
 const DEFAULT_FONT_DATA: Option<&'static [u8]> =
     Some(include_bytes!("../assets/NotoSans-Regular.ttf"));
 #[cfg(not(feature = "include-font"))]
-const DEFAULT_FONT_DATA: Option<&'static [u8]> =
-    None;
+const DEFAULT_FONT_DATA: Option<&'static [u8]> = None;
 
 /// General error type returned by the library. Wraps all other errors.
 #[derive(Fail, Debug)]
@@ -55,15 +55,19 @@ pub enum Error {
     #[fail(display = "Font decoding error")]
     FontError(FontError),
     #[fail(display = "Texture creation error")]
-    TextureError(failure::Error)
+    TextureError(failure::Error),
 }
 
 impl From<FontError> for Error {
-    fn from(e: FontError) -> Error { Error::FontError(e) }
+    fn from(e: FontError) -> Error {
+        Error::FontError(e)
+    }
 }
 
 impl From<failure::Error> for Error {
-    fn from(e: failure::Error) -> Error { Error::TextureError(e) }
+    fn from(e: failure::Error) -> Error {
+        Error::TextureError(e)
+    }
 }
 
 /// Text renderer.
@@ -126,11 +130,13 @@ impl<'r> RendererBuilder<'r> {
             Some(data) => BitmapFont::from_bytes(data, self.font_size, None),
             None => Err(FontError::NoFont),
         }?;
-        let texture = device.create_texture(Some(font_bitmap.get_image()),
+        let texture = device.create_texture(
+            Some(font_bitmap.get_image()),
             font_bitmap.get_width(),
             font_bitmap.get_height(),
             ColorFormat::Y8,
-            false)?;
+            false,
+        )?;
 
         Ok(Renderer {
             font_bitmap,
@@ -143,7 +149,7 @@ impl<'r> RendererBuilder<'r> {
 impl<D: Device> Renderer<D> {
     /// Add some text to the current draw scene relative to the top left corner
     /// of the screen using pixel coordinates.
-    pub fn add(&mut self, text: &str, pos: [i32; 2], color: [f32; 4]) {
+    pub fn add(&mut self, text: &str, pos: [i32; 2], clipping_rect: [f32; 4], color: [f32; 4]) {
         // `Result` is used here as an `Either` analogue.
         let (mut x, y) = (pos[0] as f32, pos[1] as f32);
         for ch in text.chars() {
@@ -158,35 +164,32 @@ impl<D: Device> Renderer<D> {
             let y_offset = y + ch_info.y_offset as f32;
             let tex = ch_info.tex;
 
-            // Top-left point, index + 0.
-            let vert0 = TexturedY8Vertex::new([x_offset, y_offset],
-                [tex[0], tex[1]], color);
-            // Bottom-left point, index + 1.
-            let vert1 = TexturedY8Vertex::new([x_offset, y_offset + ch_info.height as f32],
-                [tex[0], tex[1] + ch_info.tex_height], color);
-            // Bottom-right point, index + 2.
-            let vert2 = TexturedY8Vertex::new([x_offset + ch_info.width as f32, y_offset + ch_info.height as f32],
-                [tex[0] + ch_info.tex_width, tex[1] + ch_info.tex_height], color);
-            // Top-right point, index + 3.
-            let vert3 = TexturedY8Vertex::new([x_offset + ch_info.width as f32, y_offset],
-                [tex[0] + ch_info.tex_width, tex[1]], color);
-
-            // Top-left triangle.
-            // 0--3
-            // | /
-            // |/
-            // 1
-            self.vertex_data.push(vert0);
-            self.vertex_data.push(vert1.clone());
-            self.vertex_data.push(vert3.clone());
-            // Bottom-right triangle.
-            //    3
-            //   /|
-            //  / |
-            // 1--2
-            self.vertex_data.push(vert3);
-            self.vertex_data.push(vert1);
-            self.vertex_data.push(vert2);
+            if let Some(clipped) = clip_image(
+                x_offset,
+                y_offset,
+                ch_info.width as f32,
+                ch_info.height as f32,
+                clipping_rect[0],
+                clipping_rect[1],
+                clipping_rect[2],
+                clipping_rect[3],
+                &[
+                    tex[0],
+                    tex[1],
+                    tex[0] + ch_info.tex_width,
+                    tex[1] + ch_info.tex_height,
+                ],
+            ) {
+                Self::add_image(
+                    &mut self.vertex_data,
+                    clipped.0,
+                    clipped.1,
+                    clipped.2,
+                    clipped.3,
+                    clipped.4,
+                    color,
+                );
+            }
 
             x += ch_info.x_advance as f32;
         }
@@ -205,7 +208,7 @@ impl<D: Device> Renderer<D> {
         &mut self,
         device: &mut D,
         target: &D::RenderTarget,
-        transform: UnknownToDeviceTransform
+        transform: UnknownToDeviceTransform,
     ) -> Result<(), Error> {
         device.triangles_textured_y8(target, &self.texture, false, &self.vertex_data, transform);
         self.vertex_data.clear();
@@ -233,5 +236,41 @@ impl<D: Device> Renderer<D> {
         }
 
         (width, self.font_bitmap.get_font_height() as i32)
+    }
+
+    fn add_image(
+        vertex_data: &mut Vec<TexturedY8Vertex>,
+        x1: f32,
+        y1: f32,
+        width: f32,
+        height: f32,
+        uv: [f32; 4],
+        color: [f32; 4],
+    ) {
+        // Top-left point, index + 0.
+        let vert0 = TexturedY8Vertex::new([x1, y1], [uv[0], uv[1]], color);
+        // Bottom-left point, index + 1.
+        let vert1 = TexturedY8Vertex::new([x1, y1 + height], [uv[0], uv[3]], color);
+        // Bottom-right point, index + 2.
+        let vert2 = TexturedY8Vertex::new([x1 + width, y1 + height], [uv[2], uv[3]], color);
+        // Top-right point, index + 3.
+        let vert3 = TexturedY8Vertex::new([x1 + width, y1], [uv[2], uv[1]], color);
+
+        // Top-left triangle.
+        // 0--3
+        // | /
+        // |/
+        // 1
+        vertex_data.push(vert0);
+        vertex_data.push(vert1.clone());
+        vertex_data.push(vert3.clone());
+        // Bottom-right triangle.
+        //    3
+        //   /|
+        //  / |
+        // 1--2
+        vertex_data.push(vert3);
+        vertex_data.push(vert1);
+        vertex_data.push(vert2);
     }
 }

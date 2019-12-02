@@ -50,11 +50,22 @@ impl<D: Device> Font<D> for TextureFont<D> {
         color: &Color,
         text: &str,
         pos: Point,
+        clipping_rect: Rect,
         font_params: FontParams,
         transform: UnknownToDeviceTransform,
     ) -> Result<()> {
         let renderer = self.get_or_create_font_renderer(device, font_params.size)?;
-        renderer.add(text, [pos.x as i32, pos.y as i32], *color);
+        renderer.add(
+            text,
+            [pos.x as i32, pos.y as i32],
+            [
+                clipping_rect.origin.x,
+                clipping_rect.origin.y,
+                clipping_rect.size.width,
+                clipping_rect.size.height,
+            ],
+            *color,
+        );
         renderer.draw_at(device, target, transform)?;
         Ok(())
     }

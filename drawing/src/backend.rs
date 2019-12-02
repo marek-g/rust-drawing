@@ -1,8 +1,8 @@
 extern crate winit;
 
-use crate::Result;
 use crate::color::*;
 use crate::units::*;
+use crate::Result;
 
 use std::cell::Ref;
 
@@ -161,18 +161,10 @@ pub trait Device {
 		filtering: bool,
 		color: &Color,
 		rect: Rect,
+		uv: &[f32; 4],
 		transform: UnknownToDeviceTransform,
 	) {
-		self.rect_textured_sub(
-			target,
-			texture,
-			filtering,
-			color,
-			rect,
-			&[0.0, 0.0],
-			&[1.0, 1.0],
-			transform,
-		)
+		self.rect_textured_sub(target, texture, filtering, color, rect, uv, transform)
 	}
 
 	fn rect_textured_sub(
@@ -182,8 +174,7 @@ pub trait Device {
 		filtering: bool,
 		color: &Color,
 		rect: Rect,
-		uv1: &[f32; 2],
-		uv2: &[f32; 2],
+		uv: &[f32; 4],
 		transform: UnknownToDeviceTransform,
 	) {
 		let p1 = [rect.origin.x, rect.origin.y];
@@ -197,12 +188,12 @@ pub trait Device {
 			texture,
 			filtering,
 			&[
-				TexturedVertex::new([p1[0], p1[1]], [uv1[0], uv1[1]], *color),
-				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
-				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
-				TexturedVertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
-				TexturedVertex::new([p2[0], p2[1]], [uv2[0], uv2[1]], *color),
-				TexturedVertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
+				TexturedVertex::new([p1[0], p1[1]], [uv[0], uv[1]], *color),
+				TexturedVertex::new([p2[0], p1[1]], [uv[2], uv[1]], *color),
+				TexturedVertex::new([p1[0], p2[1]], [uv[0], uv[3]], *color),
+				TexturedVertex::new([p2[0], p1[1]], [uv[2], uv[1]], *color),
+				TexturedVertex::new([p2[0], p2[1]], [uv[2], uv[3]], *color),
+				TexturedVertex::new([p1[0], p2[1]], [uv[0], uv[3]], *color),
 			],
 			transform,
 		);
@@ -223,8 +214,7 @@ pub trait Device {
 			filtering,
 			color,
 			rect,
-			&[0.0, 0.0],
-			&[1.0, 1.0],
+			&[0.0, 0.0, 1.0, 1.0],
 			transform,
 		)
 	}
@@ -236,8 +226,7 @@ pub trait Device {
 		filtering: bool,
 		color: &Color,
 		rect: Rect,
-		uv1: &[f32; 2],
-		uv2: &[f32; 2],
+		uv: &[f32; 4],
 		transform: UnknownToDeviceTransform,
 	) {
 		let p1 = [rect.origin.x, rect.origin.y];
@@ -251,12 +240,12 @@ pub trait Device {
 			texture,
 			filtering,
 			&[
-				TexturedY8Vertex::new([p1[0], p1[1]], [uv1[0], uv1[1]], *color),
-				TexturedY8Vertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
-				TexturedY8Vertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
-				TexturedY8Vertex::new([p2[0], p1[1]], [uv2[0], uv1[1]], *color),
-				TexturedY8Vertex::new([p2[0], p2[1]], [uv2[0], uv2[1]], *color),
-				TexturedY8Vertex::new([p1[0], p2[1]], [uv1[0], uv2[1]], *color),
+				TexturedY8Vertex::new([p1[0], p1[1]], [uv[0], uv[1]], *color),
+				TexturedY8Vertex::new([p2[0], p1[1]], [uv[2], uv[1]], *color),
+				TexturedY8Vertex::new([p1[0], p2[1]], [uv[0], uv[3]], *color),
+				TexturedY8Vertex::new([p2[0], p1[1]], [uv[2], uv[1]], *color),
+				TexturedY8Vertex::new([p2[0], p2[1]], [uv[2], uv[3]], *color),
+				TexturedY8Vertex::new([p1[0], p2[1]], [uv[0], uv[3]], *color),
 			],
 			transform,
 		);
