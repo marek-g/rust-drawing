@@ -1,5 +1,3 @@
-extern crate image;
-
 use crate::backend::Device;
 use crate::color::Color;
 use crate::font::Font;
