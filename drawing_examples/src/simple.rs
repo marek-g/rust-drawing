@@ -6,7 +6,6 @@ extern crate shared_library;
 extern crate winit;
 
 use drawing::backend::Device;
-use drawing::backend::WindowTarget;
 use drawing::color::*;
 use drawing::font::Font;
 use drawing::primitive::Primitive;

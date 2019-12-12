@@ -1,10 +1,6 @@
-extern crate winit;
-
 use crate::color::*;
 use crate::units::*;
 use crate::Result;
-
-use std::cell::Ref;
 
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
@@ -58,20 +54,12 @@ impl TexturedY8Vertex {
 pub trait Device {
 	type Texture: Texture;
 	type RenderTarget;
-	type WindowTarget: WindowTarget;
 
 	fn new() -> Result<Self>
 	where
 		Self: Sized;
 
 	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
-
-	fn create_window_target(
-		&mut self,
-		window_builder: winit::window::WindowBuilder,
-		events_loop: &winit::event_loop::EventLoop<()>,
-		shared_window_target: Option<&Self::WindowTarget>,
-	) -> Result<Self::WindowTarget>;
 
 	fn create_texture(
 		&mut self,
@@ -87,8 +75,6 @@ pub trait Device {
 		width: u16,
 		height: u16,
 	) -> Result<(Self::Texture, Self::RenderTarget)>;
-
-	fn begin(&mut self, window_target: &Self::WindowTarget) -> Result<()>;
 
 	fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 
@@ -250,20 +236,6 @@ pub trait Device {
 			transform,
 		);
 	}
-
-	fn end(&mut self, window_target: &Self::WindowTarget);
-}
-
-pub trait WindowTarget: Sized {
-	type RenderTarget;
-
-	fn get_window(&self) -> Ref<winit::window::Window>;
-
-	fn get_render_target(&self) -> &Self::RenderTarget;
-
-	fn update_size(&mut self, width: u16, height: u16);
-
-	fn swap_buffers(&mut self);
 }
 
 pub trait Texture: Sized {
@@ -277,16 +249,4 @@ pub trait Texture: Sized {
 		width: u16,
 		height: u16,
 	) -> Result<()>;
-}
-
-///////////////////////////////////////////////////////////////////////
-//
-// backend specific extensions
-//
-///////////////////////////////////////////////////////////////////////
-
-pub trait WindowTargetExt: Sized {
-	type Context;
-
-	fn get_context(&self) -> Ref<Self::Context>;
 }

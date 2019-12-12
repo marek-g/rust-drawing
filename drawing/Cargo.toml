@@ -7,6 +7,5 @@ edition = "2018"
 
 [dependencies]
 failure = "0.1"
-winit = "0.20.0-alpha4"
 euclid = "0.20"
 freetype-rs = "0.23"

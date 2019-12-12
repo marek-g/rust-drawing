@@ -22,79 +22,12 @@ pub struct GlDevice {
 }
 
 impl GlDevice {
-    fn set_render_target(&mut self, target: &GlRenderTarget) {
-        unsafe {
-            gl::BindFramebuffer(gl::FRAMEBUFFER, target.framebuffer_id);
-            gl::Viewport(0, 0, target.width as GLint, target.height as GLint);
-        }
-    }
-
-    fn line_native(
-        &mut self,
-        color: &Color,
-        start_point: Point,
-        end_point: Point,
-        transform: UnknownToDeviceTransform,
-    ) {
-        let transform = [
-            [transform.m11, transform.m12, 0.0, 0.0],
-            [transform.m21, transform.m22, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [transform.m31, transform.m32, 0.0, 1.0],
-        ];
-
-        let v1 = ColoredVertex::new([start_point.x, start_point.y], *color);
-        let v2 = ColoredVertex::new([end_point.x, end_point.y], *color);
-        let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
-
-        if let Some(ref mut pipeline) = self.colored_pipeline {
-            pipeline.apply();
-            pipeline.set_transform(&transform);
-            pipeline.draw_lines(&[v1, v2, v3]);
-        }
-    }
-
-    fn line_triangulated(
-        &mut self,
-        color: &Color,
-        thickness: DeviceThickness,
-        start_point: Point,
-        end_point: Point,
-        transform: UnknownToDeviceTransform,
-    ) {
-    }
-}
-
-impl drawing::backend::Device for GlDevice {
-    type Texture = GlTexture;
-    type RenderTarget = GlRenderTarget;
-    type WindowTarget = GlWindowTarget;
-
-    fn new() -> Result<Self> {
-        Ok(GlDevice {
-            colored_pipeline: None,
-            textured_pipeline: None,
-            textured_y8_pipeline: None,
-        })
-    }
-
-    fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
-        PhysPixelToDeviceTransform::column_major(
-            2.0f32 / size.width,
-            0.0f32,
-            -1.0f32,
-            0.0f32,
-            -2.0f32 / size.height,
-            1.0f32,
-        )
-    }
-
-    fn create_window_target(
+    pub fn create_window_target(
         &mut self,
         window_builder: winit::window::WindowBuilder,
         events_loop: &winit::event_loop::EventLoop<()>,
-        shared_window_target: Option<&Self::WindowTarget>,
-    ) -> Result<Self::WindowTarget> {
+        shared_window_target: Option<&GlWindowTarget>,
+    ) -> Result<GlWindowTarget> {
         let context_builder = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
             .with_vsync(true);
@@ -168,6 +101,97 @@ impl drawing::backend::Device for GlDevice {
                 .create_vbo_and_vao(),
         })
     }
+
+    pub fn begin(&mut self, window_target: &GlWindowTarget) -> Result<()> {
+        unsafe {
+            let context = window_target.gl_windowed_context.replace(None);
+            let context = context.unwrap().make_current().unwrap();
+            window_target.gl_windowed_context.replace(Some(context));
+        }
+
+        self.colored_pipeline
+            .as_mut()
+            .unwrap()
+            .set_buffers(window_target.colored_pipeline_buffers);
+        self.textured_pipeline
+            .as_mut()
+            .unwrap()
+            .set_buffers(window_target.textured_pipeline_buffers);
+        self.textured_y8_pipeline
+            .as_mut()
+            .unwrap()
+            .set_buffers(window_target.textured_y8_pipeline_buffers);
+
+        Ok(())
+    }
+
+    pub fn end(&mut self, _window_target: &GlWindowTarget) {}
+
+    pub fn set_render_target(&mut self, target: &GlRenderTarget) {
+        unsafe {
+            gl::BindFramebuffer(gl::FRAMEBUFFER, target.framebuffer_id);
+            gl::Viewport(0, 0, target.width as GLint, target.height as GLint);
+        }
+    }
+
+    fn line_native(
+        &mut self,
+        color: &Color,
+        start_point: Point,
+        end_point: Point,
+        transform: UnknownToDeviceTransform,
+    ) {
+        let transform = [
+            [transform.m11, transform.m12, 0.0, 0.0],
+            [transform.m21, transform.m22, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [transform.m31, transform.m32, 0.0, 1.0],
+        ];
+
+        let v1 = ColoredVertex::new([start_point.x, start_point.y], *color);
+        let v2 = ColoredVertex::new([end_point.x, end_point.y], *color);
+        let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
+
+        if let Some(ref mut pipeline) = self.colored_pipeline {
+            pipeline.apply();
+            pipeline.set_transform(&transform);
+            pipeline.draw_lines(&[v1, v2, v3]);
+        }
+    }
+
+    fn line_triangulated(
+        &mut self,
+        color: &Color,
+        thickness: DeviceThickness,
+        start_point: Point,
+        end_point: Point,
+        transform: UnknownToDeviceTransform,
+    ) {
+    }
+}
+
+impl drawing::backend::Device for GlDevice {
+    type Texture = GlTexture;
+    type RenderTarget = GlRenderTarget;
+
+    fn new() -> Result<Self> {
+        Ok(GlDevice {
+            colored_pipeline: None,
+            textured_pipeline: None,
+            textured_y8_pipeline: None,
+        })
+    }
+
+    fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
+        PhysPixelToDeviceTransform::column_major(
+            2.0f32 / size.width,
+            0.0f32,
+            -1.0f32,
+            0.0f32,
+            -2.0f32 / size.height,
+            1.0f32,
+        )
+    }   
 
     fn create_texture(
         &mut self,
@@ -244,29 +268,6 @@ impl drawing::backend::Device for GlDevice {
                 height,
             },
         ))
-    }
-
-    fn begin(&mut self, window_target: &Self::WindowTarget) -> Result<()> {
-        unsafe {
-            let context = window_target.gl_windowed_context.replace(None);
-            let context = context.unwrap().make_current().unwrap();
-            window_target.gl_windowed_context.replace(Some(context));
-        }
-
-        self.colored_pipeline
-            .as_mut()
-            .unwrap()
-            .set_buffers(window_target.colored_pipeline_buffers);
-        self.textured_pipeline
-            .as_mut()
-            .unwrap()
-            .set_buffers(window_target.textured_pipeline_buffers);
-        self.textured_y8_pipeline
-            .as_mut()
-            .unwrap()
-            .set_buffers(window_target.textured_y8_pipeline_buffers);
-
-        Ok(())
     }
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
@@ -387,8 +388,6 @@ impl drawing::backend::Device for GlDevice {
         //self.line_triangulated(color, thickness, start_point, end_point, transform);
         //}
     }
-
-    fn end(&mut self, _window_target: &Self::WindowTarget) {}
 }
 
 pub struct GlWindowTarget {
@@ -399,6 +398,41 @@ pub struct GlWindowTarget {
     colored_pipeline_buffers: (GLuint, GLuint),
     textured_pipeline_buffers: (GLuint, GLuint),
     textured_y8_pipeline_buffers: (GLuint, GLuint),
+}
+
+impl GlWindowTarget {
+     pub fn get_window(&self) -> Ref<winit::window::Window> {
+        Ref::map(self.gl_windowed_context.borrow(), |context| {
+            context.as_ref().unwrap().window()
+        })
+    }
+
+    pub fn get_render_target(&self) -> &GlRenderTarget {
+        &self.gl_render_target
+    }
+
+    pub fn update_size(&mut self, width: u16, height: u16) {
+        unsafe {
+            self.gl_render_target.width = width;
+            self.gl_render_target.height = height;
+            gl::Viewport(0, 0, width as i32, height as i32);
+        }
+    }
+
+    pub fn swap_buffers(&mut self) {
+        self.gl_windowed_context
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .swap_buffers()
+            .unwrap();
+    }
+
+    pub fn get_context(&self) -> Ref<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>> {
+        Ref::map(self.gl_windowed_context.borrow(), |context| {
+            context.as_ref().unwrap()
+        })
+    }
 }
 
 impl Drop for GlWindowTarget {
@@ -417,37 +451,6 @@ impl Drop for GlWindowTarget {
             gl::DeleteVertexArrays(1, &mut self.textured_y8_pipeline_buffers.1);
             gl::DeleteBuffers(1, &mut self.textured_y8_pipeline_buffers.0);
         }
-    }
-}
-
-impl drawing::backend::WindowTarget for GlWindowTarget {
-    type RenderTarget = GlRenderTarget;
-
-    fn get_window(&self) -> Ref<winit::window::Window> {
-        Ref::map(self.gl_windowed_context.borrow(), |context| {
-            context.as_ref().unwrap().window()
-        })
-    }
-
-    fn get_render_target(&self) -> &Self::RenderTarget {
-        &self.gl_render_target
-    }
-
-    fn update_size(&mut self, width: u16, height: u16) {
-        unsafe {
-            self.gl_render_target.width = width;
-            self.gl_render_target.height = height;
-            gl::Viewport(0, 0, width as i32, height as i32);
-        }
-    }
-
-    fn swap_buffers(&mut self) {
-        self.gl_windowed_context
-            .borrow()
-            .as_ref()
-            .unwrap()
-            .swap_buffers()
-            .unwrap();
     }
 }
 
@@ -523,16 +526,6 @@ impl Drop for GlTexture {
 // backend specific extensions
 //
 ///////////////////////////////////////////////////////////////////////
-
-impl WindowTargetExt for GlWindowTarget {
-    type Context = glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>;
-
-    fn get_context(&self) -> Ref<Self::Context> {
-        Ref::map(self.gl_windowed_context.borrow(), |context| {
-            context.as_ref().unwrap()
-        })
-    }
-}
 
 impl GlTexture {
     pub fn from_external(id: GLuint, width: u16, height: u16, format: ColorFormat) -> GlTexture {

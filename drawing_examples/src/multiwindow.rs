@@ -6,13 +6,14 @@ extern crate shared_library;
 extern crate winit;
 
 use drawing::backend::Device;
-use drawing::backend::WindowTarget;
 use drawing::color::*;
 use drawing::font::Font;
 use drawing::primitive::Primitive;
 use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
+
+use drawing_gl::GlWindowTarget;
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
@@ -125,7 +126,7 @@ fn draw_window(
     device: &mut DrawingDevice,
     renderer: &mut Renderer,
     resources: &mut Resources<DrawingDevice, DrawingFont>,
-    window_target: &<DrawingDevice as drawing::backend::Device>::WindowTarget,
+    window_target: &GlWindowTarget,
     text: &str,
 ) {
     let logical_size = window_target.get_window().inner_size();
