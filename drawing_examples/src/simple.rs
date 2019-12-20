@@ -226,25 +226,26 @@ fn main() {
                             .to_string(),
                     },
                     // render target test
-                    Primitive::PushLayer {
+                    Primitive::Composite {
                         color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
-                    },
-                    Primitive::Rectangle {
-                        color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(200.5f32, 220.5f32),
-                            UserPixelSize::new(200.0f32, 50.0f32),
-                        ),
-                    },
-                    Primitive::Text {
-                        resource_key: "F1".to_string(),
-                        color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(207.0f32, 232.0f32),
-                        clipping_rect,
-                        size: 22,
-                        text: "Render target test".to_string(),
-                    },
-                    Primitive::PopLayer {},
+                        primitives: vec![
+                            Primitive::Rectangle {
+                                color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
+                                rect: UserPixelRect::new(
+                                    UserPixelPoint::new(200.5f32, 220.5f32),
+                                    UserPixelSize::new(200.0f32, 50.0f32),
+                                ),
+                            },
+                            Primitive::Text {
+                                resource_key: "F1".to_string(),
+                                color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+                                position: UserPixelPoint::new(207.0f32, 232.0f32),
+                                clipping_rect,
+                                size: 22,
+                                text: "Render target test".to_string(),
+                            },
+                        ],
+                    }
                 ];
 
                 device.begin(&window_target);
@@ -257,7 +258,7 @@ fn main() {
                         &mut device,
                         window_target.get_render_target(),
                         PhysPixelSize::new(width as f32, height as f32),
-                        primitives,
+                        &primitives,
                         &mut resources,
                     )
                     .unwrap();

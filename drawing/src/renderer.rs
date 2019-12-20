@@ -19,7 +19,7 @@ impl Renderer {
 		device: &mut D,
 		render_target: &D::RenderTarget,
 		size: PhysPixelSize,
-		primitives: Vec<Primitive>,
+		primitives: &Vec<Primitive>,
 		resources: &mut Resources<D, F>,
 	) -> Result<()> {
 		let physical_pixel_to_device_transform = D::get_device_transform(size);
@@ -30,9 +30,7 @@ impl Renderer {
 			user_pixel_to_device_transform.to_row_major_array(),
 		);
 
-		let mut pushed_render_target: Option<(D::Texture, D::RenderTarget, Color)> = None;
-
-		for primitive in &primitives {
+		for primitive in primitives {
 			match primitive {
 				&Primitive::Line {
 					ref color,
@@ -44,14 +42,8 @@ impl Renderer {
 						.transform_point(UserPixelPoint::new(thickness.get(), thickness.get()))
 						.x;
 
-					let target_view = if let Some(ref pushed_render_target) = pushed_render_target {
-						&pushed_render_target.1
-					} else {
-						render_target
-					};
-
 					device.line(
-						&target_view,
+						&render_target,
 						color,
 						DeviceThickness::new(thickness),
 						start_point.to_untyped(),
@@ -60,20 +52,12 @@ impl Renderer {
 					);
 				}
 
-				&Primitive::Rectangle { ref color, rect } => {
-					let target_view = if let Some(ref pushed_render_target) = pushed_render_target {
-						&pushed_render_target.1
-					} else {
-						render_target
-					};
-
-					device.rect_colored(
-						&target_view,
-						color,
-						rect.to_untyped(),
-						unknown_to_device_transform,
-					)
-				}
+				&Primitive::Rectangle { ref color, rect } => device.rect_colored(
+					&render_target,
+					color,
+					rect.to_untyped(),
+					unknown_to_device_transform,
+				),
 
 				&Primitive::Text {
 					ref resource_key,
@@ -83,16 +67,10 @@ impl Renderer {
 					size,
 					ref text,
 				} => {
-					let target_view = if let Some(ref pushed_render_target) = pushed_render_target {
-						&pushed_render_target.1
-					} else {
-						render_target
-					};
-
 					if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
 						font.draw(
 							device,
-							&target_view,
+							&render_target,
 							color,
 							text,
 							position.to_untyped(),
@@ -108,15 +86,9 @@ impl Renderer {
 					rect,
 					uv,
 				} => {
-					let target_view = if let Some(ref pushed_render_target) = pushed_render_target {
-						&pushed_render_target.1
-					} else {
-						render_target
-					};
-
 					if let Some(texture) = resources.textures_mut().get(&resource_key) {
 						device.rect_textured(
-							&target_view,
+							&render_target,
 							&texture,
 							false,
 							&[1.0f32, 1.0f32, 1.0f32, 1.0f32],
@@ -127,32 +99,29 @@ impl Renderer {
 					}
 				}
 
-				&Primitive::PushLayer { ref color } => {
+				&Primitive::Composite {
+					ref color,
+					ref primitives,
+				} => {
 					let (texture2, texture2_view) =
 						device.create_render_target(size.width as u16, size.height as u16)?;
-					pushed_render_target = Some((texture2, texture2_view, *color));
 
-					if let Some(ref pushed_render_target) = pushed_render_target {
-						device.clear(&pushed_render_target.1, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
-					}
-				}
+					device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-				&Primitive::PopLayer { .. } => {
-					if let Some(ref pushed_render_target) = pushed_render_target {
-						device.rect_textured(
-							render_target,
-							&pushed_render_target.0,
-							false,
-							&pushed_render_target.2,
-							Rect::new(
-								Point::new(0.0f32, 0.0f32),
-								Size::new(size.width, size.height),
-							),
-							&[0.0, 0.0, 1.0, 1.0],
-							unknown_to_device_transform,
-						);
-					}
-					pushed_render_target = None;
+					self.draw(device, &texture2_view, size, &primitives, resources)?;
+
+					device.rect_textured(
+						render_target,
+						&texture2,
+						false,
+						&color,
+						Rect::new(
+							Point::new(0.0f32, 0.0f32),
+							Size::new(size.width, size.height),
+						),
+						&[0.0, 0.0, 1.0, 1.0],
+						unknown_to_device_transform,
+					);
 				}
 			}
 		}

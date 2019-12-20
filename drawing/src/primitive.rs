@@ -8,10 +8,18 @@ pub enum Primitive {
         start_point: UserPixelPoint,
         end_point: UserPixelPoint,
     },
+
     Rectangle {
         color: Color,
         rect: UserPixelRect,
     },
+
+    Image {
+        resource_key: i32,
+        rect: UserPixelRect,
+        uv: [f32; 4],
+    },
+
     Text {
         resource_key: String,
         size: u16,
@@ -20,13 +28,9 @@ pub enum Primitive {
         clipping_rect: UserPixelRect,
         text: String,
     },
-    Image {
-        resource_key: i32,
-        rect: UserPixelRect,
-        uv: [f32; 4],
-    },
-    PushLayer {
+
+    Composite {
         color: Color,
+        primitives: Vec<Primitive>,
     },
-    PopLayer,
 }

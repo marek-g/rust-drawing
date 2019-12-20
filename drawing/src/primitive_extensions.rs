@@ -45,9 +45,9 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     rect.origin.y += offset.y;
                 }
 
-                Primitive::PushLayer { .. } => (),
-
-                Primitive::PopLayer => (),
+                Primitive::Composite {
+                    ref mut primitives, ..
+                } => primitives.translate(offset),
             }
         }
     }
@@ -161,12 +161,14 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     }
                 }
 
-                Primitive::PushLayer { .. } => {
-                    res.push(primitive);
-                }
-
-                Primitive::PopLayer => {
-                    res.push(primitive);
+                Primitive::Composite { color, primitives } => {
+                    let clipped_primitives = primitives.clip(clipping_rect);
+                    if clipped_primitives.len() > 0 {
+                        res.push(Primitive::Composite {
+                            color,
+                            primitives: clipped_primitives,
+                        })
+                    }
                 }
             }
         }
