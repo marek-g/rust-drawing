@@ -157,7 +157,7 @@ fn draw_window(
                 device,
                 window_target.get_render_target(),
                 PhysPixelSize::new(width, height),
-                primitives,
+                &primitives,
                 resources,
             )
             .unwrap();
