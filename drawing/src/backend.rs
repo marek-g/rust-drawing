@@ -1,4 +1,5 @@
 use crate::color::*;
+use crate::primitive::*;
 use crate::units::*;
 use crate::Result;
 
@@ -150,19 +151,6 @@ pub trait Device {
 		uv: &[f32; 4],
 		transform: UnknownToDeviceTransform,
 	) {
-		self.rect_textured_sub(target, texture, filtering, color, rect, uv, transform)
-	}
-
-	fn rect_textured_sub(
-		&mut self,
-		target: &Self::RenderTarget,
-		texture: &Self::Texture,
-		filtering: bool,
-		color: &Color,
-		rect: Rect,
-		uv: &[f32; 4],
-		transform: UnknownToDeviceTransform,
-	) {
 		let p1 = [rect.origin.x, rect.origin.y];
 		let p2 = [
 			rect.origin.x + rect.size.width,
@@ -186,26 +174,6 @@ pub trait Device {
 	}
 
 	fn rect_textured_y8(
-		&mut self,
-		target: &Self::RenderTarget,
-		texture: &Self::Texture,
-		filtering: bool,
-		color: &Color,
-		rect: Rect,
-		transform: UnknownToDeviceTransform,
-	) {
-		self.rect_textured_y8_sub(
-			target,
-			texture,
-			filtering,
-			color,
-			rect,
-			&[0.0, 0.0, 1.0, 1.0],
-			transform,
-		)
-	}
-
-	fn rect_textured_y8_sub(
 		&mut self,
 		target: &Self::RenderTarget,
 		texture: &Self::Texture,
@@ -236,6 +204,33 @@ pub trait Device {
 			transform,
 		);
 	}
+
+	// paths
+
+	fn stroke(&mut self, path: &[PathElement], thickness: f32, brush: &Brush) {}
+
+	fn stroke_styled(
+		&mut self,
+		path: &[PathElement],
+		thickness: f32,
+		brush: &Brush,
+		style: &StrokeStyle,
+	) {
+	}
+
+	fn fill(&mut self, path: &[PathElement], brush: &Brush) {}
+
+	// state
+
+	fn save_state(&mut self) {}
+
+	fn restore_state(&mut self) {}
+
+	fn set_clip_rect(&mut self, rect: UserPixelRect) {}
+
+	fn set_clip_path(&mut self, path: &[PathElement]) {}
+
+	fn transform(&mut self, transform: UnknownToDeviceTransform) {}
 }
 
 pub trait Texture: Sized {

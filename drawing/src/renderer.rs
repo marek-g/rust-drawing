@@ -102,36 +102,54 @@ impl Renderer {
 					ref path,
 					ref thickness,
 					ref brush,
-				} => {
-					// TODO: implement!
-				}
+				} => device.stroke(path, *thickness, brush),
 
 				&Primitive::StrokeStyled {
 					ref path,
 					ref thickness,
 					ref brush,
 					ref style,
-				} => {
-					// TODO: implement!
-				}
+				} => device.stroke_styled(path, *thickness, brush, style),
 
 				&Primitive::Fill {
 					ref path,
 					ref brush,
+				} => device.fill(path, brush),
+
+				&Primitive::ClipRect {
+					ref rect,
+					ref primitives,
 				} => {
-					// TODO: implement!
+					device.save_state();
+
+					device.set_clip_rect(*rect);
+					self.draw(device, render_target, size, primitives, resources)?;
+
+					device.restore_state();
 				}
 
-				&Primitive::ClipRect { .. } => {
-					// TODO: implement!
+				&Primitive::ClipPath {
+					ref path,
+					ref primitives,
+				} => {
+					device.save_state();
+
+					device.set_clip_path(path);
+					self.draw(device, render_target, size, primitives, resources)?;
+
+					device.restore_state();
 				}
 
-				&Primitive::ClipPath { .. } => {
-					// TODO: implement!
-				}
+				&Primitive::Transform {
+					ref transform,
+					ref primitives,
+				} => {
+					device.save_state();
 
-				&Primitive::Transform { .. } => {
-					// TODO: implement!
+					device.transform(*transform);
+					self.draw(device, render_target, size, primitives, resources)?;
+
+					device.restore_state();
 				}
 
 				&Primitive::Composite {
