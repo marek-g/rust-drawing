@@ -1,5 +1,4 @@
 use crate::backend::Device;
-use crate::color::Color;
 use crate::font::Font;
 use crate::font::FontParams;
 use crate::primitive::Primitive;
@@ -59,6 +58,24 @@ impl Renderer {
 					unknown_to_device_transform,
 				),
 
+				&Primitive::Image {
+					resource_key,
+					rect,
+					uv,
+				} => {
+					if let Some(texture) = resources.textures_mut().get(&resource_key) {
+						device.rect_textured(
+							&render_target,
+							&texture,
+							false,
+							&[1.0f32, 1.0f32, 1.0f32, 1.0f32],
+							rect.to_untyped(),
+							&uv,
+							unknown_to_device_transform,
+						);
+					}
+				}
+
 				&Primitive::Text {
 					ref resource_key,
 					ref color,
@@ -81,22 +98,40 @@ impl Renderer {
 					}
 				}
 
-				&Primitive::Image {
-					resource_key,
-					rect,
-					uv,
+				&Primitive::Stroke {
+					ref path,
+					ref thickness,
+					ref brush,
 				} => {
-					if let Some(texture) = resources.textures_mut().get(&resource_key) {
-						device.rect_textured(
-							&render_target,
-							&texture,
-							false,
-							&[1.0f32, 1.0f32, 1.0f32, 1.0f32],
-							rect.to_untyped(),
-							&uv,
-							unknown_to_device_transform,
-						);
-					}
+					// TODO: implement!
+				}
+
+				&Primitive::StrokeStyled {
+					ref path,
+					ref thickness,
+					ref brush,
+					ref style,
+				} => {
+					// TODO: implement!
+				}
+
+				&Primitive::Fill {
+					ref path,
+					ref brush,
+				} => {
+					// TODO: implement!
+				}
+
+				&Primitive::ClipRect { .. } => {
+					// TODO: implement!
+				}
+
+				&Primitive::ClipPath { .. } => {
+					// TODO: implement!
+				}
+
+				&Primitive::Transform { .. } => {
+					// TODO: implement!
 				}
 
 				&Primitive::Composite {

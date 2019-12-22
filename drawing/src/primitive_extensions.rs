@@ -4,12 +4,28 @@ use crate::utils::clipping::clip_image;
 use crate::utils::clipping::clip_line;
 use crate::utils::clipping::clip_rect;
 
-pub trait PrimitiveTransformations {
+pub trait Transformation {
     fn translate(&mut self, offset: UserPixelPoint);
+}
+
+pub trait Clipping {
     fn clip(self, rect: UserPixelRect) -> Self;
 }
 
-impl PrimitiveTransformations for Vec<Primitive> {
+impl Transformation for UserPixelPoint {
+    fn translate(&mut self, offset: UserPixelPoint) {
+        self.x += offset.x;
+        self.y += offset.y;
+    }
+}
+
+impl Transformation for UserPixelRect {
+    fn translate(&mut self, offset: UserPixelPoint) {
+        self.origin.translate(offset);
+    }
+}
+
+impl Transformation for Vec<Primitive> {
     fn translate(&mut self, offset: UserPixelPoint) {
         for primitive in self.iter_mut() {
             match primitive {
@@ -18,15 +34,16 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     ref mut end_point,
                     ..
                 } => {
-                    start_point.x += offset.x;
-                    start_point.y += offset.y;
-                    end_point.x += offset.x;
-                    end_point.y += offset.y;
+                    start_point.translate(offset);
+                    end_point.translate(offset);
                 }
 
                 Primitive::Rectangle { ref mut rect, .. } => {
-                    rect.origin.x += offset.x;
-                    rect.origin.y += offset.y;
+                    rect.translate(offset);
+                }
+
+                Primitive::Image { ref mut rect, .. } => {
+                    rect.translate(offset);
                 }
 
                 Primitive::Text {
@@ -34,15 +51,37 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     ref mut clipping_rect,
                     ..
                 } => {
-                    position.x += offset.x;
-                    position.y += offset.y;
-                    clipping_rect.origin.x += offset.x;
-                    clipping_rect.origin.y += offset.y;
+                    position.translate(offset);
+                    clipping_rect.translate(offset);
                 }
 
-                Primitive::Image { ref mut rect, .. } => {
-                    rect.origin.x += offset.x;
-                    rect.origin.y += offset.y;
+                Primitive::Stroke { ref mut path, .. } => path.translate(offset),
+
+                Primitive::StrokeStyled { ref mut path, .. } => path.translate(offset),
+
+                Primitive::Fill { ref mut path, .. } => path.translate(offset),
+
+                Primitive::ClipRect {
+                    ref mut rect,
+                    ref mut primitives,
+                } => {
+                    rect.translate(offset);
+                    primitives.translate(offset);
+                }
+
+                Primitive::ClipPath {
+                    ref mut path,
+                    ref mut primitives,
+                } => {
+                    path.translate(offset);
+                    primitives.translate(offset);
+                }
+
+                Primitive::Transform {
+                    ref mut transform, ..
+                } => {
+                    *transform =
+                        transform.post_translate(euclid::Vector2D::new(offset.x, offset.y));
                 }
 
                 Primitive::Composite {
@@ -51,7 +90,9 @@ impl PrimitiveTransformations for Vec<Primitive> {
             }
         }
     }
+}
 
+impl Clipping for Vec<Primitive> {
     fn clip(self, clipping_rect: UserPixelRect) -> Self {
         let mut res = Vec::new();
         for primitive in self.into_iter() {
@@ -102,6 +143,33 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     }
                 }
 
+                Primitive::Image {
+                    resource_key,
+                    rect,
+                    uv,
+                } => {
+                    if let Some(clipped) = clip_image(
+                        rect.origin.x,
+                        rect.origin.y,
+                        rect.size.width,
+                        rect.size.height,
+                        clipping_rect.origin.x,
+                        clipping_rect.origin.y,
+                        clipping_rect.size.width,
+                        clipping_rect.size.height,
+                        &uv,
+                    ) {
+                        res.push(Primitive::Image {
+                            resource_key,
+                            rect: UserPixelRect::new(
+                                UserPixelPoint::new(clipped.0, clipped.1),
+                                UserPixelSize::new(clipped.2, clipped.3),
+                            ),
+                            uv: clipped.4,
+                        });
+                    }
+                }
+
                 Primitive::Text {
                     resource_key,
                     size,
@@ -134,31 +202,58 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     }
                 }
 
-                Primitive::Image {
-                    resource_key,
-                    rect,
-                    uv,
+                Primitive::Stroke {
+                    path,
+                    thickness,
+                    brush,
                 } => {
-                    if let Some(clipped) = clip_image(
-                        rect.origin.x,
-                        rect.origin.y,
-                        rect.size.width,
-                        rect.size.height,
-                        clipping_rect.origin.x,
-                        clipping_rect.origin.y,
-                        clipping_rect.size.width,
-                        clipping_rect.size.height,
-                        &uv,
-                    ) {
-                        res.push(Primitive::Image {
-                            resource_key,
-                            rect: UserPixelRect::new(
-                                UserPixelPoint::new(clipped.0, clipped.1),
-                                UserPixelSize::new(clipped.2, clipped.3),
-                            ),
-                            uv: clipped.4,
-                        });
+                    let clipped_path = path.clip(clipping_rect);
+                    if clipped_path.len() > 0 {
+                        res.push(Primitive::Stroke {
+                            path: clipped_path,
+                            thickness,
+                            brush,
+                        })
                     }
+                }
+
+                Primitive::StrokeStyled {
+                    path,
+                    thickness,
+                    brush,
+                    style,
+                } => {
+                    let clipped_path = path.clip(clipping_rect);
+                    if clipped_path.len() > 0 {
+                        res.push(Primitive::StrokeStyled {
+                            path: clipped_path,
+                            thickness,
+                            brush,
+                            style,
+                        })
+                    }
+                }
+
+                Primitive::Fill { path, brush } => {
+                    let clipped_path = path.clip(clipping_rect);
+                    if clipped_path.len() > 0 {
+                        res.push(Primitive::Fill {
+                            path: clipped_path,
+                            brush,
+                        })
+                    }
+                }
+
+                Primitive::ClipRect { .. } => {
+                    // TODO: implement!
+                }
+
+                Primitive::ClipPath { .. } => {
+                    // TODO: implement!
+                }
+
+                Primitive::Transform { .. } => {
+                    // TODO: implement!
                 }
 
                 Primitive::Composite { color, primitives } => {
@@ -171,6 +266,41 @@ impl PrimitiveTransformations for Vec<Primitive> {
                     }
                 }
             }
+        }
+        res
+    }
+}
+
+impl Transformation for Vec<PathElement> {
+    fn translate(&mut self, offset: UserPixelPoint) {
+        for path_element in self.iter_mut() {
+            match path_element {
+                PathElement::MoveTo { ref mut point } => point.translate(offset),
+
+                PathElement::LineTo { ref mut point } => point.translate(offset),
+
+                PathElement::BezierTo {
+                    ref mut point,
+                    ref mut c1,
+                    ref mut c2,
+                } => {
+                    point.translate(offset);
+                    c1.translate(offset);
+                    c2.translate(offset);
+                }
+
+                PathElement::ClosePath => (),
+            }
+        }
+    }
+}
+
+impl Clipping for Vec<PathElement> {
+    fn clip(self, clipping_rect: UserPixelRect) -> Self {
+        let mut res = Vec::new();
+        for path_element in self.into_iter() {
+            // TODO: implement!
+            res.push(path_element);
         }
         res
     }
