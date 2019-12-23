@@ -1,9 +1,4 @@
 #![windows_subsystem = "windows"]
-extern crate drawing;
-extern crate drawing_gl;
-extern crate find_folder;
-extern crate shared_library;
-extern crate winit;
 
 use drawing::backend::Device;
 use drawing::color::*;
@@ -225,6 +220,9 @@ fn main() {
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
+
+
+
                     // render target test
                     Primitive::Composite {
                         color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],

@@ -1,9 +1,4 @@
 #![windows_subsystem = "windows"]
-extern crate drawing;
-extern crate drawing_gl;
-extern crate find_folder;
-extern crate shared_library;
-extern crate winit;
 
 use drawing::backend::Device;
 use drawing::color::*;

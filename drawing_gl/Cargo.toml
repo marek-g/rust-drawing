@@ -10,4 +10,3 @@ drawing = { path = "../drawing", version = "*" }
 winit = "0.20.0-alpha4"
 glutin = "0.22.0-alpha3"
 gl = "0.14"
-freetype-rs = "0.23"
