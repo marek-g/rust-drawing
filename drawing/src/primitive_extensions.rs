@@ -290,6 +290,8 @@ impl Transformation for Vec<PathElement> {
                 }
 
                 PathElement::ClosePath => (),
+
+                PathElement::Solidity { .. } => (),
             }
         }
     }

@@ -84,6 +84,10 @@ pub enum PathElement {
     },
 
     ClosePath,
+
+    Solidity {
+        solidity: Solidity,
+    },
 }
 
 pub enum Brush {
@@ -122,20 +126,29 @@ pub enum Brush {
     },
 }
 
+#[derive(Copy, Clone)]
 pub struct StrokeStyle {
     pub line_cap: LineCap,
     pub line_join: LineJoin,
     pub miter_limit: f32,
 }
 
+#[derive(Copy, Clone)]
 pub enum LineCap {
     Butt,
     Round,
     Square,
 }
 
+#[derive(Copy, Clone)]
 pub enum LineJoin {
     Miter,
     Round,
     Bevel,
+}
+
+#[derive(Copy, Clone)]
+pub enum Solidity {
+    Solid,
+    Hole,
 }

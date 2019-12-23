@@ -151,7 +151,6 @@ fn draw_window(
             .draw(
                 device,
                 window_target.get_render_target(),
-                PhysPixelSize::new(width, height),
                 &primitives,
                 resources,
             )

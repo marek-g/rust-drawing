@@ -1,3 +1,6 @@
+// file based on https://github.com/sunli829/nvg/blob/master/nvg-gl/src/shader.frag
+// released on MIT license
+
 #version 150 core
 
 precision highp float;
@@ -76,5 +79,5 @@ void main(void) {
         result = color * innerCol;
     }
 
-    outColor = result;
+    frag_color = result;
 }

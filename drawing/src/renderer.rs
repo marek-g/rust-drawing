@@ -1,9 +1,12 @@
+use crate::backend::ColoredVertex;
 use crate::backend::Device;
+use crate::backend::RenderTarget;
 use crate::font::Font;
 use crate::font::FontParams;
-use crate::primitive::Primitive;
+use crate::primitive::*;
 use crate::resources::*;
 use crate::units::*;
+use crate::utils::path::FlattenedPath;
 use crate::Result;
 
 pub struct Renderer;
@@ -17,11 +20,10 @@ impl Renderer {
 		&mut self,
 		device: &mut D,
 		render_target: &D::RenderTarget,
-		size: PhysPixelSize,
 		primitives: &Vec<Primitive>,
 		resources: &mut Resources<D, F>,
 	) -> Result<()> {
-		let physical_pixel_to_device_transform = D::get_device_transform(size);
+		let physical_pixel_to_device_transform = render_target.get_device_transform();
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
 		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
 			.post_transform(&physical_pixel_to_device_transform);
@@ -114,7 +116,54 @@ impl Renderer {
 				&Primitive::Fill {
 					ref path,
 					ref brush,
-				} => device.fill(path, brush),
+				} => {
+					let aspect_ratio = render_target.get_aspect_ratio();
+					let mut flattened_path =
+						FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
+					let anitialias = false;
+					let fringe_width = 1.0f32 / aspect_ratio;
+					if anitialias {
+						flattened_path.expand_fill(
+							fringe_width,
+							LineJoin::Miter,
+							2.4f32,
+							fringe_width,
+						);
+					} else {
+						flattened_path.expand_fill(0.0f32, LineJoin::Miter, 2.4f32, fringe_width);
+					}
+
+					for path in flattened_path.paths {
+						let vertices = path.get_fill();
+
+						let color = [1.0f32, 1.0f32, 0.0f32, 0.5f32];
+						let mut arr: [ColoredVertex; 3] = [
+							ColoredVertex {
+								pos: vertices[0].pos,
+								color: color,
+							},
+							ColoredVertex {
+								pos: vertices[0].pos,
+								color: color,
+							},
+							ColoredVertex {
+								pos: vertices[0].pos,
+								color: color,
+							},
+						];
+
+						for i in 2..vertices.len() {
+							arr[1].pos = vertices[i - 1].pos;
+							arr[2].pos = vertices[i].pos;
+
+							device.triangles_colored(
+								render_target,
+								&arr,
+								unknown_to_device_transform,
+							);
+						}
+					}
+				}
 
 				&Primitive::ClipRect {
 					ref rect,
@@ -123,7 +172,7 @@ impl Renderer {
 					device.save_state();
 
 					device.set_clip_rect(*rect);
-					self.draw(device, render_target, size, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources)?;
 
 					device.restore_state();
 				}
@@ -135,7 +184,7 @@ impl Renderer {
 					device.save_state();
 
 					device.set_clip_path(path);
-					self.draw(device, render_target, size, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources)?;
 
 					device.restore_state();
 				}
@@ -147,7 +196,7 @@ impl Renderer {
 					device.save_state();
 
 					device.transform(*transform);
-					self.draw(device, render_target, size, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources)?;
 
 					device.restore_state();
 				}
@@ -156,12 +205,13 @@ impl Renderer {
 					ref color,
 					ref primitives,
 				} => {
+					let size = render_target.get_size();
 					let (texture2, texture2_view) =
-						device.create_render_target(size.width as u16, size.height as u16)?;
+						device.create_render_target(size.0 as u16, size.1 as u16)?;
 
 					device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-					self.draw(device, &texture2_view, size, &primitives, resources)?;
+					self.draw(device, &texture2_view, &primitives, resources)?;
 
 					device.rect_textured(
 						render_target,
@@ -170,7 +220,7 @@ impl Renderer {
 						&color,
 						Rect::new(
 							Point::new(0.0f32, 0.0f32),
-							Size::new(size.width, size.height),
+							Size::new(size.0 as f32, size.1 as f32),
 						),
 						&[0.0, 0.0, 1.0, 1.0],
 						unknown_to_device_transform,

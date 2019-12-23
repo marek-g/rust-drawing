@@ -19,6 +19,8 @@ pub struct GlDevice {
     colored_pipeline: Option<ColoredPipeline>,
     textured_pipeline: Option<TexturedPipeline>,
     textured_y8_pipeline: Option<TexturedY8Pipeline>,
+    universal_pipeline: Option<UniversalPipeline>,
+    aspect_ratio: f32,
 }
 
 impl GlDevice {
@@ -80,6 +82,11 @@ impl GlDevice {
         if self.textured_y8_pipeline.is_none() {
             self.textured_y8_pipeline = Some(TexturedY8Pipeline::new());
         }
+        if self.universal_pipeline.is_none() {
+            self.universal_pipeline = Some(UniversalPipeline::new());
+        }
+
+        self.aspect_ratio = windowed_context.window().hidpi_factor() as f32;
 
         Ok(GlWindowTarget {
             gl_windowed_context: RefCell::new(Some(windowed_context)),
@@ -87,6 +94,7 @@ impl GlDevice {
                 framebuffer_id: 0,
                 width: 0,
                 height: 0,
+                aspect_ratio: self.aspect_ratio,
             },
             colored_pipeline_buffers: self.colored_pipeline.as_ref().unwrap().create_vbo_and_vao(),
             textured_pipeline_buffers: self
@@ -96,6 +104,11 @@ impl GlDevice {
                 .create_vbo_and_vao(),
             textured_y8_pipeline_buffers: self
                 .textured_y8_pipeline
+                .as_ref()
+                .unwrap()
+                .create_vbo_and_vao(),
+            universal_pipeline_buffers: self
+                .universal_pipeline
                 .as_ref()
                 .unwrap()
                 .create_vbo_and_vao(),
@@ -121,6 +134,10 @@ impl GlDevice {
             .as_mut()
             .unwrap()
             .set_buffers(window_target.textured_y8_pipeline_buffers);
+        self.universal_pipeline
+            .as_mut()
+            .unwrap()
+            .set_buffers(window_target.universal_pipeline_buffers);
 
         Ok(())
     }
@@ -179,19 +196,10 @@ impl drawing::backend::Device for GlDevice {
             colored_pipeline: None,
             textured_pipeline: None,
             textured_y8_pipeline: None,
+            universal_pipeline: None,
+            aspect_ratio: 1.0f32,
         })
     }
-
-    fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform {
-        PhysPixelToDeviceTransform::column_major(
-            2.0f32 / size.width,
-            0.0f32,
-            -1.0f32,
-            0.0f32,
-            -2.0f32 / size.height,
-            1.0f32,
-        )
-    }   
 
     fn create_texture(
         &mut self,
@@ -266,6 +274,7 @@ impl drawing::backend::Device for GlDevice {
                 framebuffer_id,
                 width,
                 height,
+                aspect_ratio: self.aspect_ratio,
             },
         ))
     }
@@ -398,10 +407,11 @@ pub struct GlWindowTarget {
     colored_pipeline_buffers: (GLuint, GLuint),
     textured_pipeline_buffers: (GLuint, GLuint),
     textured_y8_pipeline_buffers: (GLuint, GLuint),
+    universal_pipeline_buffers: (GLuint, GLuint),
 }
 
 impl GlWindowTarget {
-     pub fn get_window(&self) -> Ref<winit::window::Window> {
+    pub fn get_window(&self) -> Ref<winit::window::Window> {
         Ref::map(self.gl_windowed_context.borrow(), |context| {
             context.as_ref().unwrap().window()
         })
@@ -428,7 +438,9 @@ impl GlWindowTarget {
             .unwrap();
     }
 
-    pub fn get_context(&self) -> Ref<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>> {
+    pub fn get_context(
+        &self,
+    ) -> Ref<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>> {
         Ref::map(self.gl_windowed_context.borrow(), |context| {
             context.as_ref().unwrap()
         })
@@ -450,6 +462,9 @@ impl Drop for GlWindowTarget {
 
             gl::DeleteVertexArrays(1, &mut self.textured_y8_pipeline_buffers.1);
             gl::DeleteBuffers(1, &mut self.textured_y8_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &mut self.universal_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &mut self.universal_pipeline_buffers.0);
         }
     }
 }
@@ -458,6 +473,7 @@ pub struct GlRenderTarget {
     framebuffer_id: GLuint,
     width: u16,
     height: u16,
+    aspect_ratio: f32,
 }
 
 impl Drop for GlRenderTarget {
@@ -467,6 +483,27 @@ impl Drop for GlRenderTarget {
                 gl::DeleteFramebuffers(1, &mut self.framebuffer_id);
             }
         }
+    }
+}
+
+impl RenderTarget for GlRenderTarget {
+    fn get_size(&self) -> (u16, u16) {
+        (self.width, self.height)
+    }
+
+    fn get_aspect_ratio(&self) -> f32 {
+        self.aspect_ratio
+    }
+
+    fn get_device_transform(&self) -> PhysPixelToDeviceTransform {
+        PhysPixelToDeviceTransform::column_major(
+            2.0f32 / self.width as f32,
+            0.0f32,
+            -1.0f32,
+            0.0f32,
+            -2.0f32 / self.height as f32,
+            1.0f32,
+        )
     }
 }
 

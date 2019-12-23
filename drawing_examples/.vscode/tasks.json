@@ -4,12 +4,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "format",
-            "type": "shell",
-            "command": "cargo fmt",
-            "problemMatcher": []
-        },
-        {
             "taskName": "build_simple",
             "type": "shell",
             "command": "cargo build --bin simple"

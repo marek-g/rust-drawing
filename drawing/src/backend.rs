@@ -54,13 +54,11 @@ impl TexturedY8Vertex {
 
 pub trait Device {
 	type Texture: Texture;
-	type RenderTarget;
+	type RenderTarget: RenderTarget;
 
 	fn new() -> Result<Self>
 	where
 		Self: Sized;
-
-	fn get_device_transform(size: PhysPixelSize) -> PhysPixelToDeviceTransform;
 
 	fn create_texture(
 		&mut self,
@@ -244,4 +242,12 @@ pub trait Texture: Sized {
 		width: u16,
 		height: u16,
 	) -> Result<()>;
+}
+
+pub trait RenderTarget: Sized {
+	fn get_size(&self) -> (u16, u16);
+
+	fn get_aspect_ratio(&self) -> f32;
+
+	fn get_device_transform(&self) -> PhysPixelToDeviceTransform;
 }

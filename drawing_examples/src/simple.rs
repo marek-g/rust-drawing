@@ -3,7 +3,7 @@
 use drawing::backend::Device;
 use drawing::color::*;
 use drawing::font::Font;
-use drawing::primitive::Primitive;
+use drawing::primitive::*;
 use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
@@ -221,7 +221,19 @@ fn main() {
                             .to_string(),
                     },
 
-
+                    Primitive::Fill {
+                        path: vec![
+                            PathElement::MoveTo {
+                                point: UserPixelPoint::new(100.0f32, 350.0f32),
+                            },
+                            PathElement::BezierTo {
+                                point: UserPixelPoint::new(300.0f32, 150.0f32),
+                                c1: UserPixelPoint::new(120.0f32, 50.0f32),
+                                c2: UserPixelPoint::new(180.0f32, 50.0f32),
+                            }
+                        ],
+                        brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 1.0f32] },
+                    },
 
                     // render target test
                     Primitive::Composite {
@@ -255,7 +267,6 @@ fn main() {
                     .draw(
                         &mut device,
                         window_target.get_render_target(),
-                        PhysPixelSize::new(width as f32, height as f32),
                         &primitives,
                         &mut resources,
                     )
