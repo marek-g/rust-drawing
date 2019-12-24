@@ -8,6 +8,7 @@ pub type Result<T> = std::result::Result<T, failure::Error>;
 
 pub mod backend;
 pub mod color;
+pub mod composite_operation_state;
 pub mod font;
 pub mod paint;
 pub mod primitive;

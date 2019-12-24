@@ -1,6 +1,10 @@
 use crate::color::*;
+use crate::composite_operation_state::CompositeOperationState;
+use crate::paint::Paint;
 use crate::primitive::*;
 use crate::units::*;
+use crate::utils::path::Bounds;
+use crate::utils::path::Path;
 use crate::Result;
 
 #[repr(C, packed)]
@@ -50,6 +54,12 @@ impl TexturedY8Vertex {
 			color,
 		}
 	}
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Scissor {
+	pub xform: [f32; 6],
+	pub extent: [f32; 2],
 }
 
 pub trait Device {
@@ -205,18 +215,29 @@ pub trait Device {
 
 	// paths
 
-	fn stroke(&mut self, path: &[PathElement], thickness: f32, brush: &Brush) {}
-
-	fn stroke_styled(
+	fn stroke(
 		&mut self,
-		path: &[PathElement],
+		paint: &Paint,
+		path: &[Path],
 		thickness: f32,
-		brush: &Brush,
-		style: &StrokeStyle,
+		fringe_width: f32,
+		scissor: Scissor,
+		composite_operation_state: CompositeOperationState,
+		transform: UnknownToDeviceTransform,
 	) {
 	}
 
-	fn fill(&mut self, path: &[PathElement], brush: &Brush) {}
+	fn fill(
+		&mut self,
+		paint: &Paint,
+		path: &[Path],
+		bounds: Bounds,
+		fringe_width: f32,
+		scissor: Scissor,
+		composite_operation_state: CompositeOperationState,
+		transform: UnknownToDeviceTransform,
+	) {
+	}
 
 	// state
 

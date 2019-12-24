@@ -1,6 +1,7 @@
 use crate::backend::ColoredVertex;
 use crate::backend::Device;
 use crate::backend::RenderTarget;
+use crate::backend::Scissor;
 use crate::font::Font;
 use crate::font::FontParams;
 use crate::paint::Paint;
@@ -9,6 +10,8 @@ use crate::resources::*;
 use crate::units::*;
 use crate::utils::path::FlattenedPath;
 use crate::Result;
+
+use std::convert::Into;
 
 pub struct Renderer;
 
@@ -105,28 +108,84 @@ impl Renderer {
 					ref path,
 					ref thickness,
 					ref brush,
-				} => device.stroke(path, *thickness, brush),
+				} => {
+					let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
+					let stroke_width = thickness * scale; //.clamped(0.0, 200.0);
+					let aspect_ratio = render_target.get_aspect_ratio();
+					let flattened_path = Self::get_stroke_path(
+						path,
+						stroke_width,
+						&Default::default(),
+						aspect_ratio,
+					);
+					let paint = Paint::from_brush(brush);
+
+					device.stroke(
+						&paint,
+						&flattened_path.paths,
+						stroke_width,
+						1.0f32 / aspect_ratio,
+						Scissor {
+							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							extent: [-1.0, -1.0],
+						},
+						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
+						unknown_to_device_transform,
+					);
+				}
 
 				&Primitive::StrokeStyled {
 					ref path,
 					ref thickness,
 					ref brush,
 					ref style,
-				} => device.stroke_styled(path, *thickness, brush, style),
+				} => {
+					let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
+					let stroke_width = thickness * scale; //.clamped(0.0, 200.0);
+					let aspect_ratio = render_target.get_aspect_ratio();
+					let flattened_path =
+						Self::get_stroke_path(path, stroke_width, style, aspect_ratio);
+					let paint = Paint::from_brush(brush);
+
+					device.stroke(
+						&paint,
+						&flattened_path.paths,
+						stroke_width,
+						1.0f32 / aspect_ratio,
+						Scissor {
+							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							extent: [-1.0, -1.0],
+						},
+						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
+						unknown_to_device_transform,
+					);
+				}
 
 				&Primitive::Fill {
 					ref path,
 					ref brush,
 				} => {
-					let flattened_path =
-						Self::get_fill_path(path, render_target.get_aspect_ratio());
-
+					let aspect_ratio = render_target.get_aspect_ratio();
+					let flattened_path = Self::get_fill_path(path, aspect_ratio);
 					let paint = Paint::from_brush(brush);
 
 					let is_convex =
 						flattened_path.paths.len() == 1 && flattened_path.paths[0].convex;
 
-					for path in flattened_path.paths {
+					device.fill(
+						&paint,
+						&flattened_path.paths,
+						flattened_path.bounds,
+						1.0f32 / aspect_ratio,
+						Scissor {
+							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							extent: [-1.0, -1.0],
+						},
+						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
+						unknown_to_device_transform,
+					);
+
+					/*for path in flattened_path.paths {
 						let fill_vertices = path.get_fill();
 						if !fill_vertices.is_empty() {}
 
@@ -159,7 +218,7 @@ impl Renderer {
 								unknown_to_device_transform,
 							);
 						}
-					}
+					}*/
 				}
 
 				&Primitive::ClipRect {
@@ -227,6 +286,38 @@ impl Renderer {
 		}
 
 		Ok(())
+	}
+
+	fn get_stroke_path(
+		path: &Vec<PathElement>,
+		stroke_width: f32,
+		stroke_style: &StrokeStyle,
+		aspect_ratio: f32,
+	) -> FlattenedPath {
+		let mut flattened_path =
+			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
+		let anitialias = false;
+		let fringe_width = 1.0f32 / aspect_ratio;
+		if anitialias {
+			flattened_path.expand_stroke(
+				stroke_width * 0.5f32,
+				fringe_width,
+				stroke_style.line_cap,
+				stroke_style.line_join,
+				stroke_style.miter_limit,
+				0.25f32 / aspect_ratio,
+			);
+		} else {
+			flattened_path.expand_stroke(
+				stroke_width * 0.5f32,
+				0.0,
+				stroke_style.line_cap,
+				stroke_style.line_join,
+				stroke_style.miter_limit,
+				0.25f32 / aspect_ratio,
+			);
+		}
+		flattened_path
 	}
 
 	fn get_fill_path(path: &Vec<PathElement>, aspect_ratio: f32) -> FlattenedPath {

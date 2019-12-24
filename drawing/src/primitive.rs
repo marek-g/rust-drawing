@@ -134,6 +134,16 @@ pub struct StrokeStyle {
     pub miter_limit: f32,
 }
 
+impl Default for StrokeStyle {
+    fn default() -> Self {
+        StrokeStyle {
+            line_cap: LineCap::Butt,
+            line_join: LineJoin::Miter,
+            miter_limit: 10.0f32,
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 pub enum LineCap {
     Butt,
@@ -152,4 +162,49 @@ pub enum LineJoin {
 pub enum Solidity {
     Solid,
     Hole,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum CompositeOperation {
+    Basic(BasicCompositeOperation),
+    BlendFunc {
+        src: BlendFactor,
+        dst: BlendFactor,
+    },
+    BlendFuncSeparate {
+        src_rgb: BlendFactor,
+        dst_rgb: BlendFactor,
+        src_alpha: BlendFactor,
+        dst_alpha: BlendFactor,
+    },
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum BasicCompositeOperation {
+    SrcOver,
+    SrcIn,
+    SrcOut,
+    Atop,
+    DstOver,
+    DstIn,
+    DstOut,
+    DstAtop,
+    Lighter,
+    Copy,
+    Xor,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum BlendFactor {
+    Zero,
+    One,
+    SrcColor,
+    OneMinusSrcColor,
+    DstColor,
+    OneMinusDstColor,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    DstAlpha,
+    OneMinusDstAlpha,
+    SrcAlphaSaturate,
 }
