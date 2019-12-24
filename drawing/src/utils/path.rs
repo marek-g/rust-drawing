@@ -1,5 +1,6 @@
-// file based on https://github.com/sunli829/nvg/blob/master/src/cache.rs
+// file based on https://github.com/sunli829/nvg
 // released on MIT license
+// which was translated from https://github.com/memononen/nanovg (zlib license)
 
 use crate::backend::TexturedVertex;
 use crate::primitive::LineCap;
@@ -112,6 +113,7 @@ impl FlattenedPath {
             },
         };
 
+        // Flatten
         for cmd in path {
             match cmd {
                 PathElement::MoveTo { point } => {
@@ -140,18 +142,21 @@ impl FlattenedPath {
         }
 
         unsafe {
+            // Calculate the direction and length of line segments.
             for j in 0..flattened_path.paths.len() {
                 let path = &mut flattened_path.paths[j];
                 let pts = &mut flattened_path.points[path.first] as *mut VPoint;
+
+                // If the first and last points are the same, remove the last, mark as closed path.
                 let mut p0 = pts.offset(path.count as isize - 1);
                 let mut p1 = pts;
-
                 if (*p0).xy.equals((*p1).xy, dist_tol) {
                     path.count -= 1;
                     p0 = pts.offset(path.count as isize - 1);
                     path.closed = true;
                 }
 
+                // Enforce winding.
                 if path.count > 2 {
                     let area = poly_area(std::slice::from_raw_parts(pts, path.count));
                     match path.solidity {
@@ -169,15 +174,18 @@ impl FlattenedPath {
                 }
 
                 for _ in 0..path.count {
+                    // Calculate segment direction and length
                     (*p0).d.x = (*p1).xy.x - (*p0).xy.x;
                     (*p0).d.y = (*p1).xy.y - (*p0).xy.y;
                     (*p0).len = (*p0).d.normalize();
 
+                    // Update bounds
                     flattened_path.bounds.min.x = flattened_path.bounds.min.x.min((*p0).xy.x);
                     flattened_path.bounds.min.y = flattened_path.bounds.min.y.min((*p0).xy.y);
                     flattened_path.bounds.max.x = flattened_path.bounds.max.x.max((*p0).xy.x);
                     flattened_path.bounds.max.y = flattened_path.bounds.max.y.max((*p0).xy.y);
 
+                    // Advance
                     p0 = p1;
                     p1 = p1.add(1);
                 }
@@ -199,10 +207,11 @@ impl FlattenedPath {
         let aa = fringe;
         let mut u0 = 0.0;
         let mut u1 = 1.0;
-        let ncap = curve_divs(w, PI, tess_tol);
+        let ncap = curve_divs(w, PI, tess_tol); // Calculate divisions per half circle
 
         w += aa * 0.5;
 
+        // Disable the gradient used for antialiasing when antialiasing is not used.
         if aa == 0.0 {
             u0 = 0.5;
             u1 = 0.5;
@@ -210,16 +219,20 @@ impl FlattenedPath {
 
         self.calculate_joins(w, line_join, miter_limit);
 
+        // Calculate max vertex usage.
         let mut cverts = 0;
         for path in &self.paths {
             let loop_ = path.closed;
             match line_join {
                 LineJoin::Round => {
+                    // plus one for loop
                     cverts += (path.count + path.num_bevel * (ncap + 2) + 1) * 2;
                 }
                 LineJoin::Bevel | LineJoin::Miter => {
+                    // plus one for loop
                     cverts += (path.count + path.num_bevel * 5 + 1) * 2;
                     if !loop_ {
+                        // space for caps
                         cverts += match line_cap {
                             LineCap::Round => (ncap * 2 + 2) * 2,
                             LineCap::Butt | LineCap::Square => (3 + 3) * 2,
@@ -242,17 +255,21 @@ impl FlattenedPath {
                 path.fill = std::ptr::null_mut();
                 path.num_fill = 0;
 
+                // Calculate fringe or stroke
                 let loop_ = path.closed;
                 let mut dst = vertexes;
                 path.stroke = dst;
 
                 let (mut p0, mut p1, s, e) = if loop_ {
+                    // Looping
                     (pts.offset(path.count as isize - 1), pts, 0, path.count)
                 } else {
+                    // Add cap
                     (pts, pts.add(1), 1, path.count - 1)
                 };
 
                 if !loop_ {
+                    // Add cap
                     let mut d = Point::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
                     d.normalize();
                     match line_cap {
@@ -349,6 +366,7 @@ impl FlattenedPath {
                 }
 
                 if loop_ {
+                    // Loop it
                     let v0 = vertexes;
                     let v1 = vertexes.add(1);
 
@@ -366,6 +384,7 @@ impl FlattenedPath {
                     );
                     dst = dst.add(1);
                 } else {
+                    // Add cap
                     let mut d = Point::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
                     d.normalize();
                     match line_cap {
@@ -429,10 +448,12 @@ impl FlattenedPath {
 
         self.calculate_joins(w, line_join, miter_limit);
 
+        // Calculate max vertex usage.
         let mut cverts = 0;
         for path in &self.paths {
             cverts += path.count + path.num_bevel + 1;
             if fringe {
+                // plus one for loop
                 cverts += (path.count + path.num_bevel * 5 + 1) * 2;
             }
         }
@@ -446,6 +467,7 @@ impl FlattenedPath {
             let convex = self.paths.len() == 1 && self.paths[0].convex;
 
             for i in 0..self.paths.len() {
+                // Calculate shape vertices.
                 let path = &mut self.paths[i];
                 let pts = &mut self.points[path.first] as *mut VPoint;
                 let woff = 0.5 * aa;
@@ -454,6 +476,7 @@ impl FlattenedPath {
                 path.fill = dst;
 
                 if fringe {
+                    // Looping
                     let mut p0 = pts.offset(path.count as isize - 1);
                     let mut p1 = pts;
                     for _ in 0..path.count {
@@ -518,6 +541,7 @@ impl FlattenedPath {
                 path.num_fill = ptrdistance(vertexes, dst);
                 vertexes = dst;
 
+                // Calculate fringe
                 if fringe {
                     let mut lw = w + woff;
                     let rw = w - woff;
@@ -526,11 +550,14 @@ impl FlattenedPath {
                     let mut dst = vertexes;
                     path.stroke = dst;
 
+                    // Create only half a fringe for convex shapes so that
+                    // the shape can be rendered without stenciling.
                     if convex {
-                        lw = woff;
-                        lu = 0.5;
+                        lw = woff; // This should generate the same vertex as fill inset above.
+                        lu = 0.5; // Set outline fade at middle.
                     }
 
+                    // Looping
                     let mut p0 = pts.offset(path.count as isize - 1);
                     let mut p1 = pts;
 
@@ -573,6 +600,7 @@ impl FlattenedPath {
                         p1 = p1.add(1);
                     }
 
+                    // Loop it
                     let v0 = vertexes;
                     let v1 = vertexes.add(1);
 
@@ -731,6 +759,7 @@ impl FlattenedPath {
         }
 
         unsafe {
+            // Calculate which joins needs extra vertices to append, and gather vertex count.
             for i in 0..self.paths.len() {
                 let path = &mut self.paths[i];
                 let pts = &mut self.points[path.first] as *mut VPoint;
@@ -746,6 +775,7 @@ impl FlattenedPath {
                     let dlx1 = (*p1).d.y;
                     let dly1 = -(*p1).d.x;
 
+                    // Calculate extrusions
                     (*p1).dm.x = (dlx0 + dlx1) * 0.5;
                     (*p1).dm.y = (dly0 + dly1) * 0.5;
                     let dmr2 = (*p1).dm.x * (*p1).dm.x + (*p1).dm.y * (*p1).dm.y;
@@ -759,19 +789,23 @@ impl FlattenedPath {
                         (*p1).dm.y *= scale;
                     }
 
+                    // Clear flags, but keep the corner.
                     (*p1).flags &= PointFlags::PT_CORNER;
 
+                    // Keep track of left turns.
                     let cross = (*p1).d.x * (*p0).d.y - (*p0).d.x * (*p1).d.y;
                     if cross > 0.0 {
                         nleft += 1;
                         (*p1).flags |= PointFlags::PT_LEFT;
                     }
 
+                    // Calculate if we should use bevel or miter for inner join.
                     let limit = (((*p0).len.min((*p1).len) as f32) * iw).max(1.01);
                     if (dmr2 * limit * limit) < 1.0 {
                         (*p1).flags |= PointFlags::PR_INNERBEVEL;
                     }
 
+                    // Check to see if the corner needs to be beveled.
                     if (*p1).flags.contains(PointFlags::PT_CORNER) {
                         let line_join_bevel = match line_join {
                             LineJoin::Bevel => true,

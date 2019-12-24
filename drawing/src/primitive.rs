@@ -120,7 +120,8 @@ pub enum Brush {
 
     ImagePattern {
         resource_key: i32,
-        rect: UserPixelRect,
+        center: UserPixelPoint,
+        size: UserPixelSize,
         angle: f32,
         alpha: f32,
     },

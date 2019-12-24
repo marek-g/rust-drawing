@@ -3,6 +3,7 @@ use crate::backend::Device;
 use crate::backend::RenderTarget;
 use crate::font::Font;
 use crate::font::FontParams;
+use crate::paint::Paint;
 use crate::primitive::*;
 use crate::resources::*;
 use crate::units::*;
@@ -117,44 +118,40 @@ impl Renderer {
 					ref path,
 					ref brush,
 				} => {
-					let aspect_ratio = render_target.get_aspect_ratio();
-					let mut flattened_path =
-						FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
-					let anitialias = false;
-					let fringe_width = 1.0f32 / aspect_ratio;
-					if anitialias {
-						flattened_path.expand_fill(
-							fringe_width,
-							LineJoin::Miter,
-							2.4f32,
-							fringe_width,
-						);
-					} else {
-						flattened_path.expand_fill(0.0f32, LineJoin::Miter, 2.4f32, fringe_width);
-					}
+					let flattened_path =
+						Self::get_fill_path(path, render_target.get_aspect_ratio());
+
+					let paint = Paint::from_brush(brush);
+
+					let is_convex =
+						flattened_path.paths.len() == 1 && flattened_path.paths[0].convex;
 
 					for path in flattened_path.paths {
-						let vertices = path.get_fill();
+						let fill_vertices = path.get_fill();
+						if !fill_vertices.is_empty() {}
+
+						let stoke_vertices = path.get_stroke();
+						if !stoke_vertices.is_empty() {}
 
 						let color = [1.0f32, 1.0f32, 0.0f32, 0.5f32];
 						let mut arr: [ColoredVertex; 3] = [
 							ColoredVertex {
-								pos: vertices[0].pos,
+								pos: fill_vertices[0].pos,
 								color: color,
 							},
 							ColoredVertex {
-								pos: vertices[0].pos,
+								pos: fill_vertices[0].pos,
 								color: color,
 							},
 							ColoredVertex {
-								pos: vertices[0].pos,
+								pos: fill_vertices[0].pos,
 								color: color,
 							},
 						];
 
-						for i in 2..vertices.len() {
-							arr[1].pos = vertices[i - 1].pos;
-							arr[2].pos = vertices[i].pos;
+						for i in 2..fill_vertices.len() {
+							arr[1].pos = fill_vertices[i - 1].pos;
+							arr[2].pos = fill_vertices[i].pos;
 
 							device.triangles_colored(
 								render_target,
@@ -230,5 +227,18 @@ impl Renderer {
 		}
 
 		Ok(())
+	}
+
+	fn get_fill_path(path: &Vec<PathElement>, aspect_ratio: f32) -> FlattenedPath {
+		let mut flattened_path =
+			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
+		let anitialias = false;
+		let fringe_width = 1.0f32 / aspect_ratio;
+		if anitialias {
+			flattened_path.expand_fill(fringe_width, LineJoin::Miter, 2.4f32, fringe_width);
+		} else {
+			flattened_path.expand_fill(0.0f32, LineJoin::Miter, 2.4f32, fringe_width);
+		}
+		flattened_path
 	}
 }
