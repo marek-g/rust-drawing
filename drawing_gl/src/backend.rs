@@ -191,7 +191,6 @@ impl GlDevice {
     }
 
     fn convert_paint(
-        &self,
         paint: &Paint,
         scissor: &Scissor,
         width: f32,
@@ -494,16 +493,12 @@ impl drawing::backend::Device for GlDevice {
         paths: &[Path],
         thickness: f32,
         fringe_width: f32,
+        antialiasing: bool,
         scissor: Scissor,
         composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
     ) {
         self.set_render_target(&target);
-
-        let uniforms = self.convert_paint(paint, &scissor, thickness, fringe_width, -1.0);
-        let uniforms2 =
-            self.convert_paint(paint, &scissor, thickness, fringe_width, 1.0 - 0.5 / 255.0);
-
         if let Some(ref mut pipeline) = self.universal_pipeline {
             let transform = [
                 [transform.m11, transform.m12, 0.0, 0.0],
@@ -515,7 +510,6 @@ impl drawing::backend::Device for GlDevice {
             pipeline.apply();
             pipeline.set_transform(&transform);
             //pipeline.set_flipped_y(texture.flipped_y);
-            pipeline.apply_frag_uniforms(&uniforms);
 
             unsafe {
                 gl::Enable(gl::STENCIL_TEST);
@@ -524,7 +518,23 @@ impl drawing::backend::Device for GlDevice {
                 // Fill the stroke base without overlap
                 gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
                 gl::StencilOp(gl::KEEP, gl::KEEP, gl::INCR);
-                pipeline.apply_frag_uniforms(&uniforms2);
+                if antialiasing {
+                    pipeline.apply_frag_uniforms(&Self::convert_paint(
+                        paint,
+                        &scissor,
+                        thickness,
+                        fringe_width,
+                        1.0 - 0.5 / 255.0,
+                    ));
+                } else {
+                    pipeline.apply_frag_uniforms(&Self::convert_paint(
+                        paint,
+                        &scissor,
+                        thickness,
+                        fringe_width,
+                        -1.0,
+                    ));
+                }
                 for path in paths {
                     let stroke_vertices = path.get_stroke();
                     if !stroke_vertices.is_empty() {
@@ -533,13 +543,21 @@ impl drawing::backend::Device for GlDevice {
                 }
 
                 // Draw anti-aliased pixels.
-                pipeline.apply_frag_uniforms(&uniforms);
-                gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
-                gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
-                for path in paths {
-                    let stroke_vertices = path.get_stroke();
-                    if !stroke_vertices.is_empty() {
-                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                if antialiasing {
+                    pipeline.apply_frag_uniforms(&Self::convert_paint(
+                        paint,
+                        &scissor,
+                        thickness,
+                        fringe_width,
+                        -1.0,
+                    ));
+                    gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
+                    gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
+                    for path in paths {
+                        let stroke_vertices = path.get_stroke();
+                        if !stroke_vertices.is_empty() {
+                            pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                        }
                     }
                 }
 
@@ -567,6 +585,7 @@ impl drawing::backend::Device for GlDevice {
         paths: &[Path],
         bounds: Bounds,
         fringe_width: f32,
+        antialiasing: bool,
         scissor: Scissor,
         composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
@@ -576,7 +595,7 @@ impl drawing::backend::Device for GlDevice {
         if paths.len() == 1 && paths[0].convex {
             // convex fill
             let mut uniforms =
-                self.convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+                Self::convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
                 let transform = [
@@ -598,14 +617,16 @@ impl drawing::backend::Device for GlDevice {
                 }
 
                 // antialias outline
-                let stroke_vertices = paths[0].get_stroke();
-                if !stroke_vertices.is_empty() {
-                    pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                if antialiasing {
+                    let stroke_vertices = paths[0].get_stroke();
+                    if !stroke_vertices.is_empty() {
+                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                    }
                 }
             }
         } else {
             let mut uniforms =
-                self.convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+                Self::convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
                 let transform = [
@@ -619,6 +640,7 @@ impl drawing::backend::Device for GlDevice {
                 pipeline.set_transform(&transform);
 
                 unsafe {
+                    // Draw shapes on stencil buffer
                     gl::Enable(gl::STENCIL_TEST);
                     gl::StencilMask(0xff);
                     gl::StencilFunc(gl::ALWAYS, 0, 0xff);
@@ -646,15 +668,19 @@ impl drawing::backend::Device for GlDevice {
 
                     pipeline.apply_frag_uniforms(&uniforms);
 
-                    gl::StencilFunc(gl::EQUAL, 0x00, 0xff);
-                    gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
-                    for path in paths {
-                        let stroke_vertices = path.get_stroke();
-                        if !stroke_vertices.is_empty() {
-                            pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                    // Draw anti-aliased pixels
+                    if antialiasing {
+                        gl::StencilFunc(gl::EQUAL, 0x00, 0xff);
+                        gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
+                        for path in paths {
+                            let stroke_vertices = path.get_stroke();
+                            if !stroke_vertices.is_empty() {
+                                pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                            }
                         }
                     }
 
+                    // Draw fill
                     gl::Disable(gl::CULL_FACE);
 
                     let rect_verts = vec![

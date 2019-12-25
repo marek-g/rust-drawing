@@ -285,7 +285,7 @@ fn main() {
                             },
                             PathElement::ClosePath,
                         ],
-                        thickness: 10.0f32,
+                        thickness: 1.0f32,
                         //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
                         brush: Brush::LinearGradient {
                             start_point: UserPixelPoint::new(200.0f32, 450.0f32),
@@ -329,6 +329,7 @@ fn main() {
                         window_target.get_render_target(),
                         &primitives,
                         &mut resources,
+                        false,
                     )
                     .unwrap();
                 device.end(&window_target);

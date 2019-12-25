@@ -26,6 +26,7 @@ impl Renderer {
 		render_target: &D::RenderTarget,
 		primitives: &Vec<Primitive>,
 		resources: &mut Resources<D, F>,
+		antialiasing: bool,
 	) -> Result<()> {
 		let physical_pixel_to_device_transform = render_target.get_device_transform();
 		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
@@ -117,6 +118,7 @@ impl Renderer {
 						stroke_width,
 						&Default::default(),
 						aspect_ratio,
+						antialiasing,
 					);
 					let paint = Paint::from_brush(brush);
 
@@ -126,6 +128,7 @@ impl Renderer {
 						&flattened_path.paths,
 						stroke_width,
 						1.0f32 / aspect_ratio,
+						antialiasing,
 						Scissor {
 							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 							extent: [-1.0, -1.0],
@@ -144,8 +147,13 @@ impl Renderer {
 					let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
 					let stroke_width = thickness * scale; //.clamped(0.0, 200.0);
 					let aspect_ratio = render_target.get_aspect_ratio();
-					let flattened_path =
-						Self::get_stroke_path(path, stroke_width, style, aspect_ratio);
+					let flattened_path = Self::get_stroke_path(
+						path,
+						stroke_width,
+						style,
+						aspect_ratio,
+						antialiasing,
+					);
 					let paint = Paint::from_brush(brush);
 
 					device.stroke(
@@ -154,6 +162,7 @@ impl Renderer {
 						&flattened_path.paths,
 						stroke_width,
 						1.0f32 / aspect_ratio,
+						antialiasing,
 						Scissor {
 							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 							extent: [-1.0, -1.0],
@@ -168,7 +177,7 @@ impl Renderer {
 					ref brush,
 				} => {
 					let aspect_ratio = render_target.get_aspect_ratio();
-					let flattened_path = Self::get_fill_path(path, aspect_ratio);
+					let flattened_path = Self::get_fill_path(path, aspect_ratio, antialiasing);
 					let paint = Paint::from_brush(brush);
 
 					device.fill(
@@ -177,6 +186,7 @@ impl Renderer {
 						&flattened_path.paths,
 						flattened_path.bounds,
 						1.0f32 / aspect_ratio,
+						antialiasing,
 						Scissor {
 							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 							extent: [-1.0, -1.0],
@@ -184,41 +194,6 @@ impl Renderer {
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
 						unknown_to_device_transform,
 					);
-
-					/*for path in flattened_path.paths {
-						let fill_vertices = path.get_fill();
-						if !fill_vertices.is_empty() {}
-
-						let stroke_vertices = path.get_stroke();
-						if !stroke_vertices.is_empty() {}
-
-						let color = [1.0f32, 1.0f32, 0.0f32, 0.5f32];
-						let mut arr: [ColoredVertex; 3] = [
-							ColoredVertex {
-								pos: fill_vertices[0].pos,
-								color: color,
-							},
-							ColoredVertex {
-								pos: fill_vertices[0].pos,
-								color: color,
-							},
-							ColoredVertex {
-								pos: fill_vertices[0].pos,
-								color: color,
-							},
-						];
-
-						for i in 2..fill_vertices.len() {
-							arr[1].pos = fill_vertices[i - 1].pos;
-							arr[2].pos = fill_vertices[i].pos;
-
-							device.triangles_colored(
-								render_target,
-								&arr,
-								unknown_to_device_transform,
-							);
-						}
-					}*/
 				}
 
 				&Primitive::ClipRect {
@@ -228,7 +203,7 @@ impl Renderer {
 					device.save_state();
 
 					device.set_clip_rect(*rect);
-					self.draw(device, render_target, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources, antialiasing)?;
 
 					device.restore_state();
 				}
@@ -240,7 +215,7 @@ impl Renderer {
 					device.save_state();
 
 					device.set_clip_path(path);
-					self.draw(device, render_target, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources, antialiasing)?;
 
 					device.restore_state();
 				}
@@ -252,7 +227,7 @@ impl Renderer {
 					device.save_state();
 
 					device.transform(*transform);
-					self.draw(device, render_target, primitives, resources)?;
+					self.draw(device, render_target, primitives, resources, antialiasing)?;
 
 					device.restore_state();
 				}
@@ -267,7 +242,7 @@ impl Renderer {
 
 					device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-					self.draw(device, &texture2_view, &primitives, resources)?;
+					self.draw(device, &texture2_view, &primitives, resources, antialiasing)?;
 
 					device.rect_textured(
 						render_target,
@@ -293,12 +268,12 @@ impl Renderer {
 		stroke_width: f32,
 		stroke_style: &StrokeStyle,
 		aspect_ratio: f32,
+		antialiasing: bool,
 	) -> FlattenedPath {
 		let mut flattened_path =
 			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
-		let anitialias = true;
 		let fringe_width = 1.0f32 / aspect_ratio;
-		if anitialias {
+		if antialiasing {
 			flattened_path.expand_stroke(
 				stroke_width * 0.5f32,
 				fringe_width,
@@ -320,12 +295,15 @@ impl Renderer {
 		flattened_path
 	}
 
-	fn get_fill_path(path: &Vec<PathElement>, aspect_ratio: f32) -> FlattenedPath {
+	fn get_fill_path(
+		path: &Vec<PathElement>,
+		aspect_ratio: f32,
+		antialiasing: bool,
+	) -> FlattenedPath {
 		let mut flattened_path =
 			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
-		let anitialias = true;
 		let fringe_width = 1.0f32 / aspect_ratio;
-		if anitialias {
+		if antialiasing {
 			flattened_path.expand_fill(fringe_width, LineJoin::Miter, 2.4f32, fringe_width);
 		} else {
 			flattened_path.expand_fill(0.0f32, LineJoin::Miter, 2.4f32, fringe_width);
