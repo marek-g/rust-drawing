@@ -217,6 +217,7 @@ pub trait Device {
 
 	fn stroke(
 		&mut self,
+		target: &Self::RenderTarget,
 		paint: &Paint,
 		path: &[Path],
 		thickness: f32,
@@ -229,8 +230,9 @@ pub trait Device {
 
 	fn fill(
 		&mut self,
+		target: &Self::RenderTarget,
 		paint: &Paint,
-		path: &[Path],
+		paths: &[Path],
 		bounds: Bounds,
 		fringe_width: f32,
 		scissor: Scissor,

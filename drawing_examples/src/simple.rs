@@ -232,7 +232,45 @@ fn main() {
                                 c2: UserPixelPoint::new(180.0f32, 50.0f32),
                             }
                         ],
-                        brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 1.0f32] },
+                        //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
+                        brush: Brush::LinearGradient {
+                            start_point: UserPixelPoint::new(100.0f32, 150.0f32),
+                            end_point: UserPixelPoint::new(350.0f32, 350.0f32),
+                            inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                            outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+                        },
+                    },
+
+                    Primitive::Fill {
+                        path: vec![
+                            PathElement::MoveTo {
+                                point: UserPixelPoint::new(500.0f32, 350.0f32),
+                            },
+                            PathElement::BezierTo {
+                                point: UserPixelPoint::new(700.0f32, 150.0f32),
+                                c1: UserPixelPoint::new(520.0f32, 50.0f32),
+                                c2: UserPixelPoint::new(580.0f32, 50.0f32),
+                            },
+                            PathElement::ClosePath,
+
+                            PathElement::MoveTo {
+                                point: UserPixelPoint::new(550.0f32, 250.0f32),
+                            },
+                            PathElement::BezierTo {
+                                point: UserPixelPoint::new(650.0f32, 180.0f32),
+                                c1: UserPixelPoint::new(580.0f32, 150.0f32),
+                                c2: UserPixelPoint::new(620.0f32, 150.0f32),
+                            },
+                            PathElement::ClosePath,
+                            PathElement::Solidity { solidity: Solidity::Hole },
+                        ],
+                        //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
+                        brush: Brush::LinearGradient {
+                            start_point: UserPixelPoint::new(500.0f32, 150.0f32),
+                            end_point: UserPixelPoint::new(750.0f32, 350.0f32),
+                            inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                            outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+                        },
                     },
 
                     // render target test

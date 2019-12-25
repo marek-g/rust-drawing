@@ -16,7 +16,7 @@ pub mod primitive_extensions;
 pub mod renderer;
 pub mod resources;
 pub mod units;
-mod utils;
+pub mod utils;
 
 mod texture_font;
 pub use texture_font::TextureFont;

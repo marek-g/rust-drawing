@@ -5,9 +5,12 @@ extern crate std;
 extern crate winit;
 
 use crate::backend::winit::dpi::PhysicalSize;
+use drawing::composite_operation_state::CompositeOperationState;
+use drawing::paint::Paint;
 
 use self::drawing::color::*;
 use self::drawing::units::*;
+use self::drawing::utils::path::{Bounds, Path};
 use self::drawing::Result;
 use self::gl::types::*;
 use crate::backend::drawing::backend::*;
@@ -184,6 +187,91 @@ impl GlDevice {
         end_point: Point,
         transform: UnknownToDeviceTransform,
     ) {
+    }
+
+    fn convert_paint(
+        &self,
+        paint: &Paint,
+        scissor: &Scissor,
+        width: f32,
+        fringe: f32,
+        stroke_thr: f32,
+    ) -> FragUniforms {
+        let mut frag = FragUniforms {
+            scissor_mat: Default::default(),
+            paint_mat: Default::default(),
+            inner_color: premul_color(paint.inner_color),
+            outer_color: premul_color(paint.outer_color),
+            scissor_ext: Default::default(),
+            scissor_scale: Default::default(),
+            extent: Default::default(),
+            radius: 0.0,
+            feather: 0.0,
+            stroke_mult: 0.0,
+            stroke_thr,
+            tex_type: 0,
+            type_: 0,
+            //_padding: [0u8; 16],
+        };
+
+        if scissor.extent[0] < -0.5 || scissor.extent[1] < -0.5 {
+            frag.scissor_ext[0] = 1.0;
+            frag.scissor_ext[1] = 1.0;
+            frag.scissor_scale[0] = 1.0;
+            frag.scissor_scale[1] = 1.0;
+        } else {
+            frag.scissor_mat = xform_to_3x4(inverse(scissor.xform));
+            frag.scissor_ext[0] = scissor.extent[0];
+            frag.scissor_ext[1] = scissor.extent[1];
+            frag.scissor_scale[0] =
+                (scissor.xform[0] * scissor.xform[0] + scissor.xform[2] * scissor.xform[2]).sqrt()
+                    / fringe;
+            frag.scissor_scale[1] =
+                (scissor.xform[1] * scissor.xform[1] + scissor.xform[3] * scissor.xform[3]).sqrt()
+                    / fringe;
+        }
+
+        frag.extent = [paint.extent[0], paint.extent[1]];
+        frag.stroke_mult = (width * 0.5 + fringe * 0.5) / fringe;
+
+        let mut invxform;
+
+        if let Some(img) = paint.image {
+            // TODO: handle textures
+            // remove below line - it was added to compile with the below code commented out
+            invxform = inverse(paint.xform);
+        /*if let Some(texture) = self.textures.get(img) {
+            if texture.flags.contains(ImageFlags::FLIPY) {
+                let m1 = Transform::translate(0.0, frag.extent[1] * 0.5) * paint.xform;
+                let m2 = Transform::scale(1.0, -1.0) * m1;
+                let m1 = Transform::translate(0.0, -frag.extent[1] * 0.5) * m2;
+                invxform = m1.inverse();
+            } else {
+                invxform = paint.xform.inverse();
+            };
+
+            frag.type_ = ShaderType::FillImage as i32;
+            match texture.texture_type {
+                TextureType::RGBA => {
+                    frag.tex_type = if texture.flags.contains(ImageFlags::PREMULTIPLIED) {
+                        0
+                    } else {
+                        1
+                    }
+                }
+                TextureType::Alpha => frag.tex_type = 2,
+            }
+        }*/
+        } else {
+            frag.type_ = ShaderType::FillGradient as i32;
+            frag.radius = paint.radius;
+            frag.feather = paint.feather;
+            invxform = inverse(paint.xform);
+        }
+
+        frag.paint_mat = xform_to_3x4(invxform);
+
+        frag
     }
 }
 
@@ -397,6 +485,133 @@ impl drawing::backend::Device for GlDevice {
         //self.line_triangulated(color, thickness, start_point, end_point, transform);
         //}
     }
+
+    fn fill(
+        &mut self,
+        target: &Self::RenderTarget,
+        paint: &Paint,
+        paths: &[Path],
+        bounds: Bounds,
+        fringe_width: f32,
+        scissor: Scissor,
+        composite_operation_state: CompositeOperationState,
+        transform: UnknownToDeviceTransform,
+    ) {
+        self.set_render_target(&target);
+
+        if paths.len() == 1 && paths[0].convex {
+            // convex fill
+            let mut uniforms =
+                self.convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+
+            if let Some(ref mut pipeline) = self.universal_pipeline {
+                let transform = [
+                    [transform.m11, transform.m12, 0.0, 0.0],
+                    [transform.m21, transform.m22, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [transform.m31, transform.m32, 0.0, 1.0],
+                ];
+
+                pipeline.apply();
+                pipeline.set_transform(&transform);
+                //pipeline.set_flipped_y(texture.flipped_y);
+                pipeline.apply_frag_uniforms(&uniforms);
+
+                // fill shape
+                let fill_vertices = paths[0].get_fill();
+                if !fill_vertices.is_empty() {
+                    pipeline.draw(&fill_vertices, gl::TRIANGLE_FAN);
+                }
+
+                // antialias outline
+                let stoke_vertices = paths[0].get_stroke();
+                if !stoke_vertices.is_empty() {
+                    pipeline.draw(&stoke_vertices, gl::TRIANGLE_STRIP);
+                }
+            }
+        } else {
+            let mut uniforms =
+                self.convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+
+            if let Some(ref mut pipeline) = self.universal_pipeline {
+                let transform = [
+                    [transform.m11, transform.m12, 0.0, 0.0],
+                    [transform.m21, transform.m22, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [transform.m31, transform.m32, 0.0, 1.0],
+                ];
+
+                pipeline.apply();
+                pipeline.set_transform(&transform);
+
+                unsafe {
+                    gl::Enable(gl::STENCIL_TEST);
+                    gl::StencilMask(0xff);
+                    gl::StencilFunc(gl::ALWAYS, 0, 0xff);
+                    gl::ColorMask(gl::FALSE, gl::FALSE, gl::FALSE, gl::FALSE);
+
+                    pipeline.apply_frag_uniforms(&FragUniforms {
+                        stroke_thr: -1.0,
+                        type_: ShaderType::Simple as i32,
+                        ..FragUniforms::default()
+                    });
+
+                    gl::StencilOpSeparate(gl::FRONT, gl::KEEP, gl::KEEP, gl::INCR_WRAP);
+                    gl::StencilOpSeparate(gl::BACK, gl::KEEP, gl::KEEP, gl::DECR_WRAP);
+                    gl::Disable(gl::CULL_FACE);
+                    for path in paths {
+                        let fill_vertices = path.get_fill();
+                        if !fill_vertices.is_empty() {
+                            pipeline.draw(&fill_vertices, gl::TRIANGLE_FAN);
+                        }
+                    }
+                    gl::Enable(gl::CULL_FACE);
+
+                    gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
+
+                    pipeline.apply_frag_uniforms(&uniforms);
+
+                    gl::StencilFunc(gl::EQUAL, 0x00, 0xff);
+                    gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
+                    for path in paths {
+                        let stoke_vertices = path.get_stroke();
+                        if !stoke_vertices.is_empty() {
+                            pipeline.draw(&stoke_vertices, gl::TRIANGLE_STRIP);
+                        }
+                    }
+
+                    let rect_verts = vec![
+                        TexturedVertex::new(
+                            [bounds.max.x, bounds.max.y],
+                            [0.5, 1.0],
+                            [1.0, 1.0, 1.0, 1.0],
+                        ),
+                        TexturedVertex::new(
+                            [bounds.max.x, bounds.min.y],
+                            [0.5, 1.0],
+                            [1.0, 1.0, 1.0, 1.0],
+                        ),
+                        TexturedVertex::new(
+                            [bounds.min.x, bounds.max.y],
+                            [0.5, 1.0],
+                            [1.0, 1.0, 1.0, 1.0],
+                        ),
+                        TexturedVertex::new(
+                            [bounds.min.x, bounds.min.y],
+                            [0.5, 1.0],
+                            [1.0, 1.0, 1.0, 1.0],
+                        ),
+                    ];
+
+                    gl::StencilFunc(gl::NOTEQUAL, 0x00, 0xff);
+                    gl::StencilOp(gl::ZERO, gl::ZERO, gl::ZERO);
+                    pipeline.draw(&rect_verts, gl::TRIANGLE_STRIP);
+
+                    gl::Disable(gl::STENCIL_TEST);
+                }
+            }
+        }
+    }
 }
 
 pub struct GlWindowTarget {
@@ -580,4 +795,50 @@ impl GlTexture {
             flipped_y: false,
         }
     }
+}
+
+#[inline]
+fn premul_color(color: Color) -> Color {
+    [
+        color[0] * color[3],
+        color[1] * color[3],
+        color[2] * color[3],
+        color[3],
+    ]
+}
+
+#[inline]
+fn xform_to_3x4(xform: [f32; 6]) -> [f32; 12] {
+    let mut m = [0f32; 12];
+    let t = &xform;
+    m[0] = t[0];
+    m[1] = t[1];
+    m[2] = 0.0;
+    m[3] = 0.0;
+    m[4] = t[2];
+    m[5] = t[3];
+    m[6] = 0.0;
+    m[7] = 0.0;
+    m[8] = t[4];
+    m[9] = t[5];
+    m[10] = 1.0;
+    m[11] = 0.0;
+    m
+}
+
+pub fn inverse(transform: [f32; 6]) -> [f32; 6] {
+    let t = &transform;
+    let det = t[0] * t[3] - t[2] * t[1];
+    if det > -1e-6 && det < 1e-6 {
+        return [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
+    }
+    let invdet = 1.0 / det;
+    let mut inv = [0f32; 6];
+    inv[0] = t[3] * invdet;
+    inv[2] = -t[2] * invdet;
+    inv[4] = (t[2] * t[5] - t[3] * t[4]) * invdet;
+    inv[1] = -t[1] * invdet;
+    inv[3] = t[0] * invdet;
+    inv[5] = (t[1] * t[4] - t[0] * t[5]) * invdet;
+    inv
 }

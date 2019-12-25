@@ -121,6 +121,7 @@ impl Renderer {
 					let paint = Paint::from_brush(brush);
 
 					device.stroke(
+						&render_target,
 						&paint,
 						&flattened_path.paths,
 						stroke_width,
@@ -148,6 +149,7 @@ impl Renderer {
 					let paint = Paint::from_brush(brush);
 
 					device.stroke(
+						&render_target,
 						&paint,
 						&flattened_path.paths,
 						stroke_width,
@@ -169,10 +171,8 @@ impl Renderer {
 					let flattened_path = Self::get_fill_path(path, aspect_ratio);
 					let paint = Paint::from_brush(brush);
 
-					let is_convex =
-						flattened_path.paths.len() == 1 && flattened_path.paths[0].convex;
-
 					device.fill(
+						&render_target,
 						&paint,
 						&flattened_path.paths,
 						flattened_path.bounds,
@@ -296,7 +296,7 @@ impl Renderer {
 	) -> FlattenedPath {
 		let mut flattened_path =
 			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
-		let anitialias = false;
+		let anitialias = true;
 		let fringe_width = 1.0f32 / aspect_ratio;
 		if anitialias {
 			flattened_path.expand_stroke(
@@ -323,7 +323,7 @@ impl Renderer {
 	fn get_fill_path(path: &Vec<PathElement>, aspect_ratio: f32) -> FlattenedPath {
 		let mut flattened_path =
 			FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
-		let anitialias = false;
+		let anitialias = true;
 		let fringe_width = 1.0f32 / aspect_ratio;
 		if anitialias {
 			flattened_path.expand_fill(fringe_width, LineJoin::Miter, 2.4f32, fringe_width);
