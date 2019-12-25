@@ -219,14 +219,13 @@ pub trait Device {
 		&mut self,
 		target: &Self::RenderTarget,
 		paint: &Paint,
-		path: &[Path],
+		paths: &[Path],
 		thickness: f32,
 		fringe_width: f32,
 		scissor: Scissor,
 		composite_operation_state: CompositeOperationState,
 		transform: UnknownToDeviceTransform,
-	) {
-	}
+	);
 
 	fn fill(
 		&mut self,
@@ -238,8 +237,7 @@ pub trait Device {
 		scissor: Scissor,
 		composite_operation_state: CompositeOperationState,
 		transform: UnknownToDeviceTransform,
-	) {
-	}
+	);
 
 	// state
 

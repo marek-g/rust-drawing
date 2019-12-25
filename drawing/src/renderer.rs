@@ -189,8 +189,8 @@ impl Renderer {
 						let fill_vertices = path.get_fill();
 						if !fill_vertices.is_empty() {}
 
-						let stoke_vertices = path.get_stroke();
-						if !stoke_vertices.is_empty() {}
+						let stroke_vertices = path.get_stroke();
+						if !stroke_vertices.is_empty() {}
 
 						let color = [1.0f32, 1.0f32, 0.0f32, 0.5f32];
 						let mut arr: [ColoredVertex; 3] = [

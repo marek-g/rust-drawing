@@ -74,6 +74,7 @@ impl GlDevice {
         unsafe {
             gl::Enable(gl::BLEND);
             gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+            gl::Disable(gl::CULL_FACE);
         }
 
         if self.colored_pipeline.is_none() {
@@ -486,6 +487,79 @@ impl drawing::backend::Device for GlDevice {
         //}
     }
 
+    fn stroke(
+        &mut self,
+        target: &Self::RenderTarget,
+        paint: &Paint,
+        paths: &[Path],
+        thickness: f32,
+        fringe_width: f32,
+        scissor: Scissor,
+        composite_operation_state: CompositeOperationState,
+        transform: UnknownToDeviceTransform,
+    ) {
+        self.set_render_target(&target);
+
+        let uniforms = self.convert_paint(paint, &scissor, thickness, fringe_width, -1.0);
+        let uniforms2 =
+            self.convert_paint(paint, &scissor, thickness, fringe_width, 1.0 - 0.5 / 255.0);
+
+        if let Some(ref mut pipeline) = self.universal_pipeline {
+            let transform = [
+                [transform.m11, transform.m12, 0.0, 0.0],
+                [transform.m21, transform.m22, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [transform.m31, transform.m32, 0.0, 1.0],
+            ];
+
+            pipeline.apply();
+            pipeline.set_transform(&transform);
+            //pipeline.set_flipped_y(texture.flipped_y);
+            pipeline.apply_frag_uniforms(&uniforms);
+
+            unsafe {
+                gl::Enable(gl::STENCIL_TEST);
+                gl::StencilMask(0xff);
+
+                // Fill the stroke base without overlap
+                gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
+                gl::StencilOp(gl::KEEP, gl::KEEP, gl::INCR);
+                pipeline.apply_frag_uniforms(&uniforms2);
+                for path in paths {
+                    let stroke_vertices = path.get_stroke();
+                    if !stroke_vertices.is_empty() {
+                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                    }
+                }
+
+                // Draw anti-aliased pixels.
+                pipeline.apply_frag_uniforms(&uniforms);
+                gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
+                gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
+                for path in paths {
+                    let stroke_vertices = path.get_stroke();
+                    if !stroke_vertices.is_empty() {
+                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                    }
+                }
+
+                // Clear stencil buffer.
+                gl::ColorMask(gl::FALSE, gl::FALSE, gl::FALSE, gl::FALSE);
+                gl::StencilFunc(gl::ALWAYS, 0x0, 0xff);
+                gl::StencilOp(gl::ZERO, gl::ZERO, gl::ZERO);
+                for path in paths {
+                    let stroke_vertices = path.get_stroke();
+                    if !stroke_vertices.is_empty() {
+                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                    }
+                }
+                gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
+
+                gl::Disable(gl::STENCIL_TEST);
+            }
+        }
+    }
+
     fn fill(
         &mut self,
         target: &Self::RenderTarget,
@@ -524,9 +598,9 @@ impl drawing::backend::Device for GlDevice {
                 }
 
                 // antialias outline
-                let stoke_vertices = paths[0].get_stroke();
-                if !stoke_vertices.is_empty() {
-                    pipeline.draw(&stoke_vertices, gl::TRIANGLE_STRIP);
+                let stroke_vertices = paths[0].get_stroke();
+                if !stroke_vertices.is_empty() {
+                    pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
         } else {
@@ -566,6 +640,7 @@ impl drawing::backend::Device for GlDevice {
                         }
                     }
                     gl::Enable(gl::CULL_FACE);
+                    gl::CullFace(gl::BACK);
 
                     gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
 
@@ -574,11 +649,13 @@ impl drawing::backend::Device for GlDevice {
                     gl::StencilFunc(gl::EQUAL, 0x00, 0xff);
                     gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
                     for path in paths {
-                        let stoke_vertices = path.get_stroke();
-                        if !stoke_vertices.is_empty() {
-                            pipeline.draw(&stoke_vertices, gl::TRIANGLE_STRIP);
+                        let stroke_vertices = path.get_stroke();
+                        if !stroke_vertices.is_empty() {
+                            pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
                         }
                     }
+
+                    gl::Disable(gl::CULL_FACE);
 
                     let rect_verts = vec![
                         TexturedVertex::new(

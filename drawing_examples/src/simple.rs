@@ -273,6 +273,28 @@ fn main() {
                         },
                     },
 
+                    Primitive::Stroke {
+                        path: vec![
+                            PathElement::MoveTo {
+                                point: UserPixelPoint::new(300.0f32, 550.0f32),
+                            },
+                            PathElement::BezierTo {
+                                point: UserPixelPoint::new(500.0f32, 350.0f32),
+                                c1: UserPixelPoint::new(320.0f32, 250.0f32),
+                                c2: UserPixelPoint::new(380.0f32, 250.0f32),
+                            },
+                            PathElement::ClosePath,
+                        ],
+                        thickness: 10.0f32,
+                        //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
+                        brush: Brush::LinearGradient {
+                            start_point: UserPixelPoint::new(200.0f32, 450.0f32),
+                            end_point: UserPixelPoint::new(450.0f32, 650.0f32),
+                            inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                            outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+                        },
+                    },
+
                     // render target test
                     Primitive::Composite {
                         color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
