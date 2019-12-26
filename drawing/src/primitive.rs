@@ -4,19 +4,19 @@ use crate::units::*;
 pub enum Primitive {
     Line {
         color: Color,
-        thickness: UserPixelThickness,
-        start_point: UserPixelPoint,
-        end_point: UserPixelPoint,
+        thickness: PixelThickness,
+        start_point: PixelPoint,
+        end_point: PixelPoint,
     },
 
     Rectangle {
         color: Color,
-        rect: UserPixelRect,
+        rect: PixelRect,
     },
 
     Image {
         resource_key: i32,
-        rect: UserPixelRect,
+        rect: PixelRect,
         uv: [f32; 4],
     },
 
@@ -24,8 +24,8 @@ pub enum Primitive {
         resource_key: String,
         size: u16,
         color: Color,
-        position: UserPixelPoint,
-        clipping_rect: UserPixelRect,
+        position: PixelPoint,
+        clipping_rect: PixelRect,
         text: String,
     },
 
@@ -48,7 +48,7 @@ pub enum Primitive {
     },
 
     ClipRect {
-        rect: UserPixelRect,
+        rect: PixelRect,
         primitives: Vec<Primitive>,
     },
 
@@ -70,17 +70,17 @@ pub enum Primitive {
 
 pub enum PathElement {
     MoveTo {
-        point: UserPixelPoint,
+        point: PixelPoint,
     },
 
     LineTo {
-        point: UserPixelPoint,
+        point: PixelPoint,
     },
 
     BezierTo {
-        point: UserPixelPoint,
-        c1: UserPixelPoint,
-        c2: UserPixelPoint,
+        point: PixelPoint,
+        c1: PixelPoint,
+        c2: PixelPoint,
     },
 
     ClosePath,
@@ -96,14 +96,14 @@ pub enum Brush {
     },
 
     LinearGradient {
-        start_point: UserPixelPoint,
-        end_point: UserPixelPoint,
+        start_point: PixelPoint,
+        end_point: PixelPoint,
         inner_color: Color,
         outer_color: Color,
     },
 
     RadialGradient {
-        center_point: UserPixelPoint,
+        center_point: PixelPoint,
         in_radius: f32,
         out_radius: f32,
         inner_color: Color,
@@ -111,7 +111,7 @@ pub enum Brush {
     },
 
     ShadowGradient {
-        rect: UserPixelRect,
+        rect: PixelRect,
         radius: f32,
         feather: f32,
         inner_color: Color,
@@ -120,8 +120,8 @@ pub enum Brush {
 
     ImagePattern {
         resource_key: i32,
-        center_point: UserPixelPoint,
-        size: UserPixelSize,
+        center_point: PixelPoint,
+        size: PixelSize,
         angle: f32,
         alpha: f32,
     },

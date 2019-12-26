@@ -4,7 +4,7 @@
 
 use crate::color::Color;
 use crate::primitive::Brush;
-use crate::units::UserPixelRect;
+use crate::units::PixelRect;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Paint {
@@ -95,7 +95,7 @@ impl Paint {
                 inner_color,
                 outer_color,
             } => {
-                let UserPixelRect { origin, size } = rect;
+                let PixelRect { origin, size } = rect;
                 Paint {
                     xform: [
                         1.0,

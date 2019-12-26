@@ -92,65 +92,65 @@ fn main() {
 
                 pos_y += 1.0f32;
 
-                let clipping_rect = UserPixelRect::new(
-                    UserPixelPoint::new(0.0f32, 0.0f32),
-                    UserPixelSize::new(width as f32, height as f32),
+                let clipping_rect = PixelRect::new(
+                    PixelPoint::new(0.0f32, 0.0f32),
+                    PixelSize::new(width as f32, height as f32),
                 );
 
                 let primitives = vec![
                     Primitive::Rectangle {
                         color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(100.5f32, 101.5f32),
-                            UserPixelSize::new(200.0f32, 50.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(100.5f32, 101.5f32),
+                            PixelSize::new(200.0f32, 50.0f32),
                         ),
                     },
                     Primitive::Line {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        thickness: UserPixelThickness::new(1.0f32),
-                        start_point: UserPixelPoint::new(100.0f32, 100.0f32),
-                        end_point: UserPixelPoint::new(300.5f32, 100.5f32),
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(100.0f32, 100.0f32),
+                        end_point: PixelPoint::new(300.5f32, 100.5f32),
                     },
                     Primitive::Image {
                         resource_key: image2_resource_id,
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(100.0f32, 150.0f32),
-                            UserPixelSize::new(200.0f32, 200.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(100.0f32, 150.0f32),
+                            PixelSize::new(200.0f32, 200.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
                     Primitive::Line {
                         color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-                        thickness: UserPixelThickness::new(1.0f32),
-                        start_point: UserPixelPoint::new(100.0f32, 350.0f32),
-                        end_point: UserPixelPoint::new(300.0f32, 150.0f32),
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(100.0f32, 350.0f32),
+                        end_point: PixelPoint::new(300.0f32, 150.0f32),
                     },
                     Primitive::Line {
                         color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-                        thickness: UserPixelThickness::new(1.0f32),
-                        start_point: UserPixelPoint::new(100.0f32, 150.0f32),
-                        end_point: UserPixelPoint::new(300.0f32, 350.0f32),
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(100.0f32, 150.0f32),
+                        end_point: PixelPoint::new(300.0f32, 350.0f32),
                     },
 
                     Primitive::Fill {
                         path: vec![
                             PathElement::MoveTo {
-                                point: UserPixelPoint::new(100.0f32, 350.0f32),
+                                point: PixelPoint::new(100.0f32, 350.0f32),
                             },
                             PathElement::LineTo {
-                                point: UserPixelPoint::new(300.0f32, 350.0f32),
+                                point: PixelPoint::new(300.0f32, 350.0f32),
                             },
                             PathElement::LineTo {
-                                point: UserPixelPoint::new(300.0f32, 550.0f32),
+                                point: PixelPoint::new(300.0f32, 550.0f32),
                             },
                             PathElement::LineTo {
-                                point: UserPixelPoint::new(100.0f32, 550.0f32),
+                                point: PixelPoint::new(100.0f32, 550.0f32),
                             },
                         ],
                         brush: Brush::ImagePattern {
                             resource_key: image2_resource_id,
-                            center_point: UserPixelPoint::new(100.0f32 + pos_y / 10.0f32, 350.0f32 + pos_y / 5.0f32),
-                            size: UserPixelSize::new(200.0f32, 200.0f32),
+                            center_point: PixelPoint::new(100.0f32 + pos_y / 10.0f32, 350.0f32 + pos_y / 5.0f32),
+                            size: PixelSize::new(200.0f32, 200.0f32),
                             angle: pos_y / 100.0f32, // 0.0f32,
                             alpha: 1.0f32,
                         },
@@ -158,52 +158,52 @@ fn main() {
 
                     Primitive::Image {
                         resource_key: image1_resource_id,
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(0.0f32, 0.0f32),
-                            UserPixelSize::new(4.0f32, 4.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(0.0f32, 0.0f32),
+                            PixelSize::new(4.0f32, 4.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
                     Primitive::Line {
                         color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-                        thickness: UserPixelThickness::new(1.0f32),
-                        start_point: UserPixelPoint::new(0.0f32, 0.0f32),
-                        end_point: UserPixelPoint::new(4.0f32, 4.0f32),
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(0.0f32, 0.0f32),
+                        end_point: PixelPoint::new(4.0f32, 4.0f32),
                     },
                     Primitive::Image {
                         resource_key: image1_resource_id,
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(width as f32 - 4.0f32, 0.0f32),
-                            UserPixelSize::new(4.0f32, 4.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
+                            PixelSize::new(4.0f32, 4.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
                     Primitive::Line {
                         color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-                        thickness: UserPixelThickness::new(1.0f32),
-                        start_point: UserPixelPoint::new(width as f32, 0.0f32),
-                        end_point: UserPixelPoint::new(width as f32 - 4.0f32, 4.0f32),
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(width as f32, 0.0f32),
+                        end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
                     },
                     Primitive::Image {
                         resource_key: image1_resource_id,
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
-                            UserPixelSize::new(4.0f32, 4.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
+                            PixelSize::new(4.0f32, 4.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
                     Primitive::Image {
                         resource_key: image1_resource_id,
-                        rect: UserPixelRect::new(
-                            UserPixelPoint::new(0.0f32, height as f32 - 4.0f32),
-                            UserPixelSize::new(4.0f32, 4.0f32),
+                        rect: PixelRect::new(
+                            PixelPoint::new(0.0f32, height as f32 - 4.0f32),
+                            PixelSize::new(4.0f32, 4.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
                     Primitive::Text {
                         resource_key: "F1".to_string(),
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(350.0f32 + pos_y, 200.0f32),
+                        position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
                         clipping_rect,
                         size: 10,
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
@@ -212,7 +212,7 @@ fn main() {
                     Primitive::Text {
                         resource_key: "F1".to_string(),
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(350.0f32, 220.0f32 - pos_y),
+                        position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
                         clipping_rect,
                         size: 12,
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
@@ -221,7 +221,7 @@ fn main() {
                     Primitive::Text {
                         resource_key: "F1".to_string(),
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
+                        position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
                         clipping_rect,
                         size: 14,
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
@@ -230,7 +230,7 @@ fn main() {
                     Primitive::Text {
                         resource_key: "F1".to_string(),
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(350.0f32 - pos_y, 260.0f32),
+                        position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
                         clipping_rect,
                         size: 16,
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
@@ -239,7 +239,7 @@ fn main() {
                     Primitive::Text {
                         resource_key: "F1".to_string(),
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        position: UserPixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
+                        position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
                         clipping_rect,
                         size: 18,
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
@@ -249,17 +249,17 @@ fn main() {
                     Primitive::Fill {
                         path: vec![
                             PathElement::MoveTo {
-                                point: UserPixelPoint::new(100.0f32, 350.0f32),
+                                point: PixelPoint::new(100.0f32, 350.0f32),
                             },
                             PathElement::BezierTo {
-                                point: UserPixelPoint::new(300.0f32, 150.0f32),
-                                c1: UserPixelPoint::new(120.0f32, 50.0f32),
-                                c2: UserPixelPoint::new(180.0f32, 50.0f32),
+                                point: PixelPoint::new(300.0f32, 150.0f32),
+                                c1: PixelPoint::new(120.0f32, 50.0f32),
+                                c2: PixelPoint::new(180.0f32, 50.0f32),
                             }
                         ],
                         brush: Brush::LinearGradient {
-                            start_point: UserPixelPoint::new(100.0f32, 150.0f32),
-                            end_point: UserPixelPoint::new(350.0f32, 350.0f32),
+                            start_point: PixelPoint::new(100.0f32, 150.0f32),
+                            end_point: PixelPoint::new(350.0f32, 350.0f32),
                             inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                             outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
                         },
@@ -268,29 +268,29 @@ fn main() {
                     Primitive::Fill {
                         path: vec![
                             PathElement::MoveTo {
-                                point: UserPixelPoint::new(500.0f32, 350.0f32),
+                                point: PixelPoint::new(500.0f32, 350.0f32),
                             },
                             PathElement::BezierTo {
-                                point: UserPixelPoint::new(700.0f32, 150.0f32),
-                                c1: UserPixelPoint::new(520.0f32, 50.0f32),
-                                c2: UserPixelPoint::new(580.0f32, 50.0f32),
+                                point: PixelPoint::new(700.0f32, 150.0f32),
+                                c1: PixelPoint::new(520.0f32, 50.0f32),
+                                c2: PixelPoint::new(580.0f32, 50.0f32),
                             },
                             PathElement::ClosePath,
 
                             PathElement::MoveTo {
-                                point: UserPixelPoint::new(550.0f32, 250.0f32),
+                                point: PixelPoint::new(550.0f32, 250.0f32),
                             },
                             PathElement::BezierTo {
-                                point: UserPixelPoint::new(650.0f32, 180.0f32),
-                                c1: UserPixelPoint::new(580.0f32, 150.0f32),
-                                c2: UserPixelPoint::new(620.0f32, 150.0f32),
+                                point: PixelPoint::new(650.0f32, 180.0f32),
+                                c1: PixelPoint::new(580.0f32, 150.0f32),
+                                c2: PixelPoint::new(620.0f32, 150.0f32),
                             },
                             PathElement::ClosePath,
                             PathElement::Solidity { solidity: Solidity::Hole },
                         ],
                         brush: Brush::LinearGradient {
-                            start_point: UserPixelPoint::new(500.0f32, 150.0f32),
-                            end_point: UserPixelPoint::new(750.0f32, 350.0f32),
+                            start_point: PixelPoint::new(500.0f32, 150.0f32),
+                            end_point: PixelPoint::new(750.0f32, 350.0f32),
                             inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                             outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
                         },
@@ -299,20 +299,20 @@ fn main() {
                     Primitive::Stroke {
                         path: vec![
                             PathElement::MoveTo {
-                                point: UserPixelPoint::new(300.0f32, 550.0f32),
+                                point: PixelPoint::new(300.0f32, 550.0f32),
                             },
                             PathElement::BezierTo {
-                                point: UserPixelPoint::new(500.0f32, 350.0f32),
-                                c1: UserPixelPoint::new(320.0f32, 250.0f32),
-                                c2: UserPixelPoint::new(380.0f32, 250.0f32),
+                                point: PixelPoint::new(500.0f32, 350.0f32),
+                                c1: PixelPoint::new(320.0f32, 250.0f32),
+                                c2: PixelPoint::new(380.0f32, 250.0f32),
                             },
                             PathElement::ClosePath,
                         ],
                         thickness: 1.0f32,
                         //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
                         brush: Brush::LinearGradient {
-                            start_point: UserPixelPoint::new(200.0f32, 450.0f32),
-                            end_point: UserPixelPoint::new(450.0f32, 650.0f32),
+                            start_point: PixelPoint::new(200.0f32, 450.0f32),
+                            end_point: PixelPoint::new(450.0f32, 650.0f32),
                             inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                             outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
                         },
@@ -324,15 +324,15 @@ fn main() {
                         primitives: vec![
                             Primitive::Rectangle {
                                 color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
-                                rect: UserPixelRect::new(
-                                    UserPixelPoint::new(200.5f32, 220.5f32),
-                                    UserPixelSize::new(200.0f32, 50.0f32),
+                                rect: PixelRect::new(
+                                    PixelPoint::new(200.5f32, 220.5f32),
+                                    PixelSize::new(200.0f32, 50.0f32),
                                 ),
                             },
                             Primitive::Text {
                                 resource_key: "F1".to_string(),
                                 color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                                position: UserPixelPoint::new(207.0f32, 232.0f32),
+                                position: PixelPoint::new(207.0f32, 232.0f32),
                                 clipping_rect,
                                 size: 22,
                                 text: "Render target test".to_string(),

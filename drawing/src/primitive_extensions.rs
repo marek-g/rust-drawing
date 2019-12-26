@@ -5,28 +5,28 @@ use crate::utils::clipping::clip_line;
 use crate::utils::clipping::clip_rect;
 
 pub trait Transformation {
-    fn translate(&mut self, offset: UserPixelPoint);
+    fn translate(&mut self, offset: PixelPoint);
 }
 
 pub trait Clipping {
-    fn clip(self, rect: UserPixelRect) -> Self;
+    fn clip(self, rect: PixelRect) -> Self;
 }
 
-impl Transformation for UserPixelPoint {
-    fn translate(&mut self, offset: UserPixelPoint) {
+impl Transformation for PixelPoint {
+    fn translate(&mut self, offset: PixelPoint) {
         self.x += offset.x;
         self.y += offset.y;
     }
 }
 
-impl Transformation for UserPixelRect {
-    fn translate(&mut self, offset: UserPixelPoint) {
+impl Transformation for PixelRect {
+    fn translate(&mut self, offset: PixelPoint) {
         self.origin.translate(offset);
     }
 }
 
 impl Transformation for Vec<Primitive> {
-    fn translate(&mut self, offset: UserPixelPoint) {
+    fn translate(&mut self, offset: PixelPoint) {
         for primitive in self.iter_mut() {
             match primitive {
                 Primitive::Line {
@@ -93,7 +93,7 @@ impl Transformation for Vec<Primitive> {
 }
 
 impl Clipping for Vec<Primitive> {
-    fn clip(self, clipping_rect: UserPixelRect) -> Self {
+    fn clip(self, clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         for primitive in self.into_iter() {
             match primitive {
@@ -116,8 +116,8 @@ impl Clipping for Vec<Primitive> {
                         res.push(Primitive::Line {
                             color,
                             thickness,
-                            start_point: UserPixelPoint::new(clipped.0, clipped.1),
-                            end_point: UserPixelPoint::new(clipped.2, clipped.3),
+                            start_point: PixelPoint::new(clipped.0, clipped.1),
+                            end_point: PixelPoint::new(clipped.2, clipped.3),
                         });
                     }
                 }
@@ -135,9 +135,9 @@ impl Clipping for Vec<Primitive> {
                     ) {
                         res.push(Primitive::Rectangle {
                             color,
-                            rect: UserPixelRect::new(
-                                UserPixelPoint::new(clipped.0, clipped.1),
-                                UserPixelSize::new(clipped.2, clipped.3),
+                            rect: PixelRect::new(
+                                PixelPoint::new(clipped.0, clipped.1),
+                                PixelSize::new(clipped.2, clipped.3),
                             ),
                         });
                     }
@@ -161,9 +161,9 @@ impl Clipping for Vec<Primitive> {
                     ) {
                         res.push(Primitive::Image {
                             resource_key,
-                            rect: UserPixelRect::new(
-                                UserPixelPoint::new(clipped.0, clipped.1),
-                                UserPixelSize::new(clipped.2, clipped.3),
+                            rect: PixelRect::new(
+                                PixelPoint::new(clipped.0, clipped.1),
+                                PixelSize::new(clipped.2, clipped.3),
                             ),
                             uv: clipped.4,
                         });
@@ -193,9 +193,9 @@ impl Clipping for Vec<Primitive> {
                             size,
                             color,
                             position,
-                            clipping_rect: UserPixelRect::new(
-                                UserPixelPoint::new(clipped.0, clipped.1),
-                                UserPixelSize::new(clipped.2, clipped.3),
+                            clipping_rect: PixelRect::new(
+                                PixelPoint::new(clipped.0, clipped.1),
+                                PixelSize::new(clipped.2, clipped.3),
                             ),
                             text,
                         });
@@ -272,7 +272,7 @@ impl Clipping for Vec<Primitive> {
 }
 
 impl Transformation for Vec<PathElement> {
-    fn translate(&mut self, offset: UserPixelPoint) {
+    fn translate(&mut self, offset: PixelPoint) {
         for path_element in self.iter_mut() {
             match path_element {
                 PathElement::MoveTo { ref mut point } => point.translate(offset),
@@ -298,7 +298,7 @@ impl Transformation for Vec<PathElement> {
 }
 
 impl Clipping for Vec<PathElement> {
-    fn clip(self, clipping_rect: UserPixelRect) -> Self {
+    fn clip(self, clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         for path_element in self.into_iter() {
             // TODO: implement!

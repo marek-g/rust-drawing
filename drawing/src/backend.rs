@@ -251,7 +251,7 @@ pub trait Device {
 
 	fn restore_state(&mut self) {}
 
-	fn set_clip_rect(&mut self, rect: UserPixelRect) {}
+	fn set_clip_rect(&mut self, rect: PixelRect) {}
 
 	fn set_clip_path(&mut self, path: &[PathElement]) {}
 

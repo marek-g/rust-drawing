@@ -29,11 +29,8 @@ impl Renderer {
 		antialiasing: bool,
 	) -> Result<()> {
 		let physical_pixel_to_device_transform = render_target.get_device_transform();
-		let user_pixel_to_physical_pixel_transform = UserPixelToPhysPixelTransform::identity();
-		let user_pixel_to_device_transform = user_pixel_to_physical_pixel_transform
-			.post_transform(&physical_pixel_to_device_transform);
 		let unknown_to_device_transform = UnknownToDeviceTransform::from_row_major_array(
-			user_pixel_to_device_transform.to_row_major_array(),
+			physical_pixel_to_device_transform.to_row_major_array(),
 		);
 
 		for primitive in primitives {
@@ -44,8 +41,8 @@ impl Renderer {
 					start_point,
 					end_point,
 				} => {
-					let thickness = user_pixel_to_device_transform
-						.transform_point(UserPixelPoint::new(thickness.get(), thickness.get()))
+					let thickness = physical_pixel_to_device_transform
+						.transform_point(PixelPoint::new(thickness.get(), thickness.get()))
 						.x;
 
 					device.line(
