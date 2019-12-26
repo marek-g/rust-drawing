@@ -33,7 +33,8 @@ pub type UserPixelRect = euclid::Rect<f32, UserPixelUnit>;
 
 pub type UnknownToDeviceTransform = euclid::Transform2D<f32, euclid::UnknownUnit, DeviceUnit>;
 pub type DeviceTransform = euclid::Transform2D<f32, DeviceUnit, DeviceUnit>;
+pub type PixelTransform = euclid::Transform2D<f32, PixelUnit, PixelUnit>;
 pub type UserPixelTransform = euclid::Transform2D<f32, UserPixelUnit, UserPixelUnit>;
-pub type UserPixelToPhysPixelTransform = euclid::Transform2D<f32, UserPixelUnit, PixelUnit>;
+pub type UserPixelToPixelTransform = euclid::Transform2D<f32, UserPixelUnit, PixelUnit>;
 pub type UserPixelToDeviceTransform = euclid::Transform2D<f32, UserPixelUnit, DeviceUnit>;
-pub type PhysPixelToDeviceTransform = euclid::Transform2D<f32, PixelUnit, DeviceUnit>;
+pub type PixelToDeviceTransform = euclid::Transform2D<f32, PixelUnit, DeviceUnit>;

@@ -827,8 +827,8 @@ impl RenderTarget for GlRenderTarget {
         self.aspect_ratio
     }
 
-    fn get_device_transform(&self) -> PhysPixelToDeviceTransform {
-        PhysPixelToDeviceTransform::column_major(
+    fn get_device_transform(&self) -> PixelToDeviceTransform {
+        PixelToDeviceTransform::column_major(
             2.0f32 / self.width as f32,
             0.0f32,
             -1.0f32,

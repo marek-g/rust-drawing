@@ -28,9 +28,9 @@ impl Renderer {
 		resources: &mut Resources<D, F>,
 		antialiasing: bool,
 	) -> Result<()> {
-		let physical_pixel_to_device_transform = render_target.get_device_transform();
+		let pixel_to_device_transform = render_target.get_device_transform();
 		let unknown_to_device_transform = UnknownToDeviceTransform::from_row_major_array(
-			physical_pixel_to_device_transform.to_row_major_array(),
+			pixel_to_device_transform.to_row_major_array(),
 		);
 
 		for primitive in primitives {
@@ -41,7 +41,7 @@ impl Renderer {
 					start_point,
 					end_point,
 				} => {
-					let thickness = physical_pixel_to_device_transform
+					let thickness = pixel_to_device_transform
 						.transform_point(PixelPoint::new(thickness.get(), thickness.get()))
 						.x;
 
@@ -127,7 +127,7 @@ impl Renderer {
 						None
 					};
 
-					let stroke_width = physical_pixel_to_device_transform
+					let stroke_width = pixel_to_device_transform
 						.transform_point(PixelPoint::new(stroke_width.get(), stroke_width.get()))
 						.x;
 
@@ -173,7 +173,7 @@ impl Renderer {
 						None
 					};
 
-					let stroke_width = physical_pixel_to_device_transform
+					let stroke_width = pixel_to_device_transform
 						.transform_point(PixelPoint::new(stroke_width.get(), stroke_width.get()))
 						.x;
 

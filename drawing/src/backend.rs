@@ -276,5 +276,5 @@ pub trait RenderTarget: Sized {
 
 	fn get_aspect_ratio(&self) -> f32;
 
-	fn get_device_transform(&self) -> PhysPixelToDeviceTransform;
+	fn get_device_transform(&self) -> PixelToDeviceTransform;
 }
