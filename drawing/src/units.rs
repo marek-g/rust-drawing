@@ -1,4 +1,4 @@
-// unknown units - doesn't matter what it is as long as the transform matrix to something else is provided
+// unknown units - doesn't matter what it is as long as the transform matrix to/from something else is provided
 pub type Thickness = euclid::Length<f32, euclid::UnknownUnit>;
 pub type Point = euclid::Point2D<f32, euclid::UnknownUnit>;
 pub type Size = euclid::Size2D<f32, euclid::UnknownUnit>;

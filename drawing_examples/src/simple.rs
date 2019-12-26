@@ -134,18 +134,10 @@ fn main() {
 
                     Primitive::Fill {
                         path: vec![
-                            PathElement::MoveTo {
-                                point: PixelPoint::new(100.0f32, 350.0f32),
-                            },
-                            PathElement::LineTo {
-                                point: PixelPoint::new(300.0f32, 350.0f32),
-                            },
-                            PathElement::LineTo {
-                                point: PixelPoint::new(300.0f32, 550.0f32),
-                            },
-                            PathElement::LineTo {
-                                point: PixelPoint::new(100.0f32, 550.0f32),
-                            },
+                            PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
+                            PathElement::LineTo(PixelPoint::new(300.0f32, 350.0f32)),
+                            PathElement::LineTo(PixelPoint::new(300.0f32, 550.0f32)),
+                            PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
                         ],
                         brush: Brush::ImagePattern {
                             resource_key: image2_resource_id,
@@ -205,7 +197,7 @@ fn main() {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
                         clipping_rect,
-                        size: 10,
+                        size: PixelThickness::new(10.0f32),
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
@@ -214,7 +206,7 @@ fn main() {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
                         clipping_rect,
-                        size: 12,
+                        size: PixelThickness::new(12.0f32),
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
@@ -223,7 +215,7 @@ fn main() {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
                         clipping_rect,
-                        size: 14,
+                        size: PixelThickness::new(14.0f32),
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
@@ -232,7 +224,7 @@ fn main() {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
                         clipping_rect,
-                        size: 16,
+                        size: PixelThickness::new(16.0f32),
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
@@ -241,21 +233,17 @@ fn main() {
                         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
                         clipping_rect,
-                        size: 18,
+                        size: PixelThickness::new(18.0f32),
                         text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                             .to_string(),
                     },
 
                     Primitive::Fill {
                         path: vec![
-                            PathElement::MoveTo {
-                                point: PixelPoint::new(100.0f32, 350.0f32),
-                            },
-                            PathElement::BezierTo {
-                                point: PixelPoint::new(300.0f32, 150.0f32),
-                                c1: PixelPoint::new(120.0f32, 50.0f32),
-                                c2: PixelPoint::new(180.0f32, 50.0f32),
-                            }
+                            PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
+                            PathElement::BezierTo(PixelPoint::new(120.0f32, 50.0f32),
+                                PixelPoint::new(180.0f32, 50.0f32),
+                                PixelPoint::new(300.0f32, 150.0f32)),
                         ],
                         brush: Brush::LinearGradient {
                             start_point: PixelPoint::new(100.0f32, 150.0f32),
@@ -267,26 +255,18 @@ fn main() {
 
                     Primitive::Fill {
                         path: vec![
-                            PathElement::MoveTo {
-                                point: PixelPoint::new(500.0f32, 350.0f32),
-                            },
-                            PathElement::BezierTo {
-                                point: PixelPoint::new(700.0f32, 150.0f32),
-                                c1: PixelPoint::new(520.0f32, 50.0f32),
-                                c2: PixelPoint::new(580.0f32, 50.0f32),
-                            },
+                            PathElement::MoveTo(PixelPoint::new(500.0f32, 350.0f32)),
+                            PathElement::BezierTo(PixelPoint::new(520.0f32, 50.0f32),
+                                PixelPoint::new(580.0f32, 50.0f32),
+                                PixelPoint::new(700.0f32, 150.0f32)),
                             PathElement::ClosePath,
 
-                            PathElement::MoveTo {
-                                point: PixelPoint::new(550.0f32, 250.0f32),
-                            },
-                            PathElement::BezierTo {
-                                point: PixelPoint::new(650.0f32, 180.0f32),
-                                c1: PixelPoint::new(580.0f32, 150.0f32),
-                                c2: PixelPoint::new(620.0f32, 150.0f32),
-                            },
+                            PathElement::MoveTo(PixelPoint::new(550.0f32, 250.0f32)),
+                            PathElement::BezierTo(PixelPoint::new(580.0f32, 150.0f32),
+                                PixelPoint::new(620.0f32, 150.0f32),
+                                PixelPoint::new(650.0f32, 180.0f32)),
                             PathElement::ClosePath,
-                            PathElement::Solidity { solidity: Solidity::Hole },
+                            PathElement::Solidity(Solidity::Hole),
                         ],
                         brush: Brush::LinearGradient {
                             start_point: PixelPoint::new(500.0f32, 150.0f32),
@@ -298,17 +278,13 @@ fn main() {
 
                     Primitive::Stroke {
                         path: vec![
-                            PathElement::MoveTo {
-                                point: PixelPoint::new(300.0f32, 550.0f32),
-                            },
-                            PathElement::BezierTo {
-                                point: PixelPoint::new(500.0f32, 350.0f32),
-                                c1: PixelPoint::new(320.0f32, 250.0f32),
-                                c2: PixelPoint::new(380.0f32, 250.0f32),
-                            },
+                            PathElement::MoveTo(PixelPoint::new(300.0f32, 550.0f32)),
+                            PathElement::BezierTo(PixelPoint::new(320.0f32, 250.0f32),
+                                PixelPoint::new(380.0f32, 250.0f32),
+                                PixelPoint::new(500.0f32, 350.0f32)),
                             PathElement::ClosePath,
                         ],
-                        thickness: 1.0f32,
+                        thickness: PixelThickness::new(1.0f32),
                         //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
                         brush: Brush::LinearGradient {
                             start_point: PixelPoint::new(200.0f32, 450.0f32),
@@ -334,7 +310,7 @@ fn main() {
                                 color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                                 position: PixelPoint::new(207.0f32, 232.0f32),
                                 clipping_rect,
-                                size: 22,
+                                size: PixelThickness::new(22.0f32),
                                 text: "Render target test".to_string(),
                             },
                         ],

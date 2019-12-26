@@ -138,7 +138,7 @@ fn draw_window(
                 PixelPoint::new(0.0f32, 0.0f32),
                 PixelSize::new(width, height),
             ),
-            size: 20,
+            size: PixelThickness::new(20.0f32),
             text: text.to_string(),
         }];
 

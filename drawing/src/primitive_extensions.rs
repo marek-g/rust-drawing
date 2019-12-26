@@ -275,23 +275,19 @@ impl Transformation for Vec<PathElement> {
     fn translate(&mut self, offset: PixelPoint) {
         for path_element in self.iter_mut() {
             match path_element {
-                PathElement::MoveTo { ref mut point } => point.translate(offset),
+                PathElement::MoveTo(ref mut point) => point.translate(offset),
 
-                PathElement::LineTo { ref mut point } => point.translate(offset),
+                PathElement::LineTo(ref mut point) => point.translate(offset),
 
-                PathElement::BezierTo {
-                    ref mut point,
-                    ref mut c1,
-                    ref mut c2,
-                } => {
-                    point.translate(offset);
+                PathElement::BezierTo(ref mut c1, ref mut c2, ref mut point) => {
                     c1.translate(offset);
                     c2.translate(offset);
+                    point.translate(offset);
                 }
 
                 PathElement::ClosePath => (),
 
-                PathElement::Solidity { .. } => (),
+                PathElement::Solidity(..) => (),
             }
         }
     }

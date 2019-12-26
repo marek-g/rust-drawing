@@ -22,7 +22,7 @@ pub enum Primitive {
 
     Text {
         resource_key: String,
-        size: u16,
+        size: PixelThickness,
         color: Color,
         position: PixelPoint,
         clipping_rect: PixelRect,
@@ -31,13 +31,13 @@ pub enum Primitive {
 
     Stroke {
         path: Vec<PathElement>,
-        thickness: f32,
+        thickness: PixelThickness,
         brush: Brush,
     },
 
     StrokeStyled {
         path: Vec<PathElement>,
-        thickness: f32,
+        thickness: PixelThickness,
         brush: Brush,
         style: StrokeStyle,
     },
@@ -69,25 +69,15 @@ pub enum Primitive {
 }
 
 pub enum PathElement {
-    MoveTo {
-        point: PixelPoint,
-    },
+    MoveTo(PixelPoint),
 
-    LineTo {
-        point: PixelPoint,
-    },
+    LineTo(PixelPoint),
 
-    BezierTo {
-        point: PixelPoint,
-        c1: PixelPoint,
-        c2: PixelPoint,
-    },
+    BezierTo(PixelPoint, PixelPoint, PixelPoint),
 
     ClosePath,
 
-    Solidity {
-        solidity: Solidity,
-    },
+    Solidity(Solidity),
 }
 
 pub enum Brush {

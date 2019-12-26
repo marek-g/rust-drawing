@@ -96,7 +96,9 @@ impl Renderer {
 							text,
 							position.to_untyped(),
 							clipping_rect.to_untyped(),
-							FontParams { size: size as u8 },
+							FontParams {
+								size: size.get() as u8,
+							},
 							unknown_to_device_transform,
 						)?;
 					}
@@ -108,7 +110,7 @@ impl Renderer {
 					ref brush,
 				} => {
 					let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
-					let stroke_width = thickness * scale; //.clamped(0.0, 200.0);
+					let stroke_width = *thickness * scale; //.clamped(0.0, 200.0);
 					let aspect_ratio = render_target.get_aspect_ratio();
 					let flattened_path = Self::get_stroke_path(
 						path,
@@ -124,6 +126,10 @@ impl Renderer {
 					} else {
 						None
 					};
+
+					let stroke_width = physical_pixel_to_device_transform
+						.transform_point(PixelPoint::new(stroke_width.get(), stroke_width.get()))
+						.x;
 
 					device.stroke(
 						&render_target,
@@ -150,7 +156,7 @@ impl Renderer {
 					ref style,
 				} => {
 					let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
-					let stroke_width = thickness * scale; //.clamped(0.0, 200.0);
+					let stroke_width = *thickness * scale; //.clamped(0.0, 200.0);
 					let aspect_ratio = render_target.get_aspect_ratio();
 					let flattened_path = Self::get_stroke_path(
 						path,
@@ -166,6 +172,10 @@ impl Renderer {
 					} else {
 						None
 					};
+
+					let stroke_width = physical_pixel_to_device_transform
+						.transform_point(PixelPoint::new(stroke_width.get(), stroke_width.get()))
+						.x;
 
 					device.stroke(
 						&render_target,
@@ -286,7 +296,7 @@ impl Renderer {
 
 	fn get_stroke_path(
 		path: &Vec<PathElement>,
-		stroke_width: f32,
+		stroke_width: PixelThickness,
 		stroke_style: &StrokeStyle,
 		aspect_ratio: f32,
 		antialiasing: bool,
@@ -296,7 +306,7 @@ impl Renderer {
 		let fringe_width = 1.0f32 / aspect_ratio;
 		if antialiasing {
 			flattened_path.expand_stroke(
-				stroke_width * 0.5f32,
+				stroke_width.get() * 0.5f32,
 				fringe_width,
 				stroke_style.line_cap,
 				stroke_style.line_join,
@@ -305,7 +315,7 @@ impl Renderer {
 			);
 		} else {
 			flattened_path.expand_stroke(
-				stroke_width * 0.5f32,
+				stroke_width.get() * 0.5f32,
 				0.0,
 				stroke_style.line_cap,
 				stroke_style.line_join,

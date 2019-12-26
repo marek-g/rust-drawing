@@ -116,14 +116,16 @@ impl FlattenedPath {
         // Flatten
         for cmd in path {
             match cmd {
-                PathElement::MoveTo { point } => {
+                PathElement::MoveTo(point) => {
                     flattened_path.add_path();
                     flattened_path.add_point(point.to_untyped(), PointFlags::PT_CORNER, dist_tol);
                 }
-                PathElement::LineTo { point } => {
+
+                PathElement::LineTo(point) => {
                     flattened_path.add_point(point.to_untyped(), PointFlags::PT_CORNER, dist_tol);
                 }
-                PathElement::BezierTo { point, c1, c2 } => {
+
+                PathElement::BezierTo(c1, c2, point) => {
                     if let Some(last) = flattened_path.points.last().map(|point| *point) {
                         flattened_path.tesselate_bezier(
                             last.xy,
@@ -136,8 +138,10 @@ impl FlattenedPath {
                         );
                     }
                 }
+
                 PathElement::ClosePath => flattened_path.close_path(),
-                PathElement::Solidity { solidity } => flattened_path.path_solidity(*solidity),
+
+                PathElement::Solidity(solidity) => flattened_path.path_solidity(*solidity),
             }
         }
 
