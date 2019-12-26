@@ -2,8 +2,12 @@
 // released on MIT license
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
+use crate::backend::Device;
+use crate::backend::Texture;
 use crate::color::Color;
+use crate::font::Font;
 use crate::primitive::Brush;
+use crate::resources::Resources;
 use crate::units::PixelRect;
 
 #[derive(Debug, Copy, Clone)]
@@ -18,17 +22,23 @@ pub struct Paint {
 }
 
 impl Paint {
-    pub fn from_brush(brush: &Brush) -> Self {
+    pub fn from_brush<'a, D: Device, F: Font<D>>(
+        brush: &Brush,
+        resources: &'a mut Resources<D, F>,
+    ) -> (Self, Option<&'a D::Texture>) {
         match brush {
-            Brush::Color { ref color } => Paint {
-                xform: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-                extent: [0.0, 0.0],
-                radius: 0.0,
-                feather: 1.0,
-                inner_color: *color,
-                outer_color: *color,
-                image: None,
-            },
+            Brush::Color { ref color } => (
+                Paint {
+                    xform: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                    extent: [0.0, 0.0],
+                    radius: 0.0,
+                    feather: 1.0,
+                    inner_color: *color,
+                    outer_color: *color,
+                    image: None,
+                },
+                None,
+            ),
 
             Brush::LinearGradient {
                 start_point,
@@ -50,22 +60,25 @@ impl Paint {
                     dy = 1.0;
                 }
 
-                Paint {
-                    xform: [
-                        dy,
-                        -dx,
-                        dx,
-                        dy,
-                        start_point.x - dx * LARGE,
-                        start_point.y - dy * LARGE,
-                    ],
-                    extent: [LARGE, LARGE + d * 0.5],
-                    radius: 0.0,
-                    feather: d.max(1.0),
-                    inner_color: *inner_color,
-                    outer_color: *outer_color,
-                    image: None,
-                }
+                (
+                    Paint {
+                        xform: [
+                            dy,
+                            -dx,
+                            dx,
+                            dy,
+                            start_point.x - dx * LARGE,
+                            start_point.y - dy * LARGE,
+                        ],
+                        extent: [LARGE, LARGE + d * 0.5],
+                        radius: 0.0,
+                        feather: d.max(1.0),
+                        inner_color: *inner_color,
+                        outer_color: *outer_color,
+                        image: None,
+                    },
+                    None,
+                )
             }
 
             Brush::RadialGradient {
@@ -77,15 +90,18 @@ impl Paint {
             } => {
                 let r = (in_radius + out_radius) * 0.5;
                 let f = out_radius - in_radius;
-                Paint {
-                    xform: [1.0, 0.0, 0.0, 1.0, center_point.x, center_point.y],
-                    extent: [r, r],
-                    radius: r,
-                    feather: f.max(1.0),
-                    inner_color: *inner_color,
-                    outer_color: *outer_color,
-                    image: None,
-                }
+                (
+                    Paint {
+                        xform: [1.0, 0.0, 0.0, 1.0, center_point.x, center_point.y],
+                        extent: [r, r],
+                        radius: r,
+                        feather: f.max(1.0),
+                        inner_color: *inner_color,
+                        outer_color: *outer_color,
+                        image: None,
+                    },
+                    None,
+                )
             }
 
             Brush::ShadowGradient {
@@ -96,42 +112,58 @@ impl Paint {
                 outer_color,
             } => {
                 let PixelRect { origin, size } = rect;
-                Paint {
-                    xform: [
-                        1.0,
-                        0.0,
-                        0.0,
-                        1.0,
-                        origin.x + size.width * 0.5,
-                        origin.y + size.height * 0.5,
-                    ],
-                    extent: [size.width * 0.5, size.height * 0.5],
-                    radius: *radius,
-                    feather: feather.max(1.0),
-                    inner_color: *inner_color,
-                    outer_color: *outer_color,
-                    image: None,
-                }
+                (
+                    Paint {
+                        xform: [
+                            1.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            origin.x + size.width * 0.5,
+                            origin.y + size.height * 0.5,
+                        ],
+                        extent: [size.width * 0.5, size.height * 0.5],
+                        radius: *radius,
+                        feather: feather.max(1.0),
+                        inner_color: *inner_color,
+                        outer_color: *outer_color,
+                        image: None,
+                    },
+                    None,
+                )
             }
 
             Brush::ImagePattern {
                 resource_key,
-                center_point,
-                size,
-                angle,
+                transform,
                 alpha,
             } => {
-                let cs = angle.cos();
-                let sn = angle.sin();
-                Paint {
-                    xform: [cs, sn, -sn, cs, center_point.x, center_point.y],
-                    extent: [size.width, size.height],
-                    radius: 0.0,
-                    feather: 0.0,
-                    inner_color: [1.0, 1.0, 1.0, *alpha],
-                    outer_color: [1.0, 1.0, 1.0, *alpha],
-                    image: Some(*resource_key),
-                }
+                let texture = resources.textures_mut().get(resource_key);
+                let extent_size = if let Some(texture) = texture {
+                    let size = texture.get_size();
+                    [size.0 as f32, size.1 as f32]
+                } else {
+                    [1.0f32, 1.0f32]
+                };
+                (
+                    Paint {
+                        xform: [
+                            transform.m11,
+                            transform.m12,
+                            transform.m21,
+                            transform.m22,
+                            transform.m31,
+                            transform.m32,
+                        ],
+                        extent: extent_size,
+                        radius: 0.0,
+                        feather: 0.0,
+                        inner_color: [1.0, 1.0, 1.0, *alpha],
+                        outer_color: [1.0, 1.0, 1.0, *alpha],
+                        image: Some(*resource_key),
+                    },
+                    texture,
+                )
             }
         }
     }

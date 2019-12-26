@@ -14,6 +14,8 @@ type DrawingFont = drawing::TextureFont<DrawingDevice>;
 use std::fs::File;
 use std::io::Read;
 
+use euclid::{ Angle, Vector2D };
+
 fn main() {
     set_process_high_dpi_aware();
     let window_builder = winit::window::WindowBuilder::new().with_title("Title");
@@ -141,9 +143,9 @@ fn main() {
                         ],
                         brush: Brush::ImagePattern {
                             resource_key: image2_resource_id,
-                            center_point: PixelPoint::new(100.0f32 + pos_y / 10.0f32, 350.0f32 + pos_y / 5.0f32),
-                            size: PixelSize::new(200.0f32, 200.0f32),
-                            angle: pos_y / 100.0f32, // 0.0f32,
+                            transform: PixelTransform::identity()
+                                .pre_translate(Vector2D::new(100.0f32, 350.0f32))
+                                .pre_rotate(Angle::radians(pos_y / 100.0f32)),
                             alpha: 1.0f32,
                         },
                     },
