@@ -192,6 +192,7 @@ impl GlDevice {
 
     fn convert_paint(
         paint: &Paint,
+        texture: Option<&GlTexture>,
         scissor: &Scissor,
         width: f32,
         fringe: f32,
@@ -236,32 +237,25 @@ impl GlDevice {
 
         let mut invxform;
 
-        if let Some(img) = paint.image {
-            // TODO: handle textures
-            // remove below line - it was added to compile with the below code commented out
-            invxform = inverse(paint.xform);
-        /*if let Some(texture) = self.textures.get(img) {
-            if texture.flags.contains(ImageFlags::FLIPY) {
-                let m1 = Transform::translate(0.0, frag.extent[1] * 0.5) * paint.xform;
-                let m2 = Transform::scale(1.0, -1.0) * m1;
-                let m1 = Transform::translate(0.0, -frag.extent[1] * 0.5) * m2;
-                invxform = m1.inverse();
+        if let Some(texture) = texture {
+            frag.type_ = ShaderType::FillImage as i32;
+
+            if texture.flipped_y {
+                // TODO: add matrix operations
+                invxform = inverse(paint.xform);
+            /*let m1 = Transform::translate(0.0, frag.extent[1] * 0.5) * paint.xform;
+            let m2 = Transform::scale(1.0, -1.0) * m1;
+            let m1 = Transform::translate(0.0, -frag.extent[1] * 0.5) * m2;
+            invxform = m1.inverse();*/
             } else {
-                invxform = paint.xform.inverse();
+                invxform = inverse(paint.xform);
             };
 
-            frag.type_ = ShaderType::FillImage as i32;
-            match texture.texture_type {
-                TextureType::RGBA => {
-                    frag.tex_type = if texture.flags.contains(ImageFlags::PREMULTIPLIED) {
-                        0
-                    } else {
-                        1
-                    }
-                }
-                TextureType::Alpha => frag.tex_type = 2,
+            match texture.gl_format {
+                gl::BGRA => frag.tex_type = 0,
+                gl::RED => frag.tex_type = 1,
+                _ => frag.tex_type = 0,
             }
-        }*/
         } else {
             frag.type_ = ShaderType::FillGradient as i32;
             frag.radius = paint.radius;
@@ -490,6 +484,8 @@ impl drawing::backend::Device for GlDevice {
         &mut self,
         target: &Self::RenderTarget,
         paint: &Paint,
+        texture: Option<&Self::Texture>,
+        filtering: bool,
         paths: &[Path],
         thickness: f32,
         fringe_width: f32,
@@ -509,7 +505,6 @@ impl drawing::backend::Device for GlDevice {
 
             pipeline.apply();
             pipeline.set_transform(&transform);
-            //pipeline.set_flipped_y(texture.flipped_y);
 
             unsafe {
                 gl::Enable(gl::STENCIL_TEST);
@@ -521,6 +516,7 @@ impl drawing::backend::Device for GlDevice {
                 if antialiasing {
                     pipeline.apply_frag_uniforms(&Self::convert_paint(
                         paint,
+                        texture,
                         &scissor,
                         thickness,
                         fringe_width,
@@ -529,6 +525,7 @@ impl drawing::backend::Device for GlDevice {
                 } else {
                     pipeline.apply_frag_uniforms(&Self::convert_paint(
                         paint,
+                        texture,
                         &scissor,
                         thickness,
                         fringe_width,
@@ -546,6 +543,7 @@ impl drawing::backend::Device for GlDevice {
                 if antialiasing {
                     pipeline.apply_frag_uniforms(&Self::convert_paint(
                         paint,
+                        texture,
                         &scissor,
                         thickness,
                         fringe_width,
@@ -582,6 +580,8 @@ impl drawing::backend::Device for GlDevice {
         &mut self,
         target: &Self::RenderTarget,
         paint: &Paint,
+        texture: Option<&Self::Texture>,
+        filtering: bool,
         paths: &[Path],
         bounds: Bounds,
         fringe_width: f32,
@@ -592,10 +592,24 @@ impl drawing::backend::Device for GlDevice {
     ) {
         self.set_render_target(&target);
 
+        if let Some(texture_id) = paint.image {
+            unsafe {
+                gl::Enable(gl::TEXTURE_2D);
+                gl::BindTexture(gl::TEXTURE_2D, texture_id as GLuint);
+                if filtering {
+                    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+                    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+                } else {
+                    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+                    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
+                }
+            }
+        }
+
         if paths.len() == 1 && paths[0].convex {
             // convex fill
             let mut uniforms =
-                Self::convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+                Self::convert_paint(paint, texture, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
                 let transform = [
@@ -607,7 +621,7 @@ impl drawing::backend::Device for GlDevice {
 
                 pipeline.apply();
                 pipeline.set_transform(&transform);
-                //pipeline.set_flipped_y(texture.flipped_y);
+
                 pipeline.apply_frag_uniforms(&uniforms);
 
                 // fill shape
@@ -626,7 +640,7 @@ impl drawing::backend::Device for GlDevice {
             }
         } else {
             let mut uniforms =
-                Self::convert_paint(paint, &scissor, fringe_width, fringe_width, -1.0);
+                Self::convert_paint(paint, texture, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
                 let transform = [

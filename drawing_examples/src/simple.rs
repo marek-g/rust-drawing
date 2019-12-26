@@ -131,6 +131,31 @@ fn main() {
                         start_point: UserPixelPoint::new(100.0f32, 150.0f32),
                         end_point: UserPixelPoint::new(300.0f32, 350.0f32),
                     },
+
+                    Primitive::Fill {
+                        path: vec![
+                            PathElement::MoveTo {
+                                point: UserPixelPoint::new(100.0f32, 350.0f32),
+                            },
+                            PathElement::LineTo {
+                                point: UserPixelPoint::new(300.0f32, 350.0f32),
+                            },
+                            PathElement::LineTo {
+                                point: UserPixelPoint::new(300.0f32, 550.0f32),
+                            },
+                            PathElement::LineTo {
+                                point: UserPixelPoint::new(100.0f32, 550.0f32),
+                            },
+                        ],
+                        brush: Brush::ImagePattern {
+                            resource_key: image2_resource_id,
+                            center_point: UserPixelPoint::new(100.0f32 + pos_y / 10.0f32, 350.0f32 + pos_y / 5.0f32),
+                            size: UserPixelSize::new(200.0f32, 200.0f32),
+                            angle: pos_y / 100.0f32, // 0.0f32,
+                            alpha: 1.0f32,
+                        },
+                    },
+
                     Primitive::Image {
                         resource_key: image1_resource_id,
                         rect: UserPixelRect::new(
@@ -232,7 +257,6 @@ fn main() {
                                 c2: UserPixelPoint::new(180.0f32, 50.0f32),
                             }
                         ],
-                        //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
                         brush: Brush::LinearGradient {
                             start_point: UserPixelPoint::new(100.0f32, 150.0f32),
                             end_point: UserPixelPoint::new(350.0f32, 350.0f32),
@@ -264,7 +288,6 @@ fn main() {
                             PathElement::ClosePath,
                             PathElement::Solidity { solidity: Solidity::Hole },
                         ],
-                        //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
                         brush: Brush::LinearGradient {
                             start_point: UserPixelPoint::new(500.0f32, 150.0f32),
                             end_point: UserPixelPoint::new(750.0f32, 350.0f32),

@@ -73,8 +73,7 @@ void main(void) {
     } else if (type == 3) {
         // Textured tris
         vec4 color = texture(tex_sampler, vert_tex_coords);
-        if (texType == 1) color = vec4(color.xyz * color.w, color.w);
-        if (texType == 2) color = vec4(color.x);
+        if (texType == 1) color = vec4(color.x);
         color *= scissor;
         result = color * innerCol;
     }

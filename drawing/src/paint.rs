@@ -116,15 +116,15 @@ impl Paint {
 
             Brush::ImagePattern {
                 resource_key,
-                center,
+                center_point,
                 size,
                 angle,
                 alpha,
             } => {
-                let cs = alpha.cos();
-                let sn = alpha.sin();
+                let cs = angle.cos();
+                let sn = angle.sin();
                 Paint {
-                    xform: [cs, sn, -sn, cs, center.x, center.y],
+                    xform: [cs, sn, -sn, cs, center_point.x, center_point.y],
                     extent: [size.width, size.height],
                     radius: 0.0,
                     feather: 0.0,

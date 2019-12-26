@@ -42,7 +42,6 @@ pub struct UniversalPipeline {
     vbo: GLuint,
     vao: GLuint,
     transform_location: GLint,
-    flipped_y_location: GLint,
     frag_uniform_buf: GLuint,
 }
 
@@ -54,9 +53,6 @@ impl UniversalPipeline {
 
         let transform_location = unsafe {
             gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
-        };
-        let flipped_y_location = unsafe {
-            gl::GetUniformLocation(program.id(), CString::new("flipped_y").unwrap().as_ptr())
         };
 
         let frag_uniform_buf = unsafe {
@@ -78,7 +74,6 @@ impl UniversalPipeline {
             vbo: 0,
             vao: 0,
             transform_location,
-            flipped_y_location,
             frag_uniform_buf,
         }
     }
@@ -96,12 +91,6 @@ impl UniversalPipeline {
         unsafe {
             let ptr: *const f32 = std::mem::transmute(transform);
             gl::UniformMatrix4fv(self.transform_location, 1, gl::FALSE, ptr);
-        }
-    }
-
-    pub fn set_flipped_y(&mut self, flipped_y: bool) {
-        unsafe {
-            gl::Uniform1i(self.flipped_y_location, if flipped_y { 1 } else { 0 });
         }
     }
 

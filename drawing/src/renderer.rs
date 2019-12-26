@@ -120,11 +120,19 @@ impl Renderer {
 						aspect_ratio,
 						antialiasing,
 					);
+
 					let paint = Paint::from_brush(brush);
+					let texture = if let Some(resource_key) = paint.image {
+						resources.textures_mut().get(&resource_key)
+					} else {
+						None
+					};
 
 					device.stroke(
 						&render_target,
 						&paint,
+						texture,
+						true,
 						&flattened_path.paths,
 						stroke_width,
 						1.0f32 / aspect_ratio,
@@ -154,11 +162,19 @@ impl Renderer {
 						aspect_ratio,
 						antialiasing,
 					);
+
 					let paint = Paint::from_brush(brush);
+					let texture = if let Some(resource_key) = paint.image {
+						resources.textures_mut().get(&resource_key)
+					} else {
+						None
+					};
 
 					device.stroke(
 						&render_target,
 						&paint,
+						texture,
+						true,
 						&flattened_path.paths,
 						stroke_width,
 						1.0f32 / aspect_ratio,
@@ -178,11 +194,19 @@ impl Renderer {
 				} => {
 					let aspect_ratio = render_target.get_aspect_ratio();
 					let flattened_path = Self::get_fill_path(path, aspect_ratio, antialiasing);
+
 					let paint = Paint::from_brush(brush);
+					let texture = if let Some(resource_key) = paint.image {
+						resources.textures_mut().get(&resource_key)
+					} else {
+						None
+					};
 
 					device.fill(
 						&render_target,
 						&paint,
+						texture,
+						true,
 						&flattened_path.paths,
 						flattened_path.bounds,
 						1.0f32 / aspect_ratio,

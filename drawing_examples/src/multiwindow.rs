@@ -153,6 +153,7 @@ fn draw_window(
                 window_target.get_render_target(),
                 &primitives,
                 resources,
+                false,
             )
             .unwrap();
         device.end(window_target);
