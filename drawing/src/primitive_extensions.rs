@@ -421,3 +421,42 @@ pub fn rounded_rect_varying_path<R: Into<PixelRect>>(
         res
     }
 }
+
+pub fn circle_path<P: Into<PixelPoint>>(center: P, radius: f32) -> Vec<PathElement> {
+    ellipse_path(center, radius, radius)
+}
+
+pub fn ellipse_path<P: Into<PixelPoint>>(
+    center: P,
+    radius_x: f32,
+    radius_y: f32,
+) -> Vec<PathElement> {
+    let mut res = Vec::with_capacity(6);
+    let center = center.into();
+    res.push(PathElement::MoveTo(PixelPoint::new(
+        center.x - radius_x,
+        center.y,
+    )));
+    res.push(PathElement::BezierTo(
+        PixelPoint::new(center.x - radius_x, center.y + radius_y * KAPPA90),
+        PixelPoint::new(center.x - radius_x * KAPPA90, center.y + radius_y),
+        PixelPoint::new(center.x, center.y + radius_y),
+    ));
+    res.push(PathElement::BezierTo(
+        PixelPoint::new(center.x + radius_x * KAPPA90, center.y + radius_y),
+        PixelPoint::new(center.x + radius_x, center.y + radius_y * KAPPA90),
+        PixelPoint::new(center.x + radius_x, center.y),
+    ));
+    res.push(PathElement::BezierTo(
+        PixelPoint::new(center.x + radius_x, center.y - radius_y * KAPPA90),
+        PixelPoint::new(center.x + radius_x * KAPPA90, center.y - radius_y),
+        PixelPoint::new(center.x, center.y - radius_y),
+    ));
+    res.push(PathElement::BezierTo(
+        PixelPoint::new(center.x - radius_x * KAPPA90, center.y - radius_y),
+        PixelPoint::new(center.x - radius_x, center.y - radius_y * KAPPA90),
+        PixelPoint::new(center.x - radius_x, center.y),
+    ));
+    res.push(PathElement::ClosePath);
+    res
+}
