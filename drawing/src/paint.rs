@@ -9,10 +9,11 @@ use crate::font::Font;
 use crate::primitive::Brush;
 use crate::resources::Resources;
 use crate::units::PixelRect;
+use crate::units::PixelTransform;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Paint {
-    pub xform: [f32; 6],
+    pub xform: PixelTransform,
     pub extent: [f32; 2],
     pub radius: f32,
     pub feather: f32,
@@ -29,7 +30,7 @@ impl Paint {
         match brush {
             Brush::Color { ref color } => (
                 Paint {
-                    xform: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                    xform: PixelTransform::identity(),
                     extent: [0.0, 0.0],
                     radius: 0.0,
                     feather: 1.0,
@@ -62,14 +63,14 @@ impl Paint {
 
                 (
                     Paint {
-                        xform: [
+                        xform: PixelTransform::row_major(
                             dy,
                             -dx,
                             dx,
                             dy,
                             start_point.x - dx * LARGE,
                             start_point.y - dy * LARGE,
-                        ],
+                        ),
                         extent: [LARGE, LARGE + d * 0.5],
                         radius: 0.0,
                         feather: d.max(1.0),
@@ -92,7 +93,14 @@ impl Paint {
                 let f = out_radius - in_radius;
                 (
                     Paint {
-                        xform: [1.0, 0.0, 0.0, 1.0, center_point.x, center_point.y],
+                        xform: PixelTransform::row_major(
+                            1.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            center_point.x,
+                            center_point.y,
+                        ),
                         extent: [r, r],
                         radius: r,
                         feather: f.max(1.0),
@@ -114,14 +122,14 @@ impl Paint {
                 let PixelRect { origin, size } = rect;
                 (
                     Paint {
-                        xform: [
+                        xform: PixelTransform::row_major(
                             1.0,
                             0.0,
                             0.0,
                             1.0,
                             origin.x + size.width * 0.5,
                             origin.y + size.height * 0.5,
-                        ],
+                        ),
                         extent: [size.width * 0.5, size.height * 0.5],
                         radius: *radius,
                         feather: feather.max(1.0),
@@ -147,14 +155,7 @@ impl Paint {
                 };
                 (
                     Paint {
-                        xform: [
-                            transform.m11,
-                            transform.m12,
-                            transform.m21,
-                            transform.m22,
-                            transform.m31,
-                            transform.m32,
-                        ],
+                        xform: *transform,
                         extent: extent_size,
                         radius: 0.0,
                         feather: 0.0,

@@ -2,6 +2,7 @@ use crate::color::*;
 use crate::composite_operation_state::CompositeOperationState;
 use crate::paint::Paint;
 use crate::primitive::*;
+use crate::scissor::Scissor;
 use crate::units::*;
 use crate::utils::path::Bounds;
 use crate::utils::path::Path;
@@ -54,12 +55,6 @@ impl TexturedY8Vertex {
 			color,
 		}
 	}
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct Scissor {
-	pub xform: [f32; 6],
-	pub extent: [f32; 2],
 }
 
 pub trait Device {

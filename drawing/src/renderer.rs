@@ -1,12 +1,12 @@
 use crate::backend::ColoredVertex;
 use crate::backend::Device;
 use crate::backend::RenderTarget;
-use crate::backend::Scissor;
 use crate::font::Font;
 use crate::font::FontParams;
 use crate::paint::Paint;
 use crate::primitive::*;
 use crate::resources::*;
+use crate::scissor::Scissor;
 use crate::units::*;
 use crate::utils::path::FlattenedPath;
 use crate::Result;
@@ -136,7 +136,7 @@ impl Renderer {
 						1.0f32 / aspect_ratio,
 						antialiasing,
 						Scissor {
-							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							xform: PixelTransform::identity(),
 							extent: [-1.0, -1.0],
 						},
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
@@ -177,7 +177,7 @@ impl Renderer {
 						1.0f32 / aspect_ratio,
 						antialiasing,
 						Scissor {
-							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							xform: PixelTransform::identity(),
 							extent: [-1.0, -1.0],
 						},
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
@@ -204,7 +204,7 @@ impl Renderer {
 						1.0f32 / aspect_ratio,
 						antialiasing,
 						Scissor {
-							xform: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+							xform: PixelTransform::identity(),
 							extent: [-1.0, -1.0],
 						},
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),

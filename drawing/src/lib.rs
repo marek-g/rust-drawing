@@ -15,6 +15,7 @@ pub mod primitive;
 pub mod primitive_extensions;
 pub mod renderer;
 pub mod resources;
+pub mod scissor;
 pub mod units;
 pub mod utils;
 

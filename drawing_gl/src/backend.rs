@@ -7,6 +7,8 @@ extern crate winit;
 use crate::backend::winit::dpi::PhysicalSize;
 use drawing::composite_operation_state::CompositeOperationState;
 use drawing::paint::Paint;
+use drawing::scissor::Scissor;
+use euclid::Vector2D;
 
 use self::drawing::color::*;
 use self::drawing::units::*;
@@ -221,15 +223,22 @@ impl GlDevice {
             frag.scissor_scale[0] = 1.0;
             frag.scissor_scale[1] = 1.0;
         } else {
-            frag.scissor_mat = xform_to_3x4(inverse(scissor.xform));
+            frag.scissor_mat = xform_to_3x4(
+                scissor
+                    .xform
+                    .inverse()
+                    .unwrap_or_else(|| PixelTransform::identity()),
+            );
             frag.scissor_ext[0] = scissor.extent[0];
             frag.scissor_ext[1] = scissor.extent[1];
-            frag.scissor_scale[0] =
-                (scissor.xform[0] * scissor.xform[0] + scissor.xform[2] * scissor.xform[2]).sqrt()
-                    / fringe;
-            frag.scissor_scale[1] =
-                (scissor.xform[1] * scissor.xform[1] + scissor.xform[3] * scissor.xform[3]).sqrt()
-                    / fringe;
+            frag.scissor_scale[0] = (scissor.xform.m11 * scissor.xform.m11
+                + scissor.xform.m21 * scissor.xform.m21)
+                .sqrt()
+                / fringe;
+            frag.scissor_scale[1] = (scissor.xform.m12 * scissor.xform.m12
+                + scissor.xform.m22 * scissor.xform.m22)
+                .sqrt()
+                / fringe;
         }
 
         frag.extent = [paint.extent[0], paint.extent[1]];
@@ -241,14 +250,17 @@ impl GlDevice {
             frag.type_ = ShaderType::FillImage as i32;
 
             if texture.flipped_y {
-                // TODO: add matrix operations
-                invxform = inverse(paint.xform);
-            /*let m1 = Transform::translate(0.0, frag.extent[1] * 0.5) * paint.xform;
-            let m2 = Transform::scale(1.0, -1.0) * m1;
-            let m1 = Transform::translate(0.0, -frag.extent[1] * 0.5) * m2;
-            invxform = m1.inverse();*/
+                let m1 = paint
+                    .xform
+                    .pre_translate(Vector2D::new(0.0, frag.extent[1] * 0.5))
+                    .pre_scale(1.0f32, -1.0f32)
+                    .pre_translate(Vector2D::new(0.0, -frag.extent[1] * 0.5));
+                invxform = m1.inverse().unwrap_or_else(|| PixelTransform::identity());
             } else {
-                invxform = inverse(paint.xform);
+                invxform = paint
+                    .xform
+                    .inverse()
+                    .unwrap_or_else(|| PixelTransform::identity());
             };
 
             match texture.gl_format {
@@ -260,7 +272,10 @@ impl GlDevice {
             frag.type_ = ShaderType::FillGradient as i32;
             frag.radius = paint.radius;
             frag.feather = paint.feather;
-            invxform = inverse(paint.xform);
+            invxform = paint
+                .xform
+                .inverse()
+                .unwrap_or_else(|| PixelTransform::identity());
         }
 
         frag.paint_mat = xform_to_3x4(invxform);
@@ -925,37 +940,19 @@ fn premul_color(color: Color) -> Color {
 }
 
 #[inline]
-fn xform_to_3x4(xform: [f32; 6]) -> [f32; 12] {
+fn xform_to_3x4(xform: PixelTransform) -> [f32; 12] {
     let mut m = [0f32; 12];
-    let t = &xform;
-    m[0] = t[0];
-    m[1] = t[1];
+    m[0] = xform.m11;
+    m[1] = xform.m12;
     m[2] = 0.0;
     m[3] = 0.0;
-    m[4] = t[2];
-    m[5] = t[3];
+    m[4] = xform.m21;
+    m[5] = xform.m22;
     m[6] = 0.0;
     m[7] = 0.0;
-    m[8] = t[4];
-    m[9] = t[5];
+    m[8] = xform.m31;
+    m[9] = xform.m32;
     m[10] = 1.0;
     m[11] = 0.0;
     m
-}
-
-pub fn inverse(transform: [f32; 6]) -> [f32; 6] {
-    let t = &transform;
-    let det = t[0] * t[3] - t[2] * t[1];
-    if det > -1e-6 && det < 1e-6 {
-        return [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
-    }
-    let invdet = 1.0 / det;
-    let mut inv = [0f32; 6];
-    inv[0] = t[3] * invdet;
-    inv[2] = -t[2] * invdet;
-    inv[4] = (t[2] * t[5] - t[3] * t[4]) * invdet;
-    inv[1] = -t[1] * invdet;
-    inv[3] = t[0] * invdet;
-    inv[5] = (t[1] * t[4] - t[0] * t[5]) * invdet;
-    inv
 }
