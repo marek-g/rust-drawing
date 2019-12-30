@@ -179,17 +179,13 @@ impl Renderer {
 
 					let (paint, texture) = Paint::from_brush(brush, resources);
 
-					let stroke_width = pixel_to_device_transform
-						.transform_point(PixelPoint::new(stroke_width.get(), stroke_width.get()))
-						.x;
-
 					device.stroke(
 						&render_target,
 						&paint,
 						texture,
 						true,
 						&flattened_path.paths,
-						stroke_width,
+						stroke_width.get(),
 						1.0f32 / aspect_ratio,
 						antialiasing,
 						scissor,
