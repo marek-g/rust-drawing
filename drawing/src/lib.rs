@@ -7,17 +7,18 @@ extern crate failure;
 pub type Result<T> = std::result::Result<T, failure::Error>;
 
 pub mod backend;
+pub mod clipping;
 pub mod color;
 pub mod composite_operation_state;
 pub mod font;
 pub mod paint;
+pub mod path;
 pub mod primitive;
 pub mod primitive_extensions;
 pub mod renderer;
 pub mod resources;
-pub mod scissor;
+pub mod transformation;
 pub mod units;
-pub mod utils;
 
 mod texture_font;
 pub use texture_font::TextureFont;

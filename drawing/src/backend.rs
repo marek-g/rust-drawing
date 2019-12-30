@@ -1,11 +1,11 @@
+use crate::clipping::Scissor;
 use crate::color::*;
 use crate::composite_operation_state::CompositeOperationState;
 use crate::paint::Paint;
+use crate::path::Bounds;
+use crate::path::Path;
 use crate::primitive::*;
-use crate::scissor::Scissor;
 use crate::units::*;
-use crate::utils::path::Bounds;
-use crate::utils::path::Path;
 use crate::Result;
 
 #[repr(C, packed)]

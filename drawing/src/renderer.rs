@@ -1,14 +1,14 @@
 use crate::backend::ColoredVertex;
 use crate::backend::Device;
 use crate::backend::RenderTarget;
+use crate::clipping::Scissor;
 use crate::font::Font;
 use crate::font::FontParams;
 use crate::paint::Paint;
+use crate::path::FlattenedPath;
 use crate::primitive::*;
 use crate::resources::*;
-use crate::scissor::Scissor;
 use crate::units::*;
-use crate::utils::path::FlattenedPath;
 use crate::Result;
 
 use std::convert::Into;

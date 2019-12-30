@@ -34,11 +34,11 @@ extern crate freetype;
 
 use crate::backend::Device;
 use crate::backend::TexturedY8Vertex;
+use crate::clipping::clip_image;
 use crate::color::ColorFormat;
 use crate::texture_font::font::BitmapFont;
 pub use crate::texture_font::font::FontError;
 use crate::units::UnknownToDeviceTransform;
-use crate::utils::clipping::clip_image;
 
 const DEFAULT_FONT_SIZE: u8 = 16;
 

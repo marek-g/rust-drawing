@@ -5,18 +5,18 @@ extern crate std;
 extern crate winit;
 
 use crate::backend::winit::dpi::PhysicalSize;
+use drawing::clipping::Scissor;
 use drawing::composite_operation_state::CompositeOperationState;
 use drawing::paint::Paint;
-use drawing::scissor::Scissor;
 use euclid::Vector2D;
 
-use self::drawing::color::*;
-use self::drawing::units::*;
-use self::drawing::utils::path::{Bounds, Path};
-use self::drawing::Result;
-use self::gl::types::*;
 use crate::backend::drawing::backend::*;
 use crate::pipelines::*;
+use drawing::color::*;
+use drawing::path::{Bounds, Path};
+use drawing::units::*;
+use drawing::Result;
+use gl::types::*;
 
 use std::cell::{Ref, RefCell};
 
