@@ -28,7 +28,30 @@ impl Renderer {
 		resources: &mut Resources<D, F>,
 		antialiasing: bool,
 	) -> Result<()> {
-		let pixel_to_device_transform = render_target.get_device_transform();
+		self.draw_internal(
+			device,
+			render_target,
+			primitives,
+			resources,
+			antialiasing,
+			PixelTransform::identity(),
+			Scissor::empty(),
+		)
+	}
+
+	fn draw_internal<D: Device, F: Font<D>>(
+		&mut self,
+		device: &mut D,
+		render_target: &D::RenderTarget,
+		primitives: &Vec<Primitive>,
+		resources: &mut Resources<D, F>,
+		antialiasing: bool,
+		pixel_transform: PixelTransform,
+		scissor: Scissor,
+	) -> Result<()> {
+		let pixel_to_device_transform = render_target
+			.get_device_transform()
+			.pre_transform(&pixel_transform);
 		let unknown_to_device_transform = UnknownToDeviceTransform::from_row_major_array(
 			pixel_to_device_transform.to_row_major_array(),
 		);
@@ -216,36 +239,42 @@ impl Renderer {
 					ref rect,
 					ref primitives,
 				} => {
-					device.save_state();
-
-					device.set_clip_rect(*rect);
-					self.draw(device, render_target, primitives, resources, antialiasing)?;
-
-					device.restore_state();
+					self.draw_internal(
+						device,
+						render_target,
+						primitives,
+						resources,
+						antialiasing,
+						pixel_transform,
+						scissor.intersect_with_rect(rect.clone(), &pixel_transform),
+					)?;
 				}
 
 				&Primitive::ClipPath {
 					ref path,
 					ref primitives,
 				} => {
-					device.save_state();
+					/*device.save_state();
 
 					device.set_clip_path(path);
 					self.draw(device, render_target, primitives, resources, antialiasing)?;
 
-					device.restore_state();
+					device.restore_state();*/
 				}
 
 				&Primitive::Transform {
 					ref transform,
 					ref primitives,
 				} => {
-					device.save_state();
-
-					device.transform(*transform);
-					self.draw(device, render_target, primitives, resources, antialiasing)?;
-
-					device.restore_state();
+					self.draw_internal(
+						device,
+						render_target,
+						primitives,
+						resources,
+						antialiasing,
+						pixel_transform.pre_transform(transform),
+						scissor.apply_transform(transform),
+					)?;
 				}
 
 				&Primitive::Composite {
