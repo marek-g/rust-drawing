@@ -1,6 +1,7 @@
 use crate::color::*;
 use crate::units::*;
 
+#[derive(Debug)]
 pub enum Primitive {
     Line {
         color: Color,
@@ -68,6 +69,7 @@ pub enum Primitive {
     },
 }
 
+#[derive(Debug)]
 pub enum PathElement {
     MoveTo(PixelPoint),
 
@@ -80,6 +82,7 @@ pub enum PathElement {
     Solidity(Solidity),
 }
 
+#[derive(Debug)]
 pub enum Brush {
     Color {
         color: Color,
@@ -115,7 +118,7 @@ pub enum Brush {
     },
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct StrokeStyle {
     pub line_cap: LineCap,
     pub line_join: LineJoin,
@@ -132,21 +135,21 @@ impl Default for StrokeStyle {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum LineCap {
     Butt,
     Round,
     Square,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum LineJoin {
     Miter,
     Round,
     Bevel,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Solidity {
     Solid,
     Hole,

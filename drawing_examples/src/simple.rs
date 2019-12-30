@@ -186,6 +186,12 @@ fn main() {
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
                     },
+                    Primitive::Line {
+                        color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(width as f32, height as f32),
+                        end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
+                    },
                     Primitive::Image {
                         resource_key: image1_resource_id,
                         rect: PixelRect::new(
@@ -193,6 +199,12 @@ fn main() {
                             PixelSize::new(4.0f32, 4.0f32),
                         ),
                         uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+                    },
+                    Primitive::Line {
+                        color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+                        thickness: PixelThickness::new(1.0f32),
+                        start_point: PixelPoint::new(0.0f32, height as f32),
+                        end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
                     },
                     Primitive::Text {
                         resource_key: "F1".to_string(),

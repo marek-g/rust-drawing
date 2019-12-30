@@ -158,10 +158,7 @@ impl Renderer {
 						stroke_width,
 						1.0f32 / aspect_ratio,
 						antialiasing,
-						Scissor {
-							xform: PixelTransform::identity(),
-							extent: [-1.0, -1.0],
-						},
+						scissor,
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
 						unknown_to_device_transform,
 					);
@@ -199,10 +196,7 @@ impl Renderer {
 						stroke_width,
 						1.0f32 / aspect_ratio,
 						antialiasing,
-						Scissor {
-							xform: PixelTransform::identity(),
-							extent: [-1.0, -1.0],
-						},
+						scissor,
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
 						unknown_to_device_transform,
 					);
@@ -226,10 +220,7 @@ impl Renderer {
 						flattened_path.bounds,
 						1.0f32 / aspect_ratio,
 						antialiasing,
-						Scissor {
-							xform: PixelTransform::identity(),
-							extent: [-1.0, -1.0],
-						},
+						scissor,
 						CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
 						unknown_to_device_transform,
 					);

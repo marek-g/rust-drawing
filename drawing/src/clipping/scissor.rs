@@ -8,8 +8,8 @@ use euclid::Vector2D;
 // user interface cases like rendering a text edit or a timeline.
 #[derive(Debug, Copy, Clone)]
 pub struct Scissor {
-    pub xform: PixelTransform,
-    pub extent: [f32; 2],
+    pub xform: PixelTransform, // transform of the middle of the rect
+    pub extent: [f32; 2],      // half ot the width & height
 }
 
 impl Scissor {

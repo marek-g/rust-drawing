@@ -9,6 +9,8 @@ pub trait Clipping {
 impl Clipping for Vec<Primitive> {
     fn clip(self, clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
+        let mut need_scissors = false;
+
         for primitive in self.into_iter() {
             match primitive {
                 Primitive::Line {
@@ -121,14 +123,21 @@ impl Clipping for Vec<Primitive> {
                     thickness,
                     brush,
                 } => {
-                    let clipped_path = path.clip(clipping_rect);
+                    need_scissors = true;
+                    res.push(Primitive::Stroke {
+                        path,
+                        thickness,
+                        brush,
+                    });
+
+                    /*let clipped_path = path.clip(clipping_rect);
                     if clipped_path.len() > 0 {
                         res.push(Primitive::Stroke {
                             path: clipped_path,
                             thickness,
                             brush,
                         })
-                    }
+                    }*/
                 }
 
                 Primitive::StrokeStyled {
@@ -137,7 +146,15 @@ impl Clipping for Vec<Primitive> {
                     brush,
                     style,
                 } => {
-                    let clipped_path = path.clip(clipping_rect);
+                    need_scissors = true;
+                    res.push(Primitive::StrokeStyled {
+                        path,
+                        thickness,
+                        brush,
+                        style,
+                    })
+
+                    /*let clipped_path = path.clip(clipping_rect);
                     if clipped_path.len() > 0 {
                         res.push(Primitive::StrokeStyled {
                             path: clipped_path,
@@ -145,30 +162,37 @@ impl Clipping for Vec<Primitive> {
                             brush,
                             style,
                         })
-                    }
+                    }*/
                 }
 
                 Primitive::Fill { path, brush } => {
-                    let clipped_path = path.clip(clipping_rect);
+                    need_scissors = true;
+                    res.push(Primitive::Fill { path, brush });
+
+                    /*let clipped_path = path.clip(clipping_rect);
                     if clipped_path.len() > 0 {
                         res.push(Primitive::Fill {
                             path: clipped_path,
                             brush,
                         })
-                    }
+                    }*/
                 }
 
-                Primitive::ClipRect { .. } => {
-                    // TODO: implement!
+                Primitive::ClipRect { rect, primitives } => {
+                    res.push(Primitive::ClipRect { rect, primitives })
                 }
 
-                Primitive::ClipPath { .. } => {
-                    // TODO: implement!
+                Primitive::ClipPath { path, primitives } => {
+                    res.push(Primitive::ClipPath { path, primitives })
                 }
 
-                Primitive::Transform { .. } => {
-                    // TODO: implement!
-                }
+                Primitive::Transform {
+                    transform,
+                    primitives,
+                } => res.push(Primitive::Transform {
+                    transform,
+                    primitives,
+                }),
 
                 Primitive::Composite { color, primitives } => {
                     let clipped_primitives = primitives.clip(clipping_rect);
@@ -181,7 +205,15 @@ impl Clipping for Vec<Primitive> {
                 }
             }
         }
-        res
+
+        if need_scissors {
+            vec![Primitive::ClipRect {
+                rect: clipping_rect,
+                primitives: res,
+            }]
+        } else {
+            res
+        }
     }
 }
 
