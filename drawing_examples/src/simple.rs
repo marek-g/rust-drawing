@@ -92,6 +92,8 @@ fn main() {
                     return;
                 }
 
+                let cpu_time = cpu_time::ProcessTime::now();
+
                 pos_y += 1.0f32;
 
                 let clipping_rect = PixelRect::new(
@@ -346,6 +348,9 @@ fn main() {
                     )
                     .unwrap();
                 device.end(&window_target);
+
+                let cpu_time = cpu_time.elapsed();
+                println!("CPU time: {:?}", cpu_time);
 
                 window_target.swap_buffers();
             },

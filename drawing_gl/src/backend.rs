@@ -26,6 +26,7 @@ pub struct GlDevice {
     textured_y8_pipeline: Option<TexturedY8Pipeline>,
     universal_pipeline: Option<UniversalPipeline>,
     aspect_ratio: f32,
+    time_query: Option<GLuint>,
 }
 
 impl GlDevice {
@@ -94,6 +95,14 @@ impl GlDevice {
 
         self.aspect_ratio = windowed_context.window().hidpi_factor() as f32;
 
+        if self.time_query.is_none() {
+            let mut time_query: GLuint = 0;
+            unsafe {
+                gl::GenQueries(1, &mut time_query);
+            }
+            self.time_query = Some(time_query);
+        }
+
         Ok(GlWindowTarget {
             gl_windowed_context: RefCell::new(Some(windowed_context)),
             gl_render_target: GlRenderTarget {
@@ -123,6 +132,10 @@ impl GlDevice {
 
     pub fn begin(&mut self, window_target: &GlWindowTarget) -> Result<()> {
         unsafe {
+            gl::BeginQuery(gl::TIME_ELAPSED, self.time_query.unwrap());
+        }
+
+        unsafe {
             let context = window_target.gl_windowed_context.replace(None);
             let context = context.unwrap().make_current().unwrap();
             window_target.gl_windowed_context.replace(Some(context));
@@ -148,7 +161,31 @@ impl GlDevice {
         Ok(())
     }
 
-    pub fn end(&mut self, _window_target: &GlWindowTarget) {}
+    pub fn end(&mut self, _window_target: &GlWindowTarget) {
+        unsafe {
+            gl::EndQuery(gl::TIME_ELAPSED);
+
+            // retrieving the recorded elapsed time
+            // wait until the query result is available
+            let mut done = 0i32;
+            while done == 0 {
+                gl::GetQueryObjectiv(
+                    self.time_query.unwrap(),
+                    gl::QUERY_RESULT_AVAILABLE,
+                    &mut done,
+                );
+            }
+
+            // get the query result
+            let mut elapsed_time: GLuint64 = 0;
+            gl::GetQueryObjectui64v(
+                self.time_query.unwrap(),
+                gl::QUERY_RESULT,
+                &mut elapsed_time,
+            );
+            println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
+        }
+    }
 
     pub fn set_render_target(&mut self, target: &GlRenderTarget) {
         unsafe {
@@ -295,6 +332,7 @@ impl drawing::backend::Device for GlDevice {
             textured_y8_pipeline: None,
             universal_pipeline: None,
             aspect_ratio: 1.0f32,
+            time_query: None,
         })
     }
 

@@ -11,6 +11,7 @@ euclid = "0.20"
 winit = "0.20.0-alpha4"
 shared_library = "0.1"
 find_folder = "0.3"
+cpu-time = "1.0"
 
 [[bin]]
 name = "simple"
