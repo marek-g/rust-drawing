@@ -157,3 +157,81 @@ pub fn ellipse_path<P: Into<PixelPoint>>(
     res.push(PathElement::ClosePath);
     res
 }
+
+/// Creates a path that represents pixel aligned rectangle path to be used with stroke.
+///
+/// # Arguments
+///
+/// * `rect` - marks the boundaries
+/// * `thickness` - thickness of the outline, the outline grows inside the rect
+pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelThickness>>(
+    rect: R,
+    thickness: T,
+) -> Vec<PathElement> {
+    let rect = rect.into();
+    let thickness = thickness.into().get();
+
+    rect_path(PixelRect::new(
+        PixelPoint::new(
+            rect.origin.x + thickness * 0.5f32,
+            rect.origin.y + thickness * 0.5f32,
+        ),
+        PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
+    ))
+}
+
+/// Creates a path that represents pixel aligned horizontal line path to be used with stroke.
+///
+/// # Arguments
+///
+/// * `start` - starting point (left top pixel coordinates)
+/// * `length` - length of the line in pixels
+/// * `thickness` - thickness of the line, the outline grows to the bottom
+pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
+    start: P,
+    length: T,
+    thickness: T,
+) -> Vec<PathElement> {
+    let start = start.into();
+    let length = length.into().get();
+    let thickness = thickness.into().get();
+
+    let mut res = Vec::with_capacity(2);
+    res.push(PathElement::MoveTo(PixelPoint::new(
+        start.x,
+        start.y + thickness * 0.5f32,
+    )));
+    res.push(PathElement::LineTo(PixelPoint::new(
+        start.x + length,
+        start.y + thickness * 0.5f32,
+    )));
+    res
+}
+
+/// Creates a path that represents pixel aligned vertical line path to be used with stroke.
+///
+/// # Arguments
+///
+/// * `start` - starting point (left top pixel coordinates)
+/// * `length` - length of the line in pixels
+/// * `thickness` - thickness of the line, the outline grows to the right
+pub fn pixel_vertical_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
+    start: P,
+    length: T,
+    thickness: T,
+) -> Vec<PathElement> {
+    let start = start.into();
+    let length = length.into().get();
+    let thickness = thickness.into().get();
+
+    let mut res = Vec::with_capacity(2);
+    res.push(PathElement::MoveTo(PixelPoint::new(
+        start.x + thickness * 0.5f32,
+        start.y,
+    )));
+    res.push(PathElement::LineTo(PixelPoint::new(
+        start.x + thickness * 0.5f32,
+        start.y + length,
+    )));
+    res
+}
