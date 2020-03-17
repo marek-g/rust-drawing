@@ -80,4 +80,15 @@ impl<D: Device> Font<D> for TextureFont<D> {
         let dims = renderer.measure(text);
         Ok((dims.0 as u16, dims.1 as u16))
     }
+
+    fn get_dimensions_each_char(
+        &mut self,
+        device: &mut D,
+        params: FontParams,
+        text: &str,
+    ) -> Result<(Vec<i16>, u16)> {
+        let renderer = self.get_or_create_font_renderer(device, params.size)?;
+        let dims = renderer.measure_each_char(text);
+        Ok((dims.0, dims.1 as u16))
+    }
 }

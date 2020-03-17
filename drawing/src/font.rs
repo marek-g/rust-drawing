@@ -32,4 +32,11 @@ pub trait Font<D: Device> {
 		params: FontParams,
 		text: &str,
 	) -> Result<(u16, u16)>;
+
+	fn get_dimensions_each_char(
+		&mut self,
+		device: &mut D,
+		params: FontParams,
+		text: &str,
+	) -> Result<(Vec<i16>, u16)>;
 }
