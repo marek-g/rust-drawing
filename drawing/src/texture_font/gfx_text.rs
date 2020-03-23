@@ -218,29 +218,19 @@ impl<D: Device> Renderer<D> {
     /// Get the bounding box size of a string as rendered by this font.
     pub fn measure(&self, text: &str) -> (i32, i32) {
         let mut width = 0;
-        let mut last_char = None;
 
         for ch in text.chars() {
             let ch_info = match self.font_bitmap.find_char(ch) {
                 Some(info) => info,
                 None => continue,
             };
-            last_char = Some(ch_info);
-
             width += ch_info.x_advance;
-        }
-
-        match last_char {
-            Some(info) => width += info.x_offset + info.width - info.x_advance,
-            None => (),
         }
 
         (width, self.font_bitmap.get_font_height() as i32)
     }
 
     pub fn measure_each_char(&self, text: &str) -> (Vec<i16>, i32) {
-        let mut last_char = None;
-
         let mut pos_px = Vec::with_capacity(text.len());
 
         for ch in text.chars() {
@@ -248,17 +238,7 @@ impl<D: Device> Renderer<D> {
                 Some(info) => info,
                 None => continue,
             };
-            last_char = Some(ch_info);
-
             pos_px.push(ch_info.x_advance as i16);
-        }
-
-        match last_char {
-            Some(info) => {
-                pos_px.pop();
-                pos_px.push(info.width as i16);
-            }
-            None => (),
         }
 
         (pos_px, self.font_bitmap.get_font_height() as i32)
