@@ -45,6 +45,10 @@ float strokeMask() {
     return min(1.0, (1.0 - abs(vert_tex_coords.x * 2.0 - 1.0)) * strokeMult) * min(1.0, vert_tex_coords.y);
 }
 
+highp float random(vec2 coords) {
+   return fract(sin(dot(coords.xy, vec2(12.9898,78.233))) * 43758.5453);
+}
+
 void main(void) {
     vec4 result;
     float scissor = scissorMask(fpos);
@@ -56,6 +60,10 @@ void main(void) {
         vec2 pt = (paintMat * vec3(fpos,1.0)).xy;
         float d = clamp((sdroundrect(pt, extent, radius) + feather * 0.5) / feather, 0.0, 1.0);
         vec4 color = mix(innerCol, outerCol, d);
+
+        // dithering (gradient debanding)
+        color += mix(-0.5/255.0, 0.5/255.0, random(fpos));
+
         color *= strokeAlpha * scissor;
         result = color;
     } else if (type == 1) {
