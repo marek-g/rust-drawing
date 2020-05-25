@@ -62,11 +62,35 @@ fn main() {
     // main loop
     //
     event_loop.run(move |event, _, control_flow| {
-        if let winit::event::Event::EventsCleared = event {
+        if let winit::event::Event::MainEventsCleared = event {
             // Application update code.
             // Queue a RedrawRequested event.
             window_target1.get_window().request_redraw();
             window_target2.get_window().request_redraw();
+        };
+
+        if let winit::event::Event::RedrawRequested(ref window_id) = event {
+            let mut window_target = if window_id == &window_target1.get_window().id() {
+                draw_window(
+                    &mut device,
+                    &mut renderer,
+                    &mut resources,
+                    &window_target1,
+                    "Window 1",
+                );
+
+                window_target1.swap_buffers();
+            } else {
+                draw_window(
+                    &mut device,
+                    &mut renderer,
+                    &mut resources,
+                    &window_target2,
+                    "Window 2",
+                );
+
+                window_target2.swap_buffers();
+            };
         };
 
         if let winit::event::Event::WindowEvent {
@@ -85,32 +109,11 @@ fn main() {
                     *control_flow = winit::event_loop::ControlFlow::Exit;
                 }
 
-                winit::event::WindowEvent::Resized(logical_size) => {
-                    let physical_size =
-                        logical_size.to_physical(window_target.get_window().hidpi_factor());
+                winit::event::WindowEvent::Resized(physical_size) => {
                     window_target
                         .update_size(physical_size.width as u16, physical_size.height as u16)
                 }
 
-                winit::event::WindowEvent::RedrawRequested => {
-                    draw_window(
-                        &mut device,
-                        &mut renderer,
-                        &mut resources,
-                        &window_target1,
-                        "Window 1",
-                    );
-                    draw_window(
-                        &mut device,
-                        &mut renderer,
-                        &mut resources,
-                        &window_target2,
-                        "Window 2",
-                    );
-
-                    window_target1.swap_buffers();
-                    window_target2.swap_buffers();
-                }
                 _ => (),
             }
         };
@@ -124,8 +127,7 @@ fn draw_window(
     window_target: &GlWindowTarget,
     text: &str,
 ) {
-    let logical_size = window_target.get_window().inner_size();
-    let physical_size = logical_size.to_physical(window_target.get_window().hidpi_factor());
+    let physical_size = window_target.get_window().inner_size();
     let width = physical_size.width as f32;
     let height = physical_size.height as f32;
 

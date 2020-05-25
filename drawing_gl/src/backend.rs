@@ -93,7 +93,7 @@ impl GlDevice {
             self.universal_pipeline = Some(UniversalPipeline::new());
         }
 
-        self.aspect_ratio = windowed_context.window().hidpi_factor() as f32;
+        self.aspect_ratio = windowed_context.window().scale_factor() as f32;
 
         if self.time_query.is_none() {
             let mut time_query: GLuint = 0;

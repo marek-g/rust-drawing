@@ -72,17 +72,14 @@ fn main() {
 
     event_loop.run(move |event, _, control_flow| {
         match event {
-            winit::event::Event::EventsCleared => {
+            winit::event::Event::MainEventsCleared => {
                 // Application update code.
      
                 // Queue a RedrawRequested event.
                 window_target.get_window().request_redraw();
             },
 
-            winit::event::Event::WindowEvent {
-                event: winit::event::WindowEvent::RedrawRequested,
-                ..
-            } => {
+            winit::event::Event::RedrawRequested(window_id) => {
                 // Redraw the application.
                 //
                 // It's preferrable to render in this event rather than in EventsCleared, since
@@ -368,9 +365,7 @@ fn main() {
                     | winit::event::WindowEvent::CloseRequested => {
                         *control_flow = winit::event_loop::ControlFlow::Exit;
                     }
-                    winit::event::WindowEvent::Resized(logical_size) => {
-                        let physical_size =
-                            logical_size.to_physical(window_target.get_window().hidpi_factor());
+                    winit::event::WindowEvent::Resized(physical_size) => {
                         width = physical_size.width as u16;
                         height = physical_size.height as u16;
                         window_target.update_size(width, height)
