@@ -26,7 +26,6 @@ pub struct GlDevice {
     textured_y8_pipeline: Option<TexturedY8Pipeline>,
     universal_pipeline: Option<UniversalPipeline>,
     aspect_ratio: f32,
-    time_query: Option<GLuint>,
 }
 
 impl GlDevice {
@@ -95,13 +94,13 @@ impl GlDevice {
 
         self.aspect_ratio = windowed_context.window().scale_factor() as f32;
 
-        if self.time_query.is_none() {
-            let mut time_query: GLuint = 0;
-            unsafe {
-                gl::GenQueries(1, &mut time_query);
-            }
-            self.time_query = Some(time_query);
+        let mut time_query: GLuint = 0;
+        unsafe {
+            gl::GenQueries(1, &mut time_query);
+            gl::BeginQuery(gl::TIME_ELAPSED, time_query);
+            gl::EndQuery(gl::TIME_ELAPSED);
         }
+        print!("time_query: {}", time_query);
 
         Ok(GlWindowTarget {
             gl_windowed_context: RefCell::new(Some(windowed_context)),
@@ -127,12 +126,14 @@ impl GlDevice {
                 .as_ref()
                 .unwrap()
                 .create_vbo_and_vao(),
+            
+            time_query,
         })
     }
 
     pub fn begin(&mut self, window_target: &GlWindowTarget) -> Result<()> {
         unsafe {
-            gl::BeginQuery(gl::TIME_ELAPSED, self.time_query.unwrap());
+            gl::BeginQuery(gl::TIME_ELAPSED, window_target.time_query);
         }
 
         unsafe {
@@ -161,7 +162,7 @@ impl GlDevice {
         Ok(())
     }
 
-    pub fn end(&mut self, _window_target: &GlWindowTarget) {
+    pub fn end(&mut self, window_target: &GlWindowTarget) {
         unsafe {
             gl::EndQuery(gl::TIME_ELAPSED);
 
@@ -170,7 +171,7 @@ impl GlDevice {
             let mut done = 0i32;
             while done == 0 {
                 gl::GetQueryObjectiv(
-                    self.time_query.unwrap(),
+                    window_target.time_query,
                     gl::QUERY_RESULT_AVAILABLE,
                     &mut done,
                 );
@@ -179,7 +180,7 @@ impl GlDevice {
             // get the query result
             let mut elapsed_time: GLuint64 = 0;
             gl::GetQueryObjectui64v(
-                self.time_query.unwrap(),
+                window_target.time_query,
                 gl::QUERY_RESULT,
                 &mut elapsed_time,
             );
@@ -332,7 +333,6 @@ impl drawing::backend::Device for GlDevice {
             textured_y8_pipeline: None,
             universal_pipeline: None,
             aspect_ratio: 1.0f32,
-            time_query: None,
         })
     }
 
@@ -793,6 +793,8 @@ pub struct GlWindowTarget {
     textured_pipeline_buffers: (GLuint, GLuint),
     textured_y8_pipeline_buffers: (GLuint, GLuint),
     universal_pipeline_buffers: (GLuint, GLuint),
+
+    time_query: GLuint,
 }
 
 impl GlWindowTarget {
