@@ -26,11 +26,15 @@ pub fn rect_path<R: Into<PixelRect>>(rect: R) -> Vec<PathElement> {
     res
 }
 
-pub fn rounded_rect_path<R: Into<PixelRect>>(rect: R, radius: f32) -> Vec<PathElement> {
-    rounded_rect_varying_path(rect, radius, radius, radius, radius)
+pub fn rect_path_rounded<R: Into<PixelRect>>(rect: R, radius: f32) -> Vec<PathElement> {
+    rect_rounded_varying_path(rect, radius, radius, radius, radius)
 }
 
-pub fn rounded_rect_varying_path<R: Into<PixelRect>>(
+pub fn rect_path_rounded_half<R: Into<PixelRect>>(rect: R, radius: f32, is_upper_left_half: bool) -> Vec<PathElement> {
+    rect_rounded_varying_path_half(rect, radius, radius, radius, radius, is_upper_left_half)
+}
+
+pub fn rect_rounded_varying_path<R: Into<PixelRect>>(
     rect: R,
     lt: f32,
     rt: f32,
@@ -119,6 +123,104 @@ pub fn rounded_rect_varying_path<R: Into<PixelRect>>(
     }
 }
 
+pub fn rect_rounded_varying_path_half<R: Into<PixelRect>>(
+    rect: R,
+    lt: f32,
+    rt: f32,
+    rb: f32,
+    lb: f32,
+    is_upper_left_half: bool,
+) -> Vec<PathElement> {
+    let rect = rect.into();
+    if lt < 0.1 && rt < 0.1 && lb < 0.1 && rb < 0.1 {
+        rect_path(rect)
+    } else {
+        let halfw = rect.size.width.abs() * 0.5;
+        let halfh = rect.size.height.abs() * 0.5;
+        let rxlb = lb.min(halfw) * rect.size.width.signum();
+        let rylb = lb.min(halfh) * rect.size.height.signum();
+        let rxrb = rb.min(halfw) * rect.size.width.signum();
+        let ryrb = rb.min(halfh) * rect.size.height.signum();
+        let rxrt = rt.min(halfw) * rect.size.width.signum();
+        let ryrt = rt.min(halfh) * rect.size.height.signum();
+        let rxlt = lt.min(halfw) * rect.size.width.signum();
+        let rylt = lt.min(halfh) * rect.size.height.signum();
+
+        if is_upper_left_half {
+            let mut res = Vec::with_capacity(6);
+            res.push(PathElement::MoveTo(PixelPoint::new(
+                rect.origin.x + rect.size.width,
+                rect.origin.y + ryrt,
+            )));
+            res.push(PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + ryrt * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width - rxrt * (1.0 - KAPPA90),
+                    rect.origin.y,
+                ),
+                PixelPoint::new(rect.origin.x + rect.size.width - rxrt, rect.origin.y),
+            ));
+            res.push(PathElement::LineTo(PixelPoint::new(
+                rect.origin.x + rxlt,
+                rect.origin.y,
+            )));
+            res.push(PathElement::BezierTo(
+                PixelPoint::new(rect.origin.x + rxlt * (1.0 - KAPPA90), rect.origin.y),
+                PixelPoint::new(rect.origin.x, rect.origin.y + rylt * (1.0 - KAPPA90)),
+                PixelPoint::new(rect.origin.x, rect.origin.y + rylt),
+            ));
+            res.push(PathElement::LineTo(PixelPoint::new(
+                rect.origin.x,
+                rect.origin.y + rect.size.height - rylb,
+            )));
+            res.push(PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x,
+                    rect.origin.y + rect.size.height - rylb * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rxlb * (1.0 - KAPPA90),
+                    rect.origin.y + rect.size.height,
+                ),
+                PixelPoint::new(rect.origin.x + rxlb, rect.origin.y + rect.size.height),
+            ));
+            res
+        } else {
+            let mut res = Vec::with_capacity(4);
+            res.push(PathElement::MoveTo(PixelPoint::new(
+                rect.origin.x + rxlb,
+                rect.origin.y + rect.size.height,
+            )));
+            res.push(PathElement::LineTo(PixelPoint::new(
+                rect.origin.x + rect.size.width - rxrb,
+                rect.origin.y + rect.size.height,
+            )));
+            res.push(PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width - rxrb * (1.0 - KAPPA90),
+                    rect.origin.y + rect.size.height,
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + rect.size.height - ryrb * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + rect.size.height - ryrb,
+                ),
+            ));
+            res.push(PathElement::LineTo(PixelPoint::new(
+                rect.origin.x + rect.size.width,
+                rect.origin.y + ryrt,
+            )));
+            res
+        }
+    }
+}
+
 pub fn circle_path<P: Into<PixelPoint>>(center: P, radius: f32) -> Vec<PathElement> {
     ellipse_path(center, radius, radius)
 }
@@ -178,6 +280,41 @@ pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelThickness>>(
         ),
         PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
     ))
+}
+
+pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelThickness>>(
+    rect: R,
+    thickness: T,
+    radius: f32,
+) -> Vec<PathElement> {
+    let rect = rect.into();
+    let thickness = thickness.into().get();
+
+    rect_path_rounded(PixelRect::new(
+        PixelPoint::new(
+            rect.origin.x + thickness * 0.5f32,
+            rect.origin.y + thickness * 0.5f32,
+        ),
+        PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
+    ), radius)
+}
+
+pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelThickness>>(
+    rect: R,
+    thickness: T,
+    radius: f32,
+    is_upper_left_half: bool,
+) -> Vec<PathElement> {
+    let rect = rect.into();
+    let thickness = thickness.into().get();
+
+    rect_path_rounded_half(PixelRect::new(
+        PixelPoint::new(
+            rect.origin.x + thickness * 0.5f32,
+            rect.origin.y + thickness * 0.5f32,
+        ),
+        PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
+    ), radius, is_upper_left_half)
 }
 
 /// Creates a path that represents pixel aligned horizontal line path to be used with stroke.
