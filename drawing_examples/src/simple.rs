@@ -79,7 +79,7 @@ fn main() {
                 window_target.get_window().request_redraw();
             },
 
-            winit::event::Event::RedrawRequested(window_id) => {
+            winit::event::Event::RedrawRequested(_window_id) => {
                 // Redraw the application.
                 //
                 // It's preferrable to render in this event rather than in EventsCleared, since

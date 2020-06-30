@@ -218,7 +218,7 @@ impl Clipping for Vec<Primitive> {
 }
 
 impl Clipping for Vec<PathElement> {
-    fn clip(self, clipping_rect: PixelRect) -> Self {
+    fn clip(self, _clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         for path_element in self.into_iter() {
             // TODO: implement!

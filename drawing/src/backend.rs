@@ -246,11 +246,11 @@ pub trait Device {
 
 	fn restore_state(&mut self) {}
 
-	fn set_clip_rect(&mut self, rect: PixelRect) {}
+	fn set_clip_rect(&mut self, _rect: PixelRect) {}
 
-	fn set_clip_path(&mut self, path: &[PathElement]) {}
+	fn set_clip_path(&mut self, _path: &[PathElement]) {}
 
-	fn transform(&mut self, transform: UnknownToDeviceTransform) {}
+	fn transform(&mut self, _transform: UnknownToDeviceTransform) {}
 }
 
 pub trait Texture: Sized {

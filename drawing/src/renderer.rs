@@ -1,4 +1,3 @@
-use crate::backend::ColoredVertex;
 use crate::backend::Device;
 use crate::backend::RenderTarget;
 use crate::clipping::Scissor;
@@ -234,8 +233,7 @@ impl Renderer {
 				}
 
 				&Primitive::ClipPath {
-					ref path,
-					ref primitives,
+					..
 				} => {
 					/*device.save_state();
 

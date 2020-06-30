@@ -4,7 +4,6 @@ extern crate glutin;
 extern crate std;
 extern crate winit;
 
-use crate::backend::winit::dpi::PhysicalSize;
 use drawing::clipping::Scissor;
 use drawing::composite_operation_state::CompositeOperationState;
 use drawing::paint::Paint;
@@ -220,16 +219,6 @@ impl GlDevice {
         }
     }
 
-    fn line_triangulated(
-        &mut self,
-        color: &Color,
-        thickness: DeviceThickness,
-        start_point: Point,
-        end_point: Point,
-        transform: UnknownToDeviceTransform,
-    ) {
-    }
-
     fn convert_paint(
         paint: &Paint,
         texture: Option<&GlTexture>,
@@ -282,7 +271,7 @@ impl GlDevice {
         frag.extent = [paint.extent[0], paint.extent[1]];
         frag.stroke_mult = (width * 0.5 + fringe * 0.5) / fringe;
 
-        let mut invxform;
+        let invxform;
 
         if let Some(texture) = texture {
             frag.type_ = ShaderType::FillImage as i32;
@@ -519,7 +508,7 @@ impl drawing::backend::Device for GlDevice {
         &mut self,
         target: &Self::RenderTarget,
         color: &Color,
-        thickness: DeviceThickness,
+        _thickness: DeviceThickness,
         start_point: Point,
         end_point: Point,
         transform: UnknownToDeviceTransform,
@@ -538,13 +527,13 @@ impl drawing::backend::Device for GlDevice {
         target: &Self::RenderTarget,
         paint: &Paint,
         texture: Option<&Self::Texture>,
-        filtering: bool,
+        _filtering: bool,
         paths: &[Path],
         thickness: f32,
         fringe_width: f32,
         antialiasing: bool,
         scissor: Scissor,
-        composite_operation_state: CompositeOperationState,
+        _composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
     ) {
         self.set_render_target(&target);
@@ -640,7 +629,7 @@ impl drawing::backend::Device for GlDevice {
         fringe_width: f32,
         antialiasing: bool,
         scissor: Scissor,
-        composite_operation_state: CompositeOperationState,
+        _composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
     ) {
         self.set_render_target(&target);
@@ -661,7 +650,7 @@ impl drawing::backend::Device for GlDevice {
 
         if paths.len() == 1 && paths[0].convex {
             // convex fill
-            let mut uniforms =
+            let uniforms =
                 Self::convert_paint(paint, texture, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
@@ -692,7 +681,7 @@ impl drawing::backend::Device for GlDevice {
                 }
             }
         } else {
-            let mut uniforms =
+            let uniforms =
                 Self::convert_paint(paint, texture, &scissor, fringe_width, fringe_width, -1.0);
 
             if let Some(ref mut pipeline) = self.universal_pipeline {
