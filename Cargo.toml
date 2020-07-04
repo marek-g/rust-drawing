@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "drawing",
+    "drawing_examples",
+    "drawing_gl",
+]
