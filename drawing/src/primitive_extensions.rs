@@ -30,7 +30,11 @@ pub fn rect_path_rounded<R: Into<PixelRect>>(rect: R, radius: f32) -> Vec<PathEl
     rect_rounded_varying_path(rect, radius, radius, radius, radius)
 }
 
-pub fn rect_path_rounded_half<R: Into<PixelRect>>(rect: R, radius: f32, is_upper_left_half: bool) -> Vec<PathElement> {
+pub fn rect_path_rounded_half<R: Into<PixelRect>>(
+    rect: R,
+    radius: f32,
+    is_upper_left_half: bool,
+) -> Vec<PathElement> {
     rect_rounded_varying_path_half(rect, radius, radius, radius, radius, is_upper_left_half)
 }
 
@@ -290,13 +294,16 @@ pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelThickness>>(
     let rect = rect.into();
     let thickness = thickness.into().get();
 
-    rect_path_rounded(PixelRect::new(
-        PixelPoint::new(
-            rect.origin.x + thickness * 0.5f32,
-            rect.origin.y + thickness * 0.5f32,
+    rect_path_rounded(
+        PixelRect::new(
+            PixelPoint::new(
+                rect.origin.x + thickness * 0.5f32,
+                rect.origin.y + thickness * 0.5f32,
+            ),
+            PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
         ),
-        PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
-    ), radius)
+        radius,
+    )
 }
 
 pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelThickness>>(
@@ -308,13 +315,17 @@ pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelThickness>>
     let rect = rect.into();
     let thickness = thickness.into().get();
 
-    rect_path_rounded_half(PixelRect::new(
-        PixelPoint::new(
-            rect.origin.x + thickness * 0.5f32,
-            rect.origin.y + thickness * 0.5f32,
+    rect_path_rounded_half(
+        PixelRect::new(
+            PixelPoint::new(
+                rect.origin.x + thickness * 0.5f32,
+                rect.origin.y + thickness * 0.5f32,
+            ),
+            PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
         ),
-        PixelSize::new(rect.size.width - thickness, rect.size.height - thickness),
-    ), radius, is_upper_left_half)
+        radius,
+        is_upper_left_half,
+    )
 }
 
 /// Creates a path that represents pixel aligned horizontal line path to be used with stroke.

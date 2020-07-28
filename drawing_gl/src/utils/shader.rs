@@ -1,6 +1,3 @@
-extern crate gl;
-extern crate std;
-
 use std::ffi::{CStr, CString};
 
 pub struct Shader {

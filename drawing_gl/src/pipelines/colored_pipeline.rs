@@ -1,11 +1,7 @@
-extern crate drawing;
-extern crate gl;
-extern crate std;
-
 use crate::utils::*;
 
-use self::drawing::backend::ColoredVertex;
-use self::gl::types::*;
+use drawing::backend::ColoredVertex;
+use gl::types::*;
 use std::ffi::CString;
 
 pub struct ColoredPipeline {

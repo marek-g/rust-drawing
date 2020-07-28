@@ -1,5 +1,5 @@
-use crate::font::Font;
 use crate::backend::Device;
+use crate::font::Font;
 use std::collections::HashMap;
 
 pub struct Resources<D: Device, F: Font<D>> {
@@ -13,7 +13,7 @@ impl<D: Device, F: Font<D>> Resources<D, F> {
         Resources {
             fonts: HashMap::new(),
             textures: HashMap::new(),
-            last_texture_id: 0
+            last_texture_id: 0,
         }
     }
 

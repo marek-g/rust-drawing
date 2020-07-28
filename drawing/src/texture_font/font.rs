@@ -2,11 +2,9 @@
 //! Generates raw texture data for the given font and collects information
 //! about available font characters to map them into texture.
 
-extern crate freetype;
-
-use self::freetype as ft;
-use self::freetype::Error as FreetypeError;
-use self::freetype::Face;
+use freetype as ft;
+use freetype::Error as FreetypeError;
+use freetype::Face;
 use std::char::from_u32;
 use std::cmp::max;
 use std::collections::{HashMap, HashSet};

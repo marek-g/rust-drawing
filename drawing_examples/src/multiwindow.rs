@@ -1,7 +1,6 @@
 #![windows_subsystem = "windows"]
 
 use drawing::backend::Device;
-use drawing::color::*;
 use drawing::font::Font;
 use drawing::primitive::Primitive;
 use drawing::renderer::Renderer;
@@ -13,15 +12,13 @@ use drawing_gl::GlWindowTarget;
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
 
-use winit::dpi::LogicalSize;
-
 use std::fs::File;
 use std::io::Read;
 
 fn main() {
     set_process_high_dpi_aware();
 
-    let mut event_loop = winit::event_loop::EventLoop::new();
+    let event_loop = winit::event_loop::EventLoop::new();
 
     let mut device = DrawingDevice::new().unwrap();
     let mut renderer = Renderer::new();
@@ -70,7 +67,7 @@ fn main() {
         };
 
         if let winit::event::Event::RedrawRequested(ref window_id) = event {
-            let mut window_target = if window_id == &window_target1.get_window().id() {
+            let _window_target = if window_id == &window_target1.get_window().id() {
                 draw_window(
                     &mut device,
                     &mut renderer,
@@ -98,7 +95,7 @@ fn main() {
             ref event,
         } = event
         {
-            let mut window_target = if window_id == &window_target1.get_window().id() {
+            let window_target = if window_id == &window_target1.get_window().id() {
                 &mut window_target1
             } else {
                 &mut window_target2
@@ -109,10 +106,8 @@ fn main() {
                     *control_flow = winit::event_loop::ControlFlow::Exit;
                 }
 
-                winit::event::WindowEvent::Resized(physical_size) => {
-                    window_target
-                        .update_size(physical_size.width as u16, physical_size.height as u16)
-                }
+                winit::event::WindowEvent::Resized(physical_size) => window_target
+                    .update_size(physical_size.width as u16, physical_size.height as u16),
 
                 _ => (),
             }

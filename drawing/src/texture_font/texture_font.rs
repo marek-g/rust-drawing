@@ -1,4 +1,4 @@
-use crate::Result;
+use anyhow::Result;
 
 use crate::backend::*;
 use crate::color::*;

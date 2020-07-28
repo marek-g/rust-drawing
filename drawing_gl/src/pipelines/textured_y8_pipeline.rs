@@ -1,11 +1,7 @@
-extern crate drawing;
-extern crate gl;
-extern crate std;
-
 use crate::utils::*;
 
-use self::drawing::backend::TexturedY8Vertex;
-use self::gl::types::*;
+use drawing::backend::TexturedY8Vertex;
+use gl::types::*;
 use std::ffi::CString;
 
 pub struct TexturedY8Pipeline {

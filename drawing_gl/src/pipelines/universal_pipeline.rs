@@ -1,13 +1,9 @@
-extern crate drawing;
-extern crate gl;
-extern crate std;
-
 use crate::utils::*;
 use drawing::color::Color;
 use std::os::raw::c_void;
 
-use self::drawing::backend::TexturedVertex;
-use self::gl::types::*;
+use drawing::backend::TexturedVertex;
+use gl::types::*;
 use std::ffi::CString;
 
 #[repr(C, packed)]

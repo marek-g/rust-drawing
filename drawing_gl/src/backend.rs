@@ -1,20 +1,14 @@
-extern crate drawing;
-extern crate gl;
-extern crate glutin;
-extern crate std;
-extern crate winit;
-
 use drawing::clipping::Scissor;
 use drawing::composite_operation_state::CompositeOperationState;
 use drawing::paint::Paint;
 use euclid::Vector2D;
 
-use crate::backend::drawing::backend::*;
+use drawing::backend::*;
 use crate::pipelines::*;
 use drawing::color::*;
 use drawing::path::{Bounds, Path};
 use drawing::units::*;
-use drawing::Result;
+use anyhow::Result;
 use gl::types::*;
 
 use std::cell::{Ref, RefCell};
@@ -125,7 +119,7 @@ impl GlDevice {
                 .as_ref()
                 .unwrap()
                 .create_vbo_and_vao(),
-            
+
             time_query,
         })
     }

@@ -5,8 +5,8 @@ authors = ["Marek G <no@mail.com>"]
 edition = "2018"
 
 [dependencies]
-failure = "0.1"
 drawing = { path = "../drawing", version = "*" }
+anyhow = "1.0"
 euclid = "0.20"
 winit = "0.22"
 glutin = "0.24"

@@ -1,6 +1,3 @@
-extern crate gl;
-extern crate std;
-
 use crate::utils::shader::*;
 
 pub struct Program {

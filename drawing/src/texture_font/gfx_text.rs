@@ -29,9 +29,6 @@
 
 #![deny(missing_docs)]
 
-extern crate failure;
-extern crate freetype;
-
 use crate::backend::Device;
 use crate::backend::TexturedY8Vertex;
 use crate::clipping::clip_image;
@@ -39,6 +36,8 @@ use crate::color::ColorFormat;
 use crate::texture_font::font::BitmapFont;
 pub use crate::texture_font::font::FontError;
 use crate::units::UnknownToDeviceTransform;
+
+use thiserror::Error;
 
 const DEFAULT_FONT_SIZE: u8 = 16;
 
@@ -49,13 +48,13 @@ const DEFAULT_FONT_DATA: Option<&'static [u8]> =
 const DEFAULT_FONT_DATA: Option<&'static [u8]> = None;
 
 /// General error type returned by the library. Wraps all other errors.
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
     /// Font loading error
-    #[fail(display = "Font decoding error")]
+    #[error("Font decoding error")]
     FontError(FontError),
-    #[fail(display = "Texture creation error")]
-    TextureError(failure::Error),
+    #[error("Texture creation error")]
+    TextureError(anyhow::Error),
 }
 
 impl From<FontError> for Error {
@@ -64,8 +63,8 @@ impl From<FontError> for Error {
     }
 }
 
-impl From<failure::Error> for Error {
-    fn from(e: failure::Error) -> Error {
+impl From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Error {
         Error::TextureError(e)
     }
 }

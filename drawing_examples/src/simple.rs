@@ -14,7 +14,7 @@ type DrawingFont = drawing::TextureFont<DrawingDevice>;
 use std::fs::File;
 use std::io::Read;
 
-use euclid::{ Angle, Vector2D };
+use euclid::{Angle, Vector2D};
 
 fn main() {
     set_process_high_dpi_aware();

@@ -1,5 +1,3 @@
-extern crate std;
-
 use std::ffi::CString;
 
 pub fn create_whitespace_cstring_with_len(len: usize) -> CString {
