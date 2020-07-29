@@ -2,6 +2,7 @@
 name = "drawing"
 version = "0.1.0"
 authors = ["Marek G <no@mail.com>"]
+license = "MIT OR Apache-2.0"
 description = "Drawing library"
 edition = "2018"
 
