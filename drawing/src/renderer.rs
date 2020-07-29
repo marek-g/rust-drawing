@@ -48,11 +48,10 @@ impl Renderer {
         pixel_transform: PixelTransform,
         scissor: Scissor,
     ) -> Result<()> {
-        let pixel_to_device_transform = render_target
-            .get_device_transform()
-            .pre_transform(&pixel_transform);
-        let unknown_to_device_transform = UnknownToDeviceTransform::from_row_major_array(
-            pixel_to_device_transform.to_row_major_array(),
+        let pixel_to_device_transform = pixel_transform.then(&render_target
+            .get_device_transform());
+        let unknown_to_device_transform = UnknownToDeviceTransform::from_array(
+            pixel_to_device_transform.to_array(),
         );
 
         for primitive in primitives {
@@ -251,7 +250,7 @@ impl Renderer {
                         primitives,
                         resources,
                         antialiasing,
-                        pixel_transform.pre_transform(transform),
+                        transform.then(&pixel_transform),
                         scissor.apply_transform(transform),
                     )?;
                 }

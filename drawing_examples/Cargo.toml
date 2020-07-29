@@ -6,9 +6,9 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 
 [dependencies]
-drawing = { path = "../drawing", version = "*" }
-drawing_gl = { path = "../drawing_gl", version = "*" }
-euclid = "0.20"
+drawing = { path = "../drawing", version = "0.1" }
+drawing_gl = { path = "../drawing_gl", version = "0.1" }
+euclid = "0.21"
 winit = "0.22"
 shared_library = "0.1"
 find_folder = "0.3"

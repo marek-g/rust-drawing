@@ -25,7 +25,7 @@ impl Scissor {
         let width = rect.size.width.max(0.0);
         let height = rect.size.height.max(0.0);
         Scissor {
-            xform: PixelTransform::identity().post_translate(Vector2D::new(
+            xform: PixelTransform::identity().then_translate(Vector2D::new(
                 rect.origin.x + width * 0.5f32,
                 rect.origin.y + height * 0.5f32,
             )),
@@ -57,7 +57,7 @@ impl Scissor {
         let invxorm = current_transform
             .inverse()
             .unwrap_or_else(|| PixelTransform::identity());
-        let pxform = self.xform.post_transform(&invxorm);
+        let pxform = self.xform.then(&invxorm);
         let tex = ex * pxform.m11.abs() + ey * pxform.m21.abs();
         let tey = ex * pxform.m12.abs() + ey * pxform.m22.abs();
         if let Some(new_rect) = PixelRect::new(
@@ -66,7 +66,7 @@ impl Scissor {
         )
         .intersection(&rect)
         {
-            Self::new(new_rect)
+            Self::new(new_rect.to_f32())
         } else {
             Self::empty()
         }
@@ -74,7 +74,7 @@ impl Scissor {
 
     pub fn apply_transform(&self, transform: &PixelTransform) -> Self {
         Scissor {
-            xform: self.xform.post_transform(transform),
+            xform: self.xform.then(transform),
             extent: self.extent,
         }
     }

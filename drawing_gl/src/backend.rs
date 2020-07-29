@@ -866,12 +866,12 @@ impl RenderTarget for GlRenderTarget {
     }
 
     fn get_device_transform(&self) -> PixelToDeviceTransform {
-        PixelToDeviceTransform::column_major(
+        PixelToDeviceTransform::new(
             2.0f32 / self.width as f32,
             0.0f32,
-            -1.0f32,
             0.0f32,
             -2.0f32 / self.height as f32,
+            -1.0f32,
             1.0f32,
         )
     }

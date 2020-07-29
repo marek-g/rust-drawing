@@ -74,7 +74,7 @@ impl Transformation for Vec<Primitive> {
                     ref mut transform, ..
                 } => {
                     *transform =
-                        transform.post_translate(euclid::Vector2D::new(offset.x, offset.y));
+                        transform.then_translate(euclid::Vector2D::new(offset.x, offset.y));
                 }
 
                 Primitive::Composite {

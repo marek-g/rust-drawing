@@ -6,9 +6,9 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 
 [dependencies]
-drawing = { path = "../drawing", version = "*" }
+drawing = { path = "../drawing", version = "0.1" }
 anyhow = "1.0"
-euclid = "0.20"
+euclid = "0.21"
 winit = "0.22"
 glutin = "0.24"
 gl = "0.14"

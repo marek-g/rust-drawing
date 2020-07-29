@@ -63,7 +63,7 @@ impl Paint {
 
                 (
                     Paint {
-                        xform: PixelTransform::row_major(
+                        xform: PixelTransform::new(
                             dy,
                             -dx,
                             dx,
@@ -93,7 +93,7 @@ impl Paint {
                 let f = out_radius - in_radius;
                 (
                     Paint {
-                        xform: PixelTransform::row_major(
+                        xform: PixelTransform::new(
                             1.0,
                             0.0,
                             0.0,
@@ -122,7 +122,7 @@ impl Paint {
                 let PixelRect { origin, size } = rect;
                 (
                     Paint {
-                        xform: PixelTransform::row_major(
+                        xform: PixelTransform::new(
                             1.0,
                             0.0,
                             0.0,
