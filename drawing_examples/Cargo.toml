@@ -1,8 +1,11 @@
 [package]
 name = "drawing_examples"
 version = "0.1.0"
-authors = ["Marek G <no@mail.com>"]
+authors = ["Marek Gibek <marek-dev@yandex.com>"]
+description = "Examples for 2D graphics library"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/marek-g/rust-drawing"
+readme = "README.md"
 edition = "2018"
 
 [dependencies]
