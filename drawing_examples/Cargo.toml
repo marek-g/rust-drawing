@@ -13,8 +13,8 @@ edition = "2018"
 [dependencies]
 drawing = { path = "../drawing", version = "0.1" }
 drawing_gl = { path = "../drawing_gl", version = "0.1" }
-euclid = "0.21"
-winit = "0.22"
+euclid = "0.22"
+winit = "0.23"
 shared_library = "0.1"
 find_folder = "0.3"
 cpu-time = "1.0"

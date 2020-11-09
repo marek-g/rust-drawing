@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 drawing = { path = "../drawing", version = "0.1" }
 anyhow = "1.0"
-euclid = "0.21"
-winit = "0.22"
-glutin = "0.24"
+euclid = "0.22"
+winit = "0.23"
+glutin = "0.25"
 gl = "0.14"
