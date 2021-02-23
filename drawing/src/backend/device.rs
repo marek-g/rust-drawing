@@ -1,61 +1,17 @@
+use anyhow::Result;
+use core::marker::Sized;
+use core::option::Option;
+use crate::backend::{RenderTarget, Texture};
+use crate::backend::colored_vertex::ColoredVertex;
+use crate::backend::textured_vertex::TexturedVertex;
+use crate::backend::textured_y8_vertex::TexturedY8Vertex;
 use crate::clipping::Scissor;
-use crate::color::*;
+use crate::color::{Color, ColorFormat};
 use crate::composite_operation_state::CompositeOperationState;
 use crate::paint::Paint;
-use crate::path::Bounds;
-use crate::path::Path;
-use crate::primitive::*;
-use crate::units::*;
-use anyhow::Result;
-
-#[repr(C, packed)]
-#[derive(Copy, Clone)]
-pub struct ColoredVertex {
-    pub pos: [f32; 2],
-    pub color: [f32; 4],
-}
-
-impl ColoredVertex {
-    pub fn new(pos: [f32; 2], color: [f32; 4]) -> Self {
-        ColoredVertex { pos, color }
-    }
-}
-
-#[repr(C, packed)]
-#[derive(Copy, Clone)]
-pub struct TexturedVertex {
-    pub pos: [f32; 2],
-    pub tex_coords: [f32; 2],
-    pub color: [f32; 4],
-}
-
-impl TexturedVertex {
-    pub fn new(pos: [f32; 2], tex_coords: [f32; 2], color: [f32; 4]) -> Self {
-        TexturedVertex {
-            pos,
-            tex_coords,
-            color,
-        }
-    }
-}
-
-#[repr(C, packed)]
-#[derive(Copy, Clone)]
-pub struct TexturedY8Vertex {
-    pub pos: [f32; 2],
-    pub tex_coords: [f32; 2],
-    pub color: [f32; 4],
-}
-
-impl TexturedY8Vertex {
-    pub fn new(pos: [f32; 2], tex_coords: [f32; 2], color: [f32; 4]) -> Self {
-        TexturedY8Vertex {
-            pos,
-            tex_coords,
-            color,
-        }
-    }
-}
+use crate::path::{Bounds, Path};
+use crate::primitive::PathElement;
+use crate::units::{DeviceThickness, PixelRect, Point, Rect, UnknownToDeviceTransform};
 
 pub trait Device {
     type Texture: Texture;
@@ -251,25 +207,4 @@ pub trait Device {
     fn set_clip_path(&mut self, _path: &[PathElement]) {}
 
     fn transform(&mut self, _transform: UnknownToDeviceTransform) {}
-}
-
-pub trait Texture: Sized {
-    fn get_size(&self) -> (u16, u16);
-
-    fn update(
-        &mut self,
-        memory: &[u8],
-        offset_x: u16,
-        offset_y: u16,
-        width: u16,
-        height: u16,
-    ) -> Result<()>;
-}
-
-pub trait RenderTarget: Sized {
-    fn get_size(&self) -> (u16, u16);
-
-    fn get_aspect_ratio(&self) -> f32;
-
-    fn get_device_transform(&self) -> PixelToDeviceTransform;
 }
