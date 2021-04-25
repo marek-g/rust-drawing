@@ -1,19 +1,22 @@
 #![windows_subsystem = "windows"]
 
-use drawing::backend::Device;
+use drawing::backend::{Device, RenderTarget};
 use drawing::font::Font;
 use drawing::primitive::Primitive;
 use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-use drawing_gl::GlWindowTarget;
+use drawing_gl::{GlRenderTarget, GlDevice, GlContextData};
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
 
 use std::fs::File;
 use std::io::Read;
+use std::cell::{RefCell, Ref};
+
+use gl::types::*;
 
 fn main() {
     set_process_high_dpi_aware();
@@ -24,13 +27,11 @@ fn main() {
     let mut renderer = Renderer::new();
 
     let window_builder1 = winit::window::WindowBuilder::new().with_title("Window 1");
-    let mut window_target1 = device
-        .create_window_target(window_builder1, &event_loop, None)
+    let mut window_target1 = create_window_target(&mut device, window_builder1, &event_loop, None)
         .unwrap();
 
     let window_builder2 = winit::window::WindowBuilder::new().with_title("Window 2");
-    let mut window_target2 = device
-        .create_window_target(window_builder2, &event_loop, Some(&window_target1))
+    let mut window_target2 = create_window_target(&mut device, window_builder2, &event_loop, Some(&window_target1))
         .unwrap();
 
     let font_path = find_folder::Search::ParentsThenKids(3, 3)
@@ -72,7 +73,7 @@ fn main() {
                     &mut device,
                     &mut renderer,
                     &mut resources,
-                    &window_target1,
+                    &mut window_target1,
                     "Window 1",
                 );
 
@@ -82,7 +83,7 @@ fn main() {
                     &mut device,
                     &mut renderer,
                     &mut resources,
-                    &window_target2,
+                    &mut window_target2,
                     "Window 2",
                 );
 
@@ -119,7 +120,7 @@ fn draw_window(
     device: &mut DrawingDevice,
     renderer: &mut Renderer,
     resources: &mut Resources<DrawingDevice, DrawingFont>,
-    window_target: &GlWindowTarget,
+    window_target: &mut GlWindowTarget,
     text: &str,
 ) {
     let physical_size = window_target.get_window().inner_size();
@@ -139,7 +140,10 @@ fn draw_window(
             text: text.to_string(),
         }];
 
-        device.begin(window_target);
+        // make current context
+        window_target.make_current_context();
+
+        device.begin(&window_target.gl_context_data);
         device.clear(
             window_target.get_render_target(),
             &[0.5f32, 0.4f32, 0.3f32, 1.0f32],
@@ -153,7 +157,132 @@ fn draw_window(
                 false,
             )
             .unwrap();
-        device.end(window_target);
+    }
+}
+
+pub fn create_window_target(
+    device: &mut GlDevice,
+    window_builder: winit::window::WindowBuilder,
+    events_loop: &winit::event_loop::EventLoop<()>,
+    shared_window_target: Option<&GlWindowTarget>,
+) -> Result<GlWindowTarget, ()> {
+    let context_builder = glutin::ContextBuilder::new()
+        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
+        .with_vsync(true);
+
+    // make current gl context
+    let windowed_context = if let Some(ref shared_window_target) = shared_window_target {
+        if let Some(ref gl_windowed_context) =
+        shared_window_target.gl_windowed_context.borrow().as_ref()
+        {
+            unsafe {
+                context_builder
+                    .with_shared_lists(gl_windowed_context.context())
+                    .build_windowed(window_builder, &events_loop)
+                    .unwrap()
+                    .make_current()
+                    .unwrap()
+            }
+        } else {
+            unsafe {
+                context_builder
+                    .build_windowed(window_builder, &events_loop)
+                    .unwrap()
+                    .make_current()
+                    .unwrap()
+            }
+        }
+    } else {
+        unsafe {
+            context_builder
+                .build_windowed(window_builder, &events_loop)
+                .unwrap()
+                .make_current()
+                .unwrap()
+        }
+    };
+
+    // initialize gl context
+    let gl_context_data = device.init_context(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
+
+    let aspect_ratio = windowed_context.window().scale_factor() as f32;
+
+    let mut time_query: GLuint = 0;
+    unsafe {
+        gl::GenQueries(1, &mut time_query);
+        gl::BeginQuery(gl::TIME_ELAPSED, time_query);
+        gl::EndQuery(gl::TIME_ELAPSED);
+    }
+    print!("time_query: {}", time_query);
+
+    Ok(GlWindowTarget {
+        gl_windowed_context: RefCell::new(Some(windowed_context)),
+        gl_context_data,
+        gl_render_target: GlRenderTarget::new(0, 0, 0, aspect_ratio),
+        time_query,
+    })
+}
+
+pub struct GlWindowTarget {
+    gl_windowed_context:
+    RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
+    gl_context_data: GlContextData,
+    gl_render_target: GlRenderTarget,
+
+    time_query: GLuint,
+}
+
+impl GlWindowTarget {
+    pub fn get_window(&self) -> Ref<winit::window::Window> {
+        Ref::map(self.gl_windowed_context.borrow(), |context| {
+            context.as_ref().unwrap().window()
+        })
+    }
+
+    pub fn get_render_target(&self) -> &GlRenderTarget {
+        &self.gl_render_target
+    }
+
+    pub fn update_size(&mut self, width: u16, height: u16) {
+        unsafe {
+            self.gl_render_target.update_size(width, height);
+            gl::Viewport(0, 0, width as i32, height as i32);
+        }
+    }
+
+    pub fn swap_buffers(&mut self) {
+        self.gl_windowed_context
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .swap_buffers()
+            .unwrap();
+    }
+
+    pub fn make_current_context(&mut self) {
+        unsafe {
+            let context = self.gl_windowed_context.replace(None);
+            let context = context.unwrap().make_current().unwrap();
+            self.gl_windowed_context.replace(Some(context));
+        }
+    }
+
+    pub fn get_context(
+        &self,
+    ) -> Ref<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>> {
+        Ref::map(self.gl_windowed_context.borrow(), |context| {
+            context.as_ref().unwrap()
+        })
+    }
+}
+
+impl Drop for GlWindowTarget {
+    fn drop(&mut self) {
+        unsafe {
+            let context = self.gl_windowed_context.replace(None);
+            let context = context.unwrap().make_current().unwrap();
+            self.gl_windowed_context.replace(Some(context));
+        }
     }
 }
 

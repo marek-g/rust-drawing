@@ -12,6 +12,8 @@ use anyhow::Result;
 use gl::types::*;
 
 use std::cell::{Ref, RefCell};
+use std::ffi::c_void;
+use crate::{GlContextData, GlRenderTarget, GlTexture};
 
 pub struct GlDevice {
     colored_pipeline: Option<ColoredPipeline>,
@@ -22,49 +24,10 @@ pub struct GlDevice {
 }
 
 impl GlDevice {
-    pub fn create_window_target(
-        &mut self,
-        window_builder: winit::window::WindowBuilder,
-        events_loop: &winit::event_loop::EventLoop<()>,
-        shared_window_target: Option<&GlWindowTarget>,
-    ) -> Result<GlWindowTarget> {
-        let context_builder = glutin::ContextBuilder::new()
-            .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)))
-            .with_vsync(true);
-
-        let windowed_context = if let Some(ref shared_window_target) = shared_window_target {
-            if let Some(ref gl_windowed_context) =
-                shared_window_target.gl_windowed_context.borrow().as_ref()
-            {
-                unsafe {
-                    context_builder
-                        .with_shared_lists(gl_windowed_context.context())
-                        .build_windowed(window_builder, &events_loop)
-                        .unwrap()
-                        .make_current()
-                        .unwrap()
-                }
-            } else {
-                unsafe {
-                    context_builder
-                        .build_windowed(window_builder, &events_loop)
-                        .unwrap()
-                        .make_current()
-                        .unwrap()
-                }
-            }
-        } else {
-            unsafe {
-                context_builder
-                    .build_windowed(window_builder, &events_loop)
-                    .unwrap()
-                    .make_current()
-                    .unwrap()
-            }
-        };
-
+    pub fn init_context<F>(&mut self, loadfn: F) -> GlContextData where
+        F: FnMut(&'static str) -> *const c_void {
         // tell gl crate how to forward gl function calls to the driver
-        gl::load_with(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
+        gl::load_with(loadfn);
 
         unsafe {
             gl::Enable(gl::BLEND);
@@ -85,24 +48,7 @@ impl GlDevice {
             self.universal_pipeline = Some(UniversalPipeline::new());
         }
 
-        self.aspect_ratio = windowed_context.window().scale_factor() as f32;
-
-        let mut time_query: GLuint = 0;
-        unsafe {
-            gl::GenQueries(1, &mut time_query);
-            gl::BeginQuery(gl::TIME_ELAPSED, time_query);
-            gl::EndQuery(gl::TIME_ELAPSED);
-        }
-        print!("time_query: {}", time_query);
-
-        Ok(GlWindowTarget {
-            gl_windowed_context: RefCell::new(Some(windowed_context)),
-            gl_render_target: GlRenderTarget {
-                framebuffer_id: 0,
-                width: 0,
-                height: 0,
-                aspect_ratio: self.aspect_ratio,
-            },
+        GlContextData {
             colored_pipeline_buffers: self.colored_pipeline.as_ref().unwrap().create_vbo_and_vao(),
             textured_pipeline_buffers: self
                 .textured_pipeline
@@ -118,67 +64,29 @@ impl GlDevice {
                 .universal_pipeline
                 .as_ref()
                 .unwrap()
-                .create_vbo_and_vao(),
-
-            time_query,
-        })
+                .create_vbo_and_vao()
+        }
     }
 
-    pub fn begin(&mut self, window_target: &GlWindowTarget) -> Result<()> {
-        unsafe {
-            gl::BeginQuery(gl::TIME_ELAPSED, window_target.time_query);
-        }
-
-        unsafe {
-            let context = window_target.gl_windowed_context.replace(None);
-            let context = context.unwrap().make_current().unwrap();
-            window_target.gl_windowed_context.replace(Some(context));
-        }
-
+    pub fn begin(&mut self, gl_context_data: &GlContextData) -> Result<()> {
         self.colored_pipeline
             .as_mut()
             .unwrap()
-            .set_buffers(window_target.colored_pipeline_buffers);
+            .set_buffers(gl_context_data.colored_pipeline_buffers);
         self.textured_pipeline
             .as_mut()
             .unwrap()
-            .set_buffers(window_target.textured_pipeline_buffers);
+            .set_buffers(gl_context_data.textured_pipeline_buffers);
         self.textured_y8_pipeline
             .as_mut()
             .unwrap()
-            .set_buffers(window_target.textured_y8_pipeline_buffers);
+            .set_buffers(gl_context_data.textured_y8_pipeline_buffers);
         self.universal_pipeline
             .as_mut()
             .unwrap()
-            .set_buffers(window_target.universal_pipeline_buffers);
+            .set_buffers(gl_context_data.universal_pipeline_buffers);
 
         Ok(())
-    }
-
-    pub fn end(&mut self, window_target: &GlWindowTarget) {
-        unsafe {
-            gl::EndQuery(gl::TIME_ELAPSED);
-
-            // retrieving the recorded elapsed time
-            // wait until the query result is available
-            let mut done = 0i32;
-            while done == 0 {
-                gl::GetQueryObjectiv(
-                    window_target.time_query,
-                    gl::QUERY_RESULT_AVAILABLE,
-                    &mut done,
-                );
-            }
-
-            // get the query result
-            let mut elapsed_time: GLuint64 = 0;
-            gl::GetQueryObjectui64v(
-                window_target.time_query,
-                gl::QUERY_RESULT,
-                &mut elapsed_time,
-            );
-            println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
-        }
     }
 
     pub fn set_render_target(&mut self, target: &GlRenderTarget) {
@@ -762,167 +670,6 @@ impl drawing::backend::Device for GlDevice {
 
                     gl::Disable(gl::STENCIL_TEST);
                 }
-            }
-        }
-    }
-}
-
-pub struct GlWindowTarget {
-    gl_windowed_context:
-        RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
-    gl_render_target: GlRenderTarget,
-
-    colored_pipeline_buffers: (GLuint, GLuint),
-    textured_pipeline_buffers: (GLuint, GLuint),
-    textured_y8_pipeline_buffers: (GLuint, GLuint),
-    universal_pipeline_buffers: (GLuint, GLuint),
-
-    time_query: GLuint,
-}
-
-impl GlWindowTarget {
-    pub fn get_window(&self) -> Ref<winit::window::Window> {
-        Ref::map(self.gl_windowed_context.borrow(), |context| {
-            context.as_ref().unwrap().window()
-        })
-    }
-
-    pub fn get_render_target(&self) -> &GlRenderTarget {
-        &self.gl_render_target
-    }
-
-    pub fn update_size(&mut self, width: u16, height: u16) {
-        unsafe {
-            self.gl_render_target.width = width;
-            self.gl_render_target.height = height;
-            gl::Viewport(0, 0, width as i32, height as i32);
-        }
-    }
-
-    pub fn swap_buffers(&mut self) {
-        self.gl_windowed_context
-            .borrow()
-            .as_ref()
-            .unwrap()
-            .swap_buffers()
-            .unwrap();
-    }
-
-    pub fn get_context(
-        &self,
-    ) -> Ref<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>> {
-        Ref::map(self.gl_windowed_context.borrow(), |context| {
-            context.as_ref().unwrap()
-        })
-    }
-}
-
-impl Drop for GlWindowTarget {
-    fn drop(&mut self) {
-        unsafe {
-            let context = self.gl_windowed_context.replace(None);
-            let context = context.unwrap().make_current().unwrap();
-            self.gl_windowed_context.replace(Some(context));
-
-            gl::DeleteVertexArrays(1, &mut self.colored_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.colored_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &mut self.textured_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.textured_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &mut self.textured_y8_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.textured_y8_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &mut self.universal_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.universal_pipeline_buffers.0);
-        }
-    }
-}
-
-pub struct GlRenderTarget {
-    framebuffer_id: GLuint,
-    width: u16,
-    height: u16,
-    aspect_ratio: f32,
-}
-
-impl Drop for GlRenderTarget {
-    fn drop(&mut self) {
-        if self.framebuffer_id > 0 {
-            unsafe {
-                gl::DeleteFramebuffers(1, &mut self.framebuffer_id);
-            }
-        }
-    }
-}
-
-impl RenderTarget for GlRenderTarget {
-    fn get_size(&self) -> (u16, u16) {
-        (self.width, self.height)
-    }
-
-    fn get_aspect_ratio(&self) -> f32 {
-        self.aspect_ratio
-    }
-
-    fn get_device_transform(&self) -> PixelToDeviceTransform {
-        PixelToDeviceTransform::new(
-            2.0f32 / self.width as f32,
-            0.0f32,
-            0.0f32,
-            -2.0f32 / self.height as f32,
-            -1.0f32,
-            1.0f32,
-        )
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct GlTexture {
-    id: GLuint,
-    is_owned: bool,
-    width: u16,
-    height: u16,
-    gl_format: GLuint,
-    gl_type: GLuint,
-    flipped_y: bool,
-}
-
-impl drawing::backend::Texture for GlTexture {
-    fn update(
-        &mut self,
-        memory: &[u8],
-        offset_x: u16,
-        offset_y: u16,
-        width: u16,
-        height: u16,
-    ) -> Result<()> {
-        unsafe {
-            gl::TexSubImage2D(
-                gl::TEXTURE_2D,
-                0,
-                offset_x as GLint,
-                offset_y as GLint,
-                width as GLsizei,
-                height as GLsizei,
-                self.gl_format,
-                self.gl_type,
-                memory.as_ptr() as *const GLvoid,
-            );
-        }
-        Ok(())
-    }
-
-    fn get_size(&self) -> (u16, u16) {
-        (self.width, self.height)
-    }
-}
-
-impl Drop for GlTexture {
-    fn drop(&mut self) {
-        if self.is_owned && self.id > 0 {
-            unsafe {
-                gl::DeleteTextures(1, &self.id);
             }
         }
     }

@@ -15,10 +15,37 @@ use std::fs::File;
 use std::io::Read;
 
 use euclid::{Angle, Vector2D};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 fn main() {
     set_process_high_dpi_aware();
-    let window_builder = winit::window::WindowBuilder::new().with_title("Title");
+
+    let app = fui_system::Application::new("").unwrap();
+
+    let window_rc = Rc::new(RefCell::new(fui_system::Window::new(None).unwrap()));
+    {
+        let mut window = window_rc.borrow_mut();
+        window.set_title("Drawing example").unwrap();
+        window.set_visible(true).unwrap();
+        window.resize(500, 500);
+
+        window.on_initialize_gl({
+            let window_clone = window_rc.clone();
+            move || {
+                gl::load_with(|s| window_clone.borrow().get_opengl_proc_address(s).unwrap());
+            }
+        });
+
+        window.on_paint_gl(|| unsafe {
+            gl::ClearColor(1.0f32, 0.0f32, 0.0f32, 1.0f32);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
+        });
+    }
+
+    fui_system::Application::message_loop();
+
+    /*let window_builder = winit::window::WindowBuilder::new().with_title("Title");
     let event_loop = winit::event_loop::EventLoop::new();
 
     let mut device = DrawingDevice::new().unwrap();
@@ -376,7 +403,7 @@ fn main() {
 
             _ => {},
         }
-    });
+    });*/
 }
 
 pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Texture {

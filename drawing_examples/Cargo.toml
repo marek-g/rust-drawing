@@ -13,16 +13,23 @@ edition = "2018"
 [dependencies]
 drawing = { path = "../drawing", version = "0.1" }
 drawing_gl = { path = "../drawing_gl", version = "0.1" }
+gl = "0.14"
+fui_system = { path = "../../rust-fui/fui_system", version = "0.1" }
 euclid = "0.22"
+glutin = "0.25"
 winit = "0.23"
 shared_library = "0.1"
 find_folder = "0.3"
 cpu-time = "1.0"
 
 [[bin]]
-name = "simple"
-path = "src/simple.rs"
+name = "simple-winit"
+path = "src/simple-winit.rs"
 
 [[bin]]
-name = "multiwindow"
-path = "src/multiwindow.rs"
+name = "simple-fui-system"
+path = "src/simple-fui-system.rs"
+
+[[bin]]
+name = "multiwindow-winit"
+path = "src/multiwindow-winit.rs"
