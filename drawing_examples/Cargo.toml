@@ -33,3 +33,7 @@ path = "src/simple-fui-system.rs"
 [[bin]]
 name = "multiwindow-winit"
 path = "src/multiwindow-winit.rs"
+
+[[bin]]
+name = "multiwindow-fui-system"
+path = "src/multiwindow-fui-system.rs"

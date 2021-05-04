@@ -3,18 +3,23 @@ use drawing::composite_operation_state::CompositeOperationState;
 use drawing::paint::Paint;
 use euclid::Vector2D;
 
-use drawing::backend::*;
 use crate::pipelines::*;
+use anyhow::Result;
+use drawing::backend::*;
 use drawing::color::*;
 use drawing::path::{Bounds, Path};
 use drawing::units::*;
-use anyhow::Result;
 use gl::types::*;
 
+use crate::{GlContextData, GlRenderTarget, GlTexture};
 use std::cell::{Ref, RefCell};
 use std::ffi::c_void;
-use crate::{GlContextData, GlRenderTarget, GlTexture};
 
+///
+/// The one GlDevice contains data (programs) that
+/// can be shared between contexts.
+/// For unrelated contexts you need to create separate devices.
+///
 pub struct GlDevice {
     colored_pipeline: Option<ColoredPipeline>,
     textured_pipeline: Option<TexturedPipeline>,
@@ -24,8 +29,15 @@ pub struct GlDevice {
 }
 
 impl GlDevice {
-    pub fn init_context<F>(&mut self, loadfn: F) -> GlContextData where
-        F: FnMut(&'static str) -> *const c_void {
+    ///
+    /// Initializes new context.
+    /// Needs to be called per every new context.
+    /// Returned data is not shared between contexts.
+    ///
+    pub fn init_context<F>(&mut self, loadfn: F) -> GlContextData
+    where
+        F: FnMut(&'static str) -> *const c_void,
+    {
         // tell gl crate how to forward gl function calls to the driver
         gl::load_with(loadfn);
 
@@ -64,7 +76,7 @@ impl GlDevice {
                 .universal_pipeline
                 .as_ref()
                 .unwrap()
-                .create_vbo_and_vao()
+                .create_vbo_and_vao(),
         }
     }
 

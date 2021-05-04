@@ -32,6 +32,8 @@ pub struct GlWindow {
 }
 
 pub struct AppResources {
+    pub initialized: bool,
+
     pub resources: Resources<DrawingDevice, TextureFont<DrawingDevice>>,
 
     pub image1_resource_id: i32,
@@ -41,6 +43,7 @@ pub struct AppResources {
 impl AppResources {
     pub fn new() -> Self {
         AppResources {
+            initialized: false,
             resources: Resources::new(),
             image1_resource_id: 0,
             image2_resource_id: 0,
@@ -54,22 +57,36 @@ fn main() {
     let app = Application::new(
         ApplicationOptionsBuilder::new()
             .with_title("Example: tray")
+            .with_opengl_share_contexts(true)
             .with_opengl_stencil_bits(8)
             .build(),
-    )
-    .unwrap();
+    );
 
     let device_rc = Rc::new(RefCell::new(DrawingDevice::new().unwrap()));
     let app_resources_rc = Rc::new(RefCell::new(AppResources::new()));
 
-    let gl_window_rc = Rc::new(RefCell::new(GlWindow {
+    let gl_window1_rc = Rc::new(RefCell::new(GlWindow {
         window: fui_system::Window::new(None).unwrap(),
         gl_context_data: None,
         time_query: 0,
         pos_y: 0.0f32,
     }));
 
-    setup_window(&gl_window_rc, &device_rc, &app_resources_rc);
+    let gl_window2_rc = Rc::new(RefCell::new(GlWindow {
+        window: fui_system::Window::new(None).unwrap(),
+        gl_context_data: None,
+        time_query: 0,
+        pos_y: 0.0f32,
+    }));
+
+    gl_window1_rc.borrow_mut().window.set_title("Window 1");
+    gl_window2_rc.borrow_mut().window.set_title("Window 2");
+
+    setup_window(&gl_window1_rc, &device_rc, &app_resources_rc);
+    setup_window(&gl_window2_rc, &device_rc, &app_resources_rc);
+
+    gl_window1_rc.borrow_mut().window.set_visible(true);
+    gl_window2_rc.borrow_mut().window.set_visible(true);
 
     fui_system::Application::message_loop();
 }
@@ -80,7 +97,6 @@ fn setup_window(
     app_resources_rc: &Rc<RefCell<AppResources>>,
 ) {
     let mut window = &mut gl_window_rc.borrow_mut().window;
-    window.set_title("Drawing example").unwrap();
     window.resize(800, 600);
 
     window.on_initialize_gl({
@@ -89,17 +105,19 @@ fn setup_window(
         let app_resources_clone = app_resources_rc.clone();
 
         move || {
-            // initialize gl context
-            let mut gl_window = gl_window_clone.borrow_mut();
-            gl_window.gl_context_data =
-                Some(device_clone.borrow_mut().init_context(|symbol| {
-                    gl_window.window.get_opengl_proc_address(symbol).unwrap()
-                }));
+            {
+                // initialize gl context
+                let mut gl_window = gl_window_clone.borrow_mut();
+                gl_window.gl_context_data =
+                    Some(device_clone.borrow_mut().init_context(|symbol| {
+                        gl_window.window.get_opengl_proc_address(symbol).unwrap()
+                    }));
 
-            initialize_resources(
-                &mut app_resources_clone.borrow_mut(),
-                &mut device_clone.borrow_mut(),
-            );
+                initialize_resources(
+                    &mut app_resources_clone.borrow_mut(),
+                    &mut device_clone.borrow_mut(),
+                );
+            }
         }
     });
 
@@ -119,11 +137,13 @@ fn setup_window(
             gl_window_clone.borrow_mut().window.update();
         }
     });
-
-    window.set_visible(true).unwrap();
 }
 
 fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDevice) {
+    if app_resources.initialized {
+        return;
+    }
+
     //let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
     let font_path = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets")
@@ -159,6 +179,8 @@ fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDe
         .resources
         .textures_mut()
         .insert(app_resources.image2_resource_id, texture);
+
+    app_resources.initialized = true;
 }
 
 pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Texture {
