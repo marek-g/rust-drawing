@@ -18,7 +18,7 @@ fui_system = { path = "../../rust-fui/fui_system", version = "0.1" }
 euclid = "0.22"
 glutin = "0.25"
 winit = "0.23"
-find_folder = "0.3"
+rust-embed = "5.8.0"
 cpu-time = "1.0"
 
 [[bin]]

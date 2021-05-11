@@ -14,6 +14,7 @@ use std::io::Read;
 use drawing::TextureFont;
 use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
+use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -22,6 +23,10 @@ use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
+
+#[derive(RustEmbed)]
+#[folder = "assets/"]
+struct Assets;
 
 pub struct GlWindow {
     pub window: fui_system::Window,
@@ -54,7 +59,7 @@ impl AppResources {
 fn main() {
     let app = Application::new(
         ApplicationOptionsBuilder::new()
-            .with_title("Example: tray")
+            .with_title("Example: multiwindow (fui-system)")
             .with_opengl_share_contexts(true)
             .with_opengl_stencil_bits(8)
             .build(),
@@ -77,8 +82,14 @@ fn main() {
         pos_y: 0.0f32,
     }));
 
-    gl_window1_rc.borrow_mut().window.set_title("Window 1");
-    gl_window2_rc.borrow_mut().window.set_title("Window 2");
+    gl_window1_rc
+        .borrow_mut()
+        .window
+        .set_title("Window 1 (fui-system)");
+    gl_window2_rc
+        .borrow_mut()
+        .window
+        .set_title("Window 2 (fui-system)");
 
     setup_window(&gl_window1_rc, &device_rc, &app_resources_rc);
     setup_window(&gl_window2_rc, &device_rc, &app_resources_rc);
@@ -137,21 +148,12 @@ fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDe
         return;
     }
 
-    //let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
-    let font_path = find_folder::Search::ParentsThenKids(3, 3)
-        .for_folder("assets")
-        .unwrap()
-        .join("OpenSans-Regular.ttf")
-        .into_os_string()
-        .into_string()
-        .unwrap();
-
     // font
-    let mut file = File::open(font_path).unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-
-    let font = DrawingFont::create(device, buffer).unwrap();
+    let font = DrawingFont::create(
+        device,
+        Assets::get("OpenSans-Regular.ttf").unwrap().to_vec(),
+    )
+    .unwrap();
 
     app_resources
         .resources

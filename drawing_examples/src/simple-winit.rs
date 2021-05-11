@@ -8,20 +8,25 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-type DrawingDevice = drawing_gl::GlDevice;
-type DrawingFont = drawing::TextureFont<DrawingDevice>;
-
 use std::fs::File;
 use std::io::Read;
 
 use euclid::{Angle, Vector2D};
 use drawing_gl::{GlDevice, GlRenderTarget, GlContextData};
 use std::cell::{RefCell, Ref};
+use rust_embed::RustEmbed;
 
 use gl::types::*;
 
+type DrawingDevice = drawing_gl::GlDevice;
+type DrawingFont = drawing::TextureFont<DrawingDevice>;
+
+#[derive(RustEmbed)]
+#[folder = "assets/"]
+struct Assets;
+
 fn main() {
-    let window_builder = winit::window::WindowBuilder::new().with_title("Title");
+    let window_builder = winit::window::WindowBuilder::new().with_title("Example: simple (winit)");
     let event_loop = winit::event_loop::EventLoop::new();
 
     let mut device = DrawingDevice::new().unwrap();
@@ -29,26 +34,13 @@ fn main() {
         .unwrap();
     let mut renderer = Renderer::new();
 
-    //let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
-    let font_path = find_folder::Search::ParentsThenKids(3, 3)
-        .for_folder("assets")
-        .unwrap()
-        .join("OpenSans-Regular.ttf")
-        .into_os_string()
-        .into_string()
-        .unwrap();
-
     //
     // create resources
     //
     let mut resources = Resources::new();
 
     // font
-    let mut file = File::open(font_path).unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-
-    let font = DrawingFont::create(&mut device, buffer).unwrap();
+    let font = DrawingFont::create(&mut device, Assets::get("OpenSans-Regular.ttf").unwrap().to_vec()).unwrap();
 
     resources.fonts_mut().insert("F1".to_string(), font);
 

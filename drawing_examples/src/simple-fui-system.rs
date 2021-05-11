@@ -14,6 +14,7 @@ use std::io::Read;
 use drawing::TextureFont;
 use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
+use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -22,6 +23,10 @@ use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
+
+#[derive(RustEmbed)]
+#[folder = "assets/"]
+struct Assets;
 
 pub struct GlWindow {
     pub window: fui_system::Window,
@@ -51,7 +56,7 @@ impl AppResources {
 fn main() {
     let app = Application::new(
         ApplicationOptionsBuilder::new()
-            .with_title("Example: tray")
+            .with_title("Example: simple (fui-system)")
             .with_opengl_stencil_bits(8)
             .build(),
     )
@@ -78,7 +83,7 @@ fn setup_window(
     app_resources_rc: &Rc<RefCell<AppResources>>,
 ) {
     let mut window = &mut gl_window_rc.borrow_mut().window;
-    window.set_title("Drawing example").unwrap();
+    window.set_title("Example: simple (fui-system)").unwrap();
     window.resize(800, 600);
 
     window.on_paint_gl({
@@ -118,21 +123,11 @@ fn setup_window(
 }
 
 fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDevice) {
-    //let image_path = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap().join("test.png").into_os_string().into_string().unwrap();
-    let font_path = find_folder::Search::ParentsThenKids(3, 3)
-        .for_folder("assets")
-        .unwrap()
-        .join("OpenSans-Regular.ttf")
-        .into_os_string()
-        .into_string()
-        .unwrap();
-
-    // font
-    let mut file = File::open(font_path).unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-
-    let font = DrawingFont::create(device, buffer).unwrap();
+    let font = DrawingFont::create(
+        device,
+        Assets::get("OpenSans-Regular.ttf").unwrap().to_vec(),
+    )
+    .unwrap();
 
     app_resources
         .resources

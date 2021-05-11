@@ -7,16 +7,21 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-use drawing_gl::{GlRenderTarget, GlDevice, GlContextData};
+use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
+
+use rust_embed::RustEmbed;
+use std::cell::{Ref, RefCell};
+use std::fs::File;
+use std::io::Read;
+
+use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
 
-use std::fs::File;
-use std::io::Read;
-use std::cell::{RefCell, Ref};
-
-use gl::types::*;
+#[derive(RustEmbed)]
+#[folder = "assets/"]
+struct Assets;
 
 fn main() {
     let event_loop = winit::event_loop::EventLoop::new();
@@ -24,33 +29,29 @@ fn main() {
     let mut device = DrawingDevice::new().unwrap();
     let mut renderer = Renderer::new();
 
-    let window_builder1 = winit::window::WindowBuilder::new().with_title("Window 1");
-    let mut window_target1 = create_window_target(&mut device, window_builder1, &event_loop, None)
-        .unwrap();
+    let window_builder1 = winit::window::WindowBuilder::new().with_title("Window 1 (winit)");
+    let mut window_target1 =
+        create_window_target(&mut device, window_builder1, &event_loop, None).unwrap();
 
-    let window_builder2 = winit::window::WindowBuilder::new().with_title("Window 2");
-    let mut window_target2 = create_window_target(&mut device, window_builder2, &event_loop, Some(&window_target1))
-        .unwrap();
-
-    let font_path = find_folder::Search::ParentsThenKids(3, 3)
-        .for_folder("assets")
-        .unwrap()
-        .join("OpenSans-Regular.ttf")
-        .into_os_string()
-        .into_string()
-        .unwrap();
+    let window_builder2 = winit::window::WindowBuilder::new().with_title("Window 2 (winit)");
+    let mut window_target2 = create_window_target(
+        &mut device,
+        window_builder2,
+        &event_loop,
+        Some(&window_target1),
+    )
+    .unwrap();
 
     //
     // create resources
     //
     let mut resources = Resources::new();
 
-    // font
-    let mut file = File::open(font_path).unwrap();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).unwrap();
-
-    let font = DrawingFont::create(&mut device, buffer).unwrap();
+    let font = DrawingFont::create(
+        &mut device,
+        Assets::get("OpenSans-Regular.ttf").unwrap().to_vec(),
+    )
+    .unwrap();
 
     resources.fonts_mut().insert("F1".to_string(), font);
 
@@ -171,7 +172,7 @@ pub fn create_window_target(
     // make current gl context
     let windowed_context = if let Some(ref shared_window_target) = shared_window_target {
         if let Some(ref gl_windowed_context) =
-        shared_window_target.gl_windowed_context.borrow().as_ref()
+            shared_window_target.gl_windowed_context.borrow().as_ref()
         {
             unsafe {
                 context_builder
@@ -201,7 +202,8 @@ pub fn create_window_target(
     };
 
     // initialize gl context
-    let gl_context_data = device.init_context(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
+    let gl_context_data = device
+        .init_context(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
 
     let aspect_ratio = windowed_context.window().scale_factor() as f32;
 
@@ -223,7 +225,7 @@ pub fn create_window_target(
 
 pub struct GlWindowTarget {
     gl_windowed_context:
-    RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
+        RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
     gl_context_data: GlContextData,
     gl_render_target: GlRenderTarget,
 
