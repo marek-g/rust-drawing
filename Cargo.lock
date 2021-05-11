@@ -418,7 +418,6 @@ dependencies = [
  "fui_system",
  "gl",
  "glutin",
- "shared_library",
  "winit",
 ]
 

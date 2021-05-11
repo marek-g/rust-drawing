@@ -49,8 +49,6 @@ impl AppResources {
 }
 
 fn main() {
-    set_process_high_dpi_aware();
-
     let app = Application::new(
         ApplicationOptionsBuilder::new()
             .with_title("Example: tray")
@@ -83,32 +81,28 @@ fn setup_window(
     window.set_title("Drawing example").unwrap();
     window.resize(800, 600);
 
-    window.on_initialize_gl({
-        let gl_window_clone = gl_window_rc.clone();
-        let device_clone = device_rc.clone();
-        let app_resources_clone = app_resources_rc.clone();
-
-        move || {
-            // initialize gl context
-            let mut gl_window = gl_window_clone.borrow_mut();
-            gl_window.gl_context_data =
-                Some(device_clone.borrow_mut().init_context(|symbol| {
-                    gl_window.window.get_opengl_proc_address(symbol).unwrap()
-                }));
-
-            initialize_resources(
-                &mut app_resources_clone.borrow_mut(),
-                &mut device_clone.borrow_mut(),
-            );
-        }
-    });
-
     window.on_paint_gl({
         let gl_window_clone = gl_window_rc.clone();
         let device_clone = device_rc.clone();
         let app_resources_clone = app_resources_rc.clone();
+        let mut initialized = false;
 
         move || unsafe {
+            if !initialized {
+                let mut gl_window = gl_window_clone.borrow_mut();
+                gl_window.gl_context_data =
+                    Some(device_clone.borrow_mut().init_context(|symbol| {
+                        gl_window.window.get_opengl_proc_address(symbol).unwrap()
+                    }));
+
+                initialize_resources(
+                    &mut app_resources_clone.borrow_mut(),
+                    &mut device_clone.borrow_mut(),
+                );
+
+                initialized = true;
+            }
+
             draw(
                 &mut device_clone.borrow_mut(),
                 &mut gl_window_clone.borrow_mut(),
@@ -485,45 +479,3 @@ pub fn draw(
     let cpu_time = cpu_time.elapsed();
     println!("CPU time: {:?}", cpu_time);
 }
-
-// Helper function to dynamically load a function pointer and call it.
-// The result of the callback is forwarded.
-#[cfg(windows)]
-fn try_get_function_pointer<F>(
-    dll: &str,
-    name: &str,
-    callback: &Fn(&F) -> Result<(), ()>,
-) -> Result<(), ()> {
-    use shared_library::dynamic_library::DynamicLibrary;
-    use std::path::Path;
-
-    // Try to load the function dynamically.
-    let lib = DynamicLibrary::open(Some(Path::new(dll))).map_err(|_| ())?;
-
-    let func_ptr = unsafe { lib.symbol::<F>(name).map_err(|_| ())? };
-
-    let func = unsafe { std::mem::transmute(&func_ptr) };
-
-    callback(func)
-}
-
-#[cfg(windows)]
-pub fn set_process_high_dpi_aware() {
-    let _result = try_get_function_pointer::<unsafe extern "system" fn() -> u32>(
-        "User32.dll",
-        "SetProcessDPIAware",
-        &|SetProcessDPIAware| {
-            // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms633543(v=vs.85).aspx
-            let result = unsafe { SetProcessDPIAware() };
-
-            match result {
-                0 => Err(()),
-                _ => Ok(()),
-            }
-        },
-    );
-}
-
-/// This function only works on Windows.
-#[cfg(not(windows))]
-pub fn set_process_high_dpi_aware() {}
