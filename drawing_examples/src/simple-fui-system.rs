@@ -8,9 +8,6 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-use std::fs::File;
-use std::io::Read;
-
 use drawing::TextureFont;
 use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
@@ -54,7 +51,7 @@ impl AppResources {
 }
 
 fn main() {
-    let app = Application::new(
+    let _app = Application::new(
         ApplicationOptionsBuilder::new()
             .with_title("Example: simple (fui-system)")
             .with_opengl_stencil_bits(8)
@@ -82,7 +79,7 @@ fn setup_window(
     device_rc: &Rc<RefCell<GlDevice>>,
     app_resources_rc: &Rc<RefCell<AppResources>>,
 ) {
-    let mut window = &mut gl_window_rc.borrow_mut().window;
+    let window = &mut gl_window_rc.borrow_mut().window;
     window.set_title("Example: simple (fui-system)").unwrap();
     window.resize(800, 600);
 
@@ -92,7 +89,7 @@ fn setup_window(
         let app_resources_clone = app_resources_rc.clone();
         let mut initialized = false;
 
-        move || unsafe {
+        move || {
             if !initialized {
                 let mut gl_window = gl_window_clone.borrow_mut();
                 gl_window.gl_context_data =
@@ -104,6 +101,15 @@ fn setup_window(
                     &mut app_resources_clone.borrow_mut(),
                     &mut device_clone.borrow_mut(),
                 );
+
+                let mut time_query: GLuint = 0;
+                unsafe {
+                    gl::GenQueries(1, &mut time_query);
+                    gl::BeginQuery(gl::TIME_ELAPSED, time_query);
+                    gl::EndQuery(gl::TIME_ELAPSED);
+                }
+                gl_window.time_query = time_query;
+                print!("time_query: {}", time_query);
 
                 initialized = true;
             }
@@ -432,11 +438,13 @@ pub fn draw(
         },
     ];
 
-    /*unsafe {
+    unsafe {
         gl::BeginQuery(gl::TIME_ELAPSED, gl_window.time_query);
-    }*/
+    }
 
-    device.begin(gl_window.gl_context_data.as_ref().unwrap());
+    device
+        .begin(gl_window.gl_context_data.as_ref().unwrap())
+        .unwrap();
 
     device.clear(
         //window_target.get_render_target(),
@@ -455,7 +463,10 @@ pub fn draw(
         .unwrap();
 
     // end
-    /*unsafe {
+    let cpu_time = cpu_time.elapsed();
+    println!("CPU time: {:?}", cpu_time);
+
+    unsafe {
         gl::EndQuery(gl::TIME_ELAPSED);
 
         // retrieving the recorded elapsed time
@@ -469,8 +480,5 @@ pub fn draw(
         let mut elapsed_time: GLuint64 = 0;
         gl::GetQueryObjectui64v(gl_window.time_query, gl::QUERY_RESULT, &mut elapsed_time);
         println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
-    }*/
-
-    let cpu_time = cpu_time.elapsed();
-    println!("CPU time: {:?}", cpu_time);
+    }
 }

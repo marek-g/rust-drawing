@@ -8,9 +8,6 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-use std::fs::File;
-use std::io::Read;
-
 use euclid::{Angle, Vector2D};
 use drawing_gl::{GlDevice, GlRenderTarget, GlContextData};
 use std::cell::{RefCell, Ref};
@@ -331,7 +328,7 @@ fn main() {
                 // make current context
                 window_target.make_current_context();
 
-                device.begin(&window_target.gl_context_data);
+                device.begin(&window_target.gl_context_data).unwrap();
 
                 device.clear(
                     window_target.get_render_target(),
@@ -348,6 +345,9 @@ fn main() {
                     .unwrap();
 
                 // end
+                let cpu_time = cpu_time.elapsed();
+                println!("CPU time: {:?}", cpu_time);
+
                 unsafe {
                     gl::EndQuery(gl::TIME_ELAPSED);
 
@@ -371,9 +371,6 @@ fn main() {
                     );
                     println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
                 }
-
-                let cpu_time = cpu_time.elapsed();
-                println!("CPU time: {:?}", cpu_time);
 
                 window_target.swap_buffers();
             },

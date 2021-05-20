@@ -19,10 +19,12 @@ impl TexturedPipeline {
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
         let transform_location = unsafe {
-            gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
+            let str = CString::new("transform").unwrap();
+            gl::GetUniformLocation(program.id(), str.as_ptr())
         };
         let flipped_y_location = unsafe {
-            gl::GetUniformLocation(program.id(), CString::new("flipped_y").unwrap().as_ptr())
+            let str = CString::new("flipped_y").unwrap();
+            gl::GetUniformLocation(program.id(), str.as_ptr())
         };
 
         TexturedPipeline {
@@ -98,8 +100,8 @@ impl TexturedPipeline {
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
-            let pos_attr =
-                gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
+            let str = CString::new("in_position").unwrap();
+            let pos_attr = gl::GetAttribLocation(program_id, str.as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(
                 pos_attr as GLuint,
@@ -110,8 +112,8 @@ impl TexturedPipeline {
                 std::ptr::null(),
             ); // offset of the first component
 
-            let pos_attr =
-                gl::GetAttribLocation(program_id, CString::new("in_tex_coords").unwrap().as_ptr());
+            let str = CString::new("in_tex_coords").unwrap();
+            let pos_attr = gl::GetAttribLocation(program_id, str.as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(
                 pos_attr as GLuint,
@@ -122,8 +124,8 @@ impl TexturedPipeline {
                 (2 * std::mem::size_of::<f32>()) as *const GLvoid,
             ); // offset of the first component
 
-            let pos_attr =
-                gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
+            let str = CString::new("in_color").unwrap();
+            let pos_attr = gl::GetAttribLocation(program_id, str.as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(
                 pos_attr as GLuint,

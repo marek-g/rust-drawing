@@ -12,7 +12,6 @@ use drawing::units::*;
 use gl::types::*;
 
 use crate::{GlContextData, GlRenderTarget, GlTexture};
-use std::cell::{Ref, RefCell};
 use std::ffi::c_void;
 
 ///

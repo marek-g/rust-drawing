@@ -8,9 +8,6 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
-use std::fs::File;
-use std::io::Read;
-
 use drawing::TextureFont;
 use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
@@ -57,7 +54,7 @@ impl AppResources {
 }
 
 fn main() {
-    let app = Application::new(
+    let _app = Application::new(
         ApplicationOptionsBuilder::new()
             .with_title("Example: multiwindow (fui-system)")
             .with_opengl_share_contexts(true)
@@ -85,17 +82,19 @@ fn main() {
     gl_window1_rc
         .borrow_mut()
         .window
-        .set_title("Window 1 (fui-system)");
+        .set_title("Window 1 (fui-system)")
+        .unwrap();
     gl_window2_rc
         .borrow_mut()
         .window
-        .set_title("Window 2 (fui-system)");
+        .set_title("Window 2 (fui-system)")
+        .unwrap();
 
     setup_window(&gl_window1_rc, &device_rc, &app_resources_rc);
     setup_window(&gl_window2_rc, &device_rc, &app_resources_rc);
 
-    gl_window1_rc.borrow_mut().window.set_visible(true);
-    gl_window2_rc.borrow_mut().window.set_visible(true);
+    gl_window1_rc.borrow_mut().window.set_visible(true).unwrap();
+    gl_window2_rc.borrow_mut().window.set_visible(true).unwrap();
 
     fui_system::Application::message_loop();
 }
@@ -105,7 +104,7 @@ fn setup_window(
     device_rc: &Rc<RefCell<GlDevice>>,
     app_resources_rc: &Rc<RefCell<AppResources>>,
 ) {
-    let mut window = &mut gl_window_rc.borrow_mut().window;
+    let window = &mut gl_window_rc.borrow_mut().window;
     window.resize(800, 600);
 
     window.on_paint_gl({
@@ -114,7 +113,7 @@ fn setup_window(
         let app_resources_clone = app_resources_rc.clone();
         let mut initialized = false;
 
-        move || unsafe {
+        move || {
             if !initialized {
                 // initialize gl context
                 let mut gl_window = gl_window_clone.borrow_mut();
@@ -127,6 +126,15 @@ fn setup_window(
                     &mut app_resources_clone.borrow_mut(),
                     &mut device_clone.borrow_mut(),
                 );
+
+                let mut time_query: GLuint = 0;
+                unsafe {
+                    gl::GenQueries(1, &mut time_query);
+                    gl::BeginQuery(gl::TIME_ELAPSED, time_query);
+                    gl::EndQuery(gl::TIME_ELAPSED);
+                }
+                gl_window.time_query = time_query;
+                print!("time_query: {}", time_query);
 
                 initialized = true;
             }
@@ -460,11 +468,13 @@ pub fn draw(
         },
     ];
 
-    /*unsafe {
+    unsafe {
         gl::BeginQuery(gl::TIME_ELAPSED, gl_window.time_query);
-    }*/
+    }
 
-    device.begin(gl_window.gl_context_data.as_ref().unwrap());
+    device
+        .begin(gl_window.gl_context_data.as_ref().unwrap())
+        .unwrap();
 
     device.clear(
         //window_target.get_render_target(),
@@ -483,7 +493,10 @@ pub fn draw(
         .unwrap();
 
     // end
-    /*unsafe {
+    let cpu_time = cpu_time.elapsed();
+    println!("CPU time: {:?}", cpu_time);
+
+    unsafe {
         gl::EndQuery(gl::TIME_ELAPSED);
 
         // retrieving the recorded elapsed time
@@ -497,8 +510,5 @@ pub fn draw(
         let mut elapsed_time: GLuint64 = 0;
         gl::GetQueryObjectui64v(gl_window.time_query, gl::QUERY_RESULT, &mut elapsed_time);
         println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
-    }*/
-
-    let cpu_time = cpu_time.elapsed();
-    println!("CPU time: {:?}", cpu_time);
+    }
 }

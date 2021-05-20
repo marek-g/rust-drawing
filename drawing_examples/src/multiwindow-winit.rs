@@ -11,10 +11,6 @@ use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 
 use rust_embed::RustEmbed;
 use std::cell::{Ref, RefCell};
-use std::fs::File;
-use std::io::Read;
-
-use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing::TextureFont<DrawingDevice>;
@@ -142,7 +138,7 @@ fn draw_window(
         // make current context
         window_target.make_current_context();
 
-        device.begin(&window_target.gl_context_data);
+        device.begin(&window_target.gl_context_data).unwrap();
         device.clear(
             window_target.get_render_target(),
             &[0.5f32, 0.4f32, 0.3f32, 1.0f32],
@@ -207,19 +203,10 @@ pub fn create_window_target(
 
     let aspect_ratio = windowed_context.window().scale_factor() as f32;
 
-    let mut time_query: GLuint = 0;
-    unsafe {
-        gl::GenQueries(1, &mut time_query);
-        gl::BeginQuery(gl::TIME_ELAPSED, time_query);
-        gl::EndQuery(gl::TIME_ELAPSED);
-    }
-    print!("time_query: {}", time_query);
-
     Ok(GlWindowTarget {
         gl_windowed_context: RefCell::new(Some(windowed_context)),
         gl_context_data,
         gl_render_target: GlRenderTarget::new(0, 0, 0, aspect_ratio),
-        time_query,
     })
 }
 
@@ -228,8 +215,6 @@ pub struct GlWindowTarget {
         RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
     gl_context_data: GlContextData,
     gl_render_target: GlRenderTarget,
-
-    time_query: GLuint,
 }
 
 impl GlWindowTarget {

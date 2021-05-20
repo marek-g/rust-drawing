@@ -18,7 +18,8 @@ impl ColoredPipeline {
         let program = Program::from_shaders(&[vertex_shader, pixel_shader]).unwrap();
 
         let transform_location = unsafe {
-            gl::GetUniformLocation(program.id(), CString::new("transform").unwrap().as_ptr())
+            let str = CString::new("transform").unwrap();
+            gl::GetUniformLocation(program.id(), str.as_ptr())
         };
 
         ColoredPipeline {
@@ -95,8 +96,8 @@ impl ColoredPipeline {
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
-            let pos_attr =
-                gl::GetAttribLocation(program_id, CString::new("in_position").unwrap().as_ptr());
+            let str = CString::new("in_position").unwrap();
+            let pos_attr = gl::GetAttribLocation(program_id, str.as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(
                 pos_attr as GLuint,
@@ -107,8 +108,8 @@ impl ColoredPipeline {
                 std::ptr::null(),
             ); // offset of the first component
 
-            let pos_attr =
-                gl::GetAttribLocation(program_id, CString::new("in_color").unwrap().as_ptr());
+            let str = CString::new("in_color").unwrap();
+            let pos_attr = gl::GetAttribLocation(program_id, str.as_ptr());
             gl::EnableVertexAttribArray(pos_attr as GLuint);
             gl::VertexAttribPointer(
                 pos_attr as GLuint,
