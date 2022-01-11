@@ -8,11 +8,7 @@
 //!
 //! ```ignore
 //! // Initialize text renderer.
-//! let mut text = RendererBuilder::new()
-//!                                .with_font_data(&self.bytes)
-//!                                .with_size(size)
-//!                                .build::<D>(device)
-//!                                .unwrap()
+//! let mut text = FontSizeRenderer::new(&buffer, 25)?;
 //!
 //! // In render loop:
 //!
@@ -33,19 +29,11 @@ use crate::backend::Device;
 use crate::backend::TexturedY8Vertex;
 use crate::clipping::clip_image;
 use crate::color::ColorFormat;
-use crate::texture_font::font::BitmapFont;
-pub use crate::texture_font::font::FontError;
+use crate::texture_font::bitmap_font::BitmapFont;
+pub use crate::texture_font::bitmap_font::FontError;
 use crate::units::UnknownToDeviceTransform;
 
 use thiserror::Error;
-
-const DEFAULT_FONT_SIZE: u8 = 16;
-
-#[cfg(feature = "include-font")]
-const DEFAULT_FONT_DATA: Option<&'static [u8]> =
-    Some(include_bytes!("../assets/NotoSans-Regular.ttf"));
-#[cfg(not(feature = "include-font"))]
-const DEFAULT_FONT_DATA: Option<&'static [u8]> = None;
 
 /// General error type returned by the library. Wraps all other errors.
 #[derive(Error, Debug)]
@@ -70,14 +58,6 @@ impl From<anyhow::Error> for Error {
 }
 
 /// Text renderer.
-pub struct Renderer<D: Device> {
-    font_bitmap: BitmapFont,
-    texture: D::Texture,
-    vertex_data: Vec<TexturedY8Vertex>,
-}
-
-/// Text renderer builder. Allows to set rendering options using builder
-/// pattern.
 ///
 /// # Examples
 ///
@@ -86,73 +66,32 @@ pub struct Renderer<D: Device> {
 /// let mut buffer = Vec::new();
 /// file.read_to_end(&mut buffer);
 ///
-/// let mut text = gfx_text::RendererBuilder::new(factory)
-///     .with_size(25)
-///     .with_font_data(data)
-///     .build()
-///     .unwrap();
+/// let mut text = FontSizeRenderer::new(&buffer, 25);
 /// ```
-pub struct RendererBuilder<'r> {
-    font_size: u8,
-    font_data: Option<&'r [u8]>,
+pub struct FontSizeRenderer<D: Device> {
+    bitmap_font: BitmapFont,
+    texture: Option<D::Texture>,
+    vertex_data: Vec<TexturedY8Vertex>,
 }
 
-impl<'r> RendererBuilder<'r> {
-    /// Create a new text renderer builder.
-    pub fn new() -> Self {
-        // Default renderer settings.
-        RendererBuilder {
-            font_size: DEFAULT_FONT_SIZE,
-            font_data: DEFAULT_FONT_DATA,
-        }
-    }
+impl<D: Device> FontSizeRenderer<D> {
+    pub fn new(font_data: &[u8], font_size: u8) -> Result<Self, Error> {
+        let bitmap_font = BitmapFont::from_bytes(font_data, font_size, None)?;
 
-    /// Specify custom size.
-    pub fn with_size(mut self, size: u8) -> Self {
-        self.font_size = size;
-        self
-    }
-
-    /// Pass raw font data.
-    pub fn with_font_data(mut self, data: &'r [u8]) -> Self {
-        self.font_data = Some(data);
-        self
-    }
-
-    /// Build a new text renderer instance using current settings.
-    pub fn build<D: Device>(self, device: &mut D) -> Result<Renderer<D>, Error> {
-        // Initialize bitmap font.
-        // TODO(Kagami): Outline!
-        // TODO(Kagami): More granulated font settings, e.g. antialiasing,
-        // hinting, kerning, etc.
-        let font_bitmap = match self.font_data {
-            Some(data) => BitmapFont::from_bytes(data, self.font_size, None),
-            None => Err(FontError::NoFont),
-        }?;
-        let texture = device.create_texture(
-            Some(font_bitmap.get_image()),
-            font_bitmap.get_width(),
-            font_bitmap.get_height(),
-            ColorFormat::Y8,
-            false,
-        )?;
-
-        Ok(Renderer {
-            font_bitmap,
-            texture,
+        Ok(FontSizeRenderer {
+            bitmap_font,
+            texture: None,
             vertex_data: Vec::new(),
         })
     }
-}
 
-impl<D: Device> Renderer<D> {
     /// Add some text to the current draw scene relative to the top left corner
     /// of the screen using pixel coordinates.
     pub fn add(&mut self, text: &str, pos: [i32; 2], clipping_rect: [f32; 4], color: [f32; 4]) {
         // `Result` is used here as an `Either` analogue.
         let (mut x, y) = (pos[0] as f32, pos[1] as f32);
         for ch in text.chars() {
-            let ch_info = match self.font_bitmap.find_char(ch) {
+            let ch_info = match self.bitmap_font.find_char(ch) {
                 Some(info) => info,
                 // Skip unknown chars from text string. Probably it would be
                 // better to place some "?" mark instead but it may not exist
@@ -209,38 +148,28 @@ impl<D: Device> Renderer<D> {
         target: &D::RenderTarget,
         transform: UnknownToDeviceTransform,
     ) -> Result<(), Error> {
-        device.triangles_textured_y8(target, &self.texture, false, &self.vertex_data, transform);
+        if self.texture.is_none() {
+            self.texture = Some(device.create_texture(
+                Some(self.bitmap_font.get_image()),
+                self.bitmap_font.get_width(),
+                self.bitmap_font.get_height(),
+                ColorFormat::Y8,
+                false,
+            )?);
+        }
+        device.triangles_textured_y8(
+            target,
+            self.texture.as_ref().unwrap(),
+            false,
+            &self.vertex_data,
+            transform,
+        );
         self.vertex_data.clear();
         Ok(())
     }
 
-    /// Get the bounding box size of a string as rendered by this font.
-    pub fn measure(&self, text: &str) -> (i32, i32) {
-        let mut width = 0;
-
-        for ch in text.chars() {
-            let ch_info = match self.font_bitmap.find_char(ch) {
-                Some(info) => info,
-                None => continue,
-            };
-            width += ch_info.x_advance;
-        }
-
-        (width, self.font_bitmap.get_font_height() as i32)
-    }
-
-    pub fn measure_each_char(&self, text: &str) -> (Vec<i16>, i32) {
-        let mut pos_px = Vec::with_capacity(text.len());
-
-        for ch in text.chars() {
-            let ch_info = match self.font_bitmap.find_char(ch) {
-                Some(info) => info,
-                None => continue,
-            };
-            pos_px.push(ch_info.x_advance as i16);
-        }
-
-        (pos_px, self.font_bitmap.get_font_height() as i32)
+    pub fn get_bitmap_font(&self) -> &BitmapFont {
+        &self.bitmap_font
     }
 
     fn add_image(

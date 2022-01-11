@@ -38,8 +38,6 @@ pub struct BitmapChar {
 /// Represents possible errors which may occur during the font loading.
 #[derive(Debug)]
 pub enum FontError {
-    /// No font was specified
-    NoFont,
     /// Character set is empty
     EmptyFont,
     /// FreeType library error
@@ -301,5 +299,34 @@ impl BitmapFont {
 
     pub fn find_char(&self, ch: char) -> Option<&BitmapChar> {
         self.chars.get(&ch)
+    }
+
+    /// Get the bounding box size of a string as rendered by this font.
+    pub fn measure(&self, text: &str) -> (i32, i32) {
+        let mut width = 0;
+
+        for ch in text.chars() {
+            let ch_info = match self.find_char(ch) {
+                Some(info) => info,
+                None => continue,
+            };
+            width += ch_info.x_advance;
+        }
+
+        (width, self.get_font_height() as i32)
+    }
+
+    pub fn measure_each_char(&self, text: &str) -> (Vec<i16>, i32) {
+        let mut pos_px = Vec::with_capacity(text.len());
+
+        for ch in text.chars() {
+            let ch_info = match self.find_char(ch) {
+                Some(info) => info,
+                None => continue,
+            };
+            pos_px.push(ch_info.x_advance as i16);
+        }
+
+        (pos_px, self.get_font_height() as i32)
     }
 }
