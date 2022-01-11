@@ -13,9 +13,10 @@ use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
+use std::error::Error;
 use std::rc::Rc;
 
-use fui_system::{Application, ApplicationOptionsBuilder};
+use fui_system::{Application, ApplicationOptions};
 use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
@@ -53,14 +54,13 @@ impl AppResources {
     }
 }
 
-fn main() {
-    let _app = Application::new(
-        ApplicationOptionsBuilder::new()
+fn main() -> Result<(), Box<dyn Error>> {
+    let app = Application::new(
+        ApplicationOptions::new()
             .with_title("Example: multiwindow (fui-system)")
             .with_opengl_share_contexts(true)
-            .with_opengl_stencil_bits(8)
-            .build(),
-    );
+            .with_opengl_stencil_bits(8),
+    )?;
 
     let device_rc = Rc::new(RefCell::new(DrawingDevice::new().unwrap()));
     let app_resources_rc = Rc::new(RefCell::new(AppResources::new()));
@@ -96,7 +96,9 @@ fn main() {
     gl_window1_rc.borrow_mut().window.set_visible(true).unwrap();
     gl_window2_rc.borrow_mut().window.set_visible(true).unwrap();
 
-    fui_system::Application::message_loop();
+    app.message_loop();
+
+    Ok(())
 }
 
 fn setup_window(

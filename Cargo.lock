@@ -537,6 +537,16 @@ version = "0.1.0"
 dependencies = [
  "bindgen",
  "cbindgen",
+ "fui_system_core",
+ "thiserror",
+]
+
+[[package]]
+name = "fui_system_core"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "cbindgen",
  "thiserror",
 ]
 

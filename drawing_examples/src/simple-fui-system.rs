@@ -13,9 +13,10 @@ use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
+use std::error::Error;
 use std::rc::Rc;
 
-use fui_system::{Application, ApplicationOptionsBuilder};
+use fui_system::{Application, ApplicationOptions};
 use gl::types::*;
 
 type DrawingDevice = drawing_gl::GlDevice;
@@ -50,12 +51,11 @@ impl AppResources {
     }
 }
 
-fn main() {
-    let _app = Application::new(
-        ApplicationOptionsBuilder::new()
+fn main() -> Result<(), Box<dyn Error>> {
+    let app = Application::new(
+        ApplicationOptions::new()
             .with_title("Example: simple (fui-system)")
-            .with_opengl_stencil_bits(8)
-            .build(),
+            .with_opengl_stencil_bits(8),
     )
     .unwrap();
 
@@ -71,7 +71,9 @@ fn main() {
 
     setup_window(&gl_window_rc, &device_rc, &app_resources_rc);
 
-    fui_system::Application::message_loop();
+    app.message_loop();
+
+    Ok(())
 }
 
 fn setup_window(
