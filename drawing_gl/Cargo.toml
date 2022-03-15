@@ -12,7 +12,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-drawing = { path = "../drawing", version = "0.2" }
+drawing = { path = "../drawing", version = "0.3" }
 anyhow = "1.0"
 euclid = "0.22"
 gl = "0.14"
