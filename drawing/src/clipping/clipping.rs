@@ -196,7 +196,7 @@ impl Clipping for Vec<Primitive> {
 
                 Primitive::Composite { color, primitives } => {
                     let clipped_primitives = primitives.clip(clipping_rect);
-                    if clipped_primitives.len() > 0 {
+                    if !clipped_primitives.is_empty() {
                         res.push(Primitive::Composite {
                             color,
                             primitives: clipped_primitives,

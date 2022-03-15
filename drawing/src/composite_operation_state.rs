@@ -10,9 +10,9 @@ pub struct CompositeOperationState {
     pub dst_alpha: BlendFactor,
 }
 
-impl Into<CompositeOperationState> for CompositeOperation {
-    fn into(self) -> CompositeOperationState {
-        match self {
+impl From<CompositeOperation> for CompositeOperationState {
+    fn from(operation: CompositeOperation) -> Self {
+        match operation {
             CompositeOperation::Basic(op) => {
                 let (src_factor, dst_factor) = match op {
                     BasicCompositeOperation::SrcOver => {

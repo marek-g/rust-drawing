@@ -60,70 +60,64 @@ pub fn rect_rounded_varying_path<R: Into<PixelRect>>(
         let rxlt = lt.min(halfw) * rect.size.width.signum();
         let rylt = lt.min(halfh) * rect.size.height.signum();
 
-        let mut res = Vec::with_capacity(10);
-        res.push(PathElement::MoveTo(PixelPoint::new(
-            rect.origin.x,
-            rect.origin.y + rylt,
-        )));
-        res.push(PathElement::LineTo(PixelPoint::new(
-            rect.origin.x,
-            rect.origin.y + rect.size.height - rylb,
-        )));
-        res.push(PathElement::BezierTo(
-            PixelPoint::new(
+        vec![
+            PathElement::MoveTo(PixelPoint::new(rect.origin.x, rect.origin.y + rylt)),
+            PathElement::LineTo(PixelPoint::new(
                 rect.origin.x,
-                rect.origin.y + rect.size.height - rylb * (1.0 - KAPPA90),
+                rect.origin.y + rect.size.height - rylb,
+            )),
+            PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x,
+                    rect.origin.y + rect.size.height - rylb * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rxlb * (1.0 - KAPPA90),
+                    rect.origin.y + rect.size.height,
+                ),
+                PixelPoint::new(rect.origin.x + rxlb, rect.origin.y + rect.size.height),
             ),
-            PixelPoint::new(
-                rect.origin.x + rxlb * (1.0 - KAPPA90),
+            PathElement::LineTo(PixelPoint::new(
+                rect.origin.x + rect.size.width - rxrb,
                 rect.origin.y + rect.size.height,
+            )),
+            PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width - rxrb * (1.0 - KAPPA90),
+                    rect.origin.y + rect.size.height,
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + rect.size.height - ryrb * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + rect.size.height - ryrb,
+                ),
             ),
-            PixelPoint::new(rect.origin.x + rxlb, rect.origin.y + rect.size.height),
-        ));
-        res.push(PathElement::LineTo(PixelPoint::new(
-            rect.origin.x + rect.size.width - rxrb,
-            rect.origin.y + rect.size.height,
-        )));
-        res.push(PathElement::BezierTo(
-            PixelPoint::new(
-                rect.origin.x + rect.size.width - rxrb * (1.0 - KAPPA90),
-                rect.origin.y + rect.size.height,
-            ),
-            PixelPoint::new(
+            PathElement::LineTo(PixelPoint::new(
                 rect.origin.x + rect.size.width,
-                rect.origin.y + rect.size.height - ryrb * (1.0 - KAPPA90),
+                rect.origin.y + ryrt,
+            )),
+            PathElement::BezierTo(
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width,
+                    rect.origin.y + ryrt * (1.0 - KAPPA90),
+                ),
+                PixelPoint::new(
+                    rect.origin.x + rect.size.width - rxrt * (1.0 - KAPPA90),
+                    rect.origin.y,
+                ),
+                PixelPoint::new(rect.origin.x + rect.size.width - rxrt, rect.origin.y),
             ),
-            PixelPoint::new(
-                rect.origin.x + rect.size.width,
-                rect.origin.y + rect.size.height - ryrb,
+            PathElement::LineTo(PixelPoint::new(rect.origin.x + rxlt, rect.origin.y)),
+            PathElement::BezierTo(
+                PixelPoint::new(rect.origin.x + rxlt * (1.0 - KAPPA90), rect.origin.y),
+                PixelPoint::new(rect.origin.x, rect.origin.y + rylt * (1.0 - KAPPA90)),
+                PixelPoint::new(rect.origin.x, rect.origin.y + rylt),
             ),
-        ));
-        res.push(PathElement::LineTo(PixelPoint::new(
-            rect.origin.x + rect.size.width,
-            rect.origin.y + ryrt,
-        )));
-        res.push(PathElement::BezierTo(
-            PixelPoint::new(
-                rect.origin.x + rect.size.width,
-                rect.origin.y + ryrt * (1.0 - KAPPA90),
-            ),
-            PixelPoint::new(
-                rect.origin.x + rect.size.width - rxrt * (1.0 - KAPPA90),
-                rect.origin.y,
-            ),
-            PixelPoint::new(rect.origin.x + rect.size.width - rxrt, rect.origin.y),
-        ));
-        res.push(PathElement::LineTo(PixelPoint::new(
-            rect.origin.x + rxlt,
-            rect.origin.y,
-        )));
-        res.push(PathElement::BezierTo(
-            PixelPoint::new(rect.origin.x + rxlt * (1.0 - KAPPA90), rect.origin.y),
-            PixelPoint::new(rect.origin.x, rect.origin.y + rylt * (1.0 - KAPPA90)),
-            PixelPoint::new(rect.origin.x, rect.origin.y + rylt),
-        ));
-        res.push(PathElement::ClosePath);
-        res
+            PathElement::ClosePath,
+        ]
     }
 }
 
@@ -151,76 +145,73 @@ pub fn rect_rounded_varying_path_half<R: Into<PixelRect>>(
         let rylt = lt.min(halfh) * rect.size.height.signum();
 
         if is_upper_left_half {
-            let mut res = Vec::with_capacity(6);
-            res.push(PathElement::MoveTo(PixelPoint::new(
-                rect.origin.x + rect.size.width,
-                rect.origin.y + ryrt,
-            )));
-            res.push(PathElement::BezierTo(
-                PixelPoint::new(
+            vec![
+                PathElement::MoveTo(PixelPoint::new(
                     rect.origin.x + rect.size.width,
-                    rect.origin.y + ryrt * (1.0 - KAPPA90),
+                    rect.origin.y + ryrt,
+                )),
+                PathElement::BezierTo(
+                    PixelPoint::new(
+                        rect.origin.x + rect.size.width,
+                        rect.origin.y + ryrt * (1.0 - KAPPA90),
+                    ),
+                    PixelPoint::new(
+                        rect.origin.x + rect.size.width - rxrt * (1.0 - KAPPA90),
+                        rect.origin.y,
+                    ),
+                    PixelPoint::new(rect.origin.x + rect.size.width - rxrt, rect.origin.y),
                 ),
-                PixelPoint::new(
-                    rect.origin.x + rect.size.width - rxrt * (1.0 - KAPPA90),
-                    rect.origin.y,
+                PathElement::LineTo(PixelPoint::new(rect.origin.x + rxlt, rect.origin.y)),
+                PathElement::BezierTo(
+                    PixelPoint::new(rect.origin.x + rxlt * (1.0 - KAPPA90), rect.origin.y),
+                    PixelPoint::new(rect.origin.x, rect.origin.y + rylt * (1.0 - KAPPA90)),
+                    PixelPoint::new(rect.origin.x, rect.origin.y + rylt),
                 ),
-                PixelPoint::new(rect.origin.x + rect.size.width - rxrt, rect.origin.y),
-            ));
-            res.push(PathElement::LineTo(PixelPoint::new(
-                rect.origin.x + rxlt,
-                rect.origin.y,
-            )));
-            res.push(PathElement::BezierTo(
-                PixelPoint::new(rect.origin.x + rxlt * (1.0 - KAPPA90), rect.origin.y),
-                PixelPoint::new(rect.origin.x, rect.origin.y + rylt * (1.0 - KAPPA90)),
-                PixelPoint::new(rect.origin.x, rect.origin.y + rylt),
-            ));
-            res.push(PathElement::LineTo(PixelPoint::new(
-                rect.origin.x,
-                rect.origin.y + rect.size.height - rylb,
-            )));
-            res.push(PathElement::BezierTo(
-                PixelPoint::new(
+                PathElement::LineTo(PixelPoint::new(
                     rect.origin.x,
-                    rect.origin.y + rect.size.height - rylb * (1.0 - KAPPA90),
+                    rect.origin.y + rect.size.height - rylb,
+                )),
+                PathElement::BezierTo(
+                    PixelPoint::new(
+                        rect.origin.x,
+                        rect.origin.y + rect.size.height - rylb * (1.0 - KAPPA90),
+                    ),
+                    PixelPoint::new(
+                        rect.origin.x + rxlb * (1.0 - KAPPA90),
+                        rect.origin.y + rect.size.height,
+                    ),
+                    PixelPoint::new(rect.origin.x + rxlb, rect.origin.y + rect.size.height),
                 ),
-                PixelPoint::new(
-                    rect.origin.x + rxlb * (1.0 - KAPPA90),
-                    rect.origin.y + rect.size.height,
-                ),
-                PixelPoint::new(rect.origin.x + rxlb, rect.origin.y + rect.size.height),
-            ));
-            res
+            ]
         } else {
-            let mut res = Vec::with_capacity(4);
-            res.push(PathElement::MoveTo(PixelPoint::new(
-                rect.origin.x + rxlb,
-                rect.origin.y + rect.size.height,
-            )));
-            res.push(PathElement::LineTo(PixelPoint::new(
-                rect.origin.x + rect.size.width - rxrb,
-                rect.origin.y + rect.size.height,
-            )));
-            res.push(PathElement::BezierTo(
-                PixelPoint::new(
-                    rect.origin.x + rect.size.width - rxrb * (1.0 - KAPPA90),
+            vec![
+                PathElement::MoveTo(PixelPoint::new(
+                    rect.origin.x + rxlb,
                     rect.origin.y + rect.size.height,
+                )),
+                PathElement::LineTo(PixelPoint::new(
+                    rect.origin.x + rect.size.width - rxrb,
+                    rect.origin.y + rect.size.height,
+                )),
+                PathElement::BezierTo(
+                    PixelPoint::new(
+                        rect.origin.x + rect.size.width - rxrb * (1.0 - KAPPA90),
+                        rect.origin.y + rect.size.height,
+                    ),
+                    PixelPoint::new(
+                        rect.origin.x + rect.size.width,
+                        rect.origin.y + rect.size.height - ryrb * (1.0 - KAPPA90),
+                    ),
+                    PixelPoint::new(
+                        rect.origin.x + rect.size.width,
+                        rect.origin.y + rect.size.height - ryrb,
+                    ),
                 ),
-                PixelPoint::new(
+                PathElement::LineTo(PixelPoint::new(
                     rect.origin.x + rect.size.width,
-                    rect.origin.y + rect.size.height - ryrb * (1.0 - KAPPA90),
-                ),
-                PixelPoint::new(
-                    rect.origin.x + rect.size.width,
-                    rect.origin.y + rect.size.height - ryrb,
-                ),
-            ));
-            res.push(PathElement::LineTo(PixelPoint::new(
-                rect.origin.x + rect.size.width,
-                rect.origin.y + ryrt,
-            )));
-            res
+                    rect.origin.y + ryrt,
+                )),
+            ]
         }
     }
 }
@@ -234,34 +225,31 @@ pub fn ellipse_path<P: Into<PixelPoint>>(
     radius_x: f32,
     radius_y: f32,
 ) -> Vec<PathElement> {
-    let mut res = Vec::with_capacity(6);
     let center = center.into();
-    res.push(PathElement::MoveTo(PixelPoint::new(
-        center.x - radius_x,
-        center.y,
-    )));
-    res.push(PathElement::BezierTo(
-        PixelPoint::new(center.x - radius_x, center.y + radius_y * KAPPA90),
-        PixelPoint::new(center.x - radius_x * KAPPA90, center.y + radius_y),
-        PixelPoint::new(center.x, center.y + radius_y),
-    ));
-    res.push(PathElement::BezierTo(
-        PixelPoint::new(center.x + radius_x * KAPPA90, center.y + radius_y),
-        PixelPoint::new(center.x + radius_x, center.y + radius_y * KAPPA90),
-        PixelPoint::new(center.x + radius_x, center.y),
-    ));
-    res.push(PathElement::BezierTo(
-        PixelPoint::new(center.x + radius_x, center.y - radius_y * KAPPA90),
-        PixelPoint::new(center.x + radius_x * KAPPA90, center.y - radius_y),
-        PixelPoint::new(center.x, center.y - radius_y),
-    ));
-    res.push(PathElement::BezierTo(
-        PixelPoint::new(center.x - radius_x * KAPPA90, center.y - radius_y),
-        PixelPoint::new(center.x - radius_x, center.y - radius_y * KAPPA90),
-        PixelPoint::new(center.x - radius_x, center.y),
-    ));
-    res.push(PathElement::ClosePath);
-    res
+    vec![
+        PathElement::MoveTo(PixelPoint::new(center.x - radius_x, center.y)),
+        PathElement::BezierTo(
+            PixelPoint::new(center.x - radius_x, center.y + radius_y * KAPPA90),
+            PixelPoint::new(center.x - radius_x * KAPPA90, center.y + radius_y),
+            PixelPoint::new(center.x, center.y + radius_y),
+        ),
+        PathElement::BezierTo(
+            PixelPoint::new(center.x + radius_x * KAPPA90, center.y + radius_y),
+            PixelPoint::new(center.x + radius_x, center.y + radius_y * KAPPA90),
+            PixelPoint::new(center.x + radius_x, center.y),
+        ),
+        PathElement::BezierTo(
+            PixelPoint::new(center.x + radius_x, center.y - radius_y * KAPPA90),
+            PixelPoint::new(center.x + radius_x * KAPPA90, center.y - radius_y),
+            PixelPoint::new(center.x, center.y - radius_y),
+        ),
+        PathElement::BezierTo(
+            PixelPoint::new(center.x - radius_x * KAPPA90, center.y - radius_y),
+            PixelPoint::new(center.x - radius_x, center.y - radius_y * KAPPA90),
+            PixelPoint::new(center.x - radius_x, center.y),
+        ),
+        PathElement::ClosePath,
+    ]
 }
 
 /// Creates a path that represents pixel aligned rectangle path to be used with stroke.
@@ -344,16 +332,13 @@ pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
     let length = length.into().get();
     let thickness = thickness.into().get();
 
-    let mut res = Vec::with_capacity(2);
-    res.push(PathElement::MoveTo(PixelPoint::new(
-        start.x,
-        start.y + thickness * 0.5f32,
-    )));
-    res.push(PathElement::LineTo(PixelPoint::new(
-        start.x + length,
-        start.y + thickness * 0.5f32,
-    )));
-    res
+    vec![
+        PathElement::MoveTo(PixelPoint::new(start.x, start.y + thickness * 0.5f32)),
+        PathElement::LineTo(PixelPoint::new(
+            start.x + length,
+            start.y + thickness * 0.5f32,
+        )),
+    ]
 }
 
 /// Creates a path that represents pixel aligned vertical line path to be used with stroke.
@@ -372,14 +357,11 @@ pub fn pixel_vertical_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
     let length = length.into().get();
     let thickness = thickness.into().get();
 
-    let mut res = Vec::with_capacity(2);
-    res.push(PathElement::MoveTo(PixelPoint::new(
-        start.x + thickness * 0.5f32,
-        start.y,
-    )));
-    res.push(PathElement::LineTo(PixelPoint::new(
-        start.x + thickness * 0.5f32,
-        start.y + length,
-    )));
-    res
+    vec![
+        PathElement::MoveTo(PixelPoint::new(start.x + thickness * 0.5f32, start.y)),
+        PathElement::LineTo(PixelPoint::new(
+            start.x + thickness * 0.5f32,
+            start.y + length,
+        )),
+    ]
 }

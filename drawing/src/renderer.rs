@@ -14,6 +14,12 @@ use std::convert::Into;
 
 pub struct Renderer;
 
+impl Default for Renderer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Renderer {
     pub fn new() -> Self {
         Renderer {}
@@ -23,7 +29,7 @@ impl Renderer {
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &Vec<Primitive>,
+        primitives: &[Primitive],
         resources: &mut Resources<D, F>,
         antialiasing: bool,
     ) -> Result<()> {
@@ -42,21 +48,19 @@ impl Renderer {
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &Vec<Primitive>,
+        primitives: &[Primitive],
         resources: &mut Resources<D, F>,
         antialiasing: bool,
         pixel_transform: PixelTransform,
         scissor: Scissor,
     ) -> Result<()> {
-        let pixel_to_device_transform = pixel_transform.then(&render_target
-            .get_device_transform());
-        let unknown_to_device_transform = UnknownToDeviceTransform::from_array(
-            pixel_to_device_transform.to_array(),
-        );
+        let pixel_to_device_transform = pixel_transform.then(&render_target.get_device_transform());
+        let unknown_to_device_transform =
+            UnknownToDeviceTransform::from_array(pixel_to_device_transform.to_array());
 
         for primitive in primitives {
-            match primitive {
-                &Primitive::Line {
+            match *primitive {
+                Primitive::Line {
                     ref color,
                     thickness,
                     start_point,
@@ -67,7 +71,7 @@ impl Renderer {
                         .x;
 
                     device.line(
-                        &render_target,
+                        render_target,
                         color,
                         DeviceThickness::new(thickness),
                         start_point.to_untyped(),
@@ -76,22 +80,22 @@ impl Renderer {
                     );
                 }
 
-                &Primitive::Rectangle { ref color, rect } => device.rect_colored(
-                    &render_target,
+                Primitive::Rectangle { ref color, rect } => device.rect_colored(
+                    render_target,
                     color,
                     rect.to_untyped(),
                     unknown_to_device_transform,
                 ),
 
-                &Primitive::Image {
+                Primitive::Image {
                     resource_key,
                     rect,
                     uv,
                 } => {
                     if let Some(texture) = resources.textures_mut().get(&resource_key) {
                         device.rect_textured(
-                            &render_target,
-                            &texture,
+                            render_target,
+                            texture,
                             false,
                             &[1.0f32, 1.0f32, 1.0f32, 1.0f32],
                             rect.to_untyped(),
@@ -101,7 +105,7 @@ impl Renderer {
                     }
                 }
 
-                &Primitive::Text {
+                Primitive::Text {
                     ref resource_key,
                     ref color,
                     position,
@@ -109,10 +113,10 @@ impl Renderer {
                     size,
                     ref text,
                 } => {
-                    if let Some(font) = resources.fonts_mut().get_mut(&resource_key.to_string()) {
+                    if let Some(font) = resources.fonts_mut().get_mut(resource_key) {
                         font.draw(
                             device,
-                            &render_target,
+                            render_target,
                             color,
                             text,
                             position.to_untyped(),
@@ -125,7 +129,7 @@ impl Renderer {
                     }
                 }
 
-                &Primitive::Stroke {
+                Primitive::Stroke {
                     ref path,
                     ref thickness,
                     ref brush,
@@ -144,7 +148,7 @@ impl Renderer {
                     let (paint, texture) = Paint::from_brush(brush, resources);
 
                     device.stroke(
-                        &render_target,
+                        render_target,
                         &paint,
                         texture,
                         true,
@@ -158,7 +162,7 @@ impl Renderer {
                     );
                 }
 
-                &Primitive::StrokeStyled {
+                Primitive::StrokeStyled {
                     ref path,
                     ref thickness,
                     ref brush,
@@ -178,7 +182,7 @@ impl Renderer {
                     let (paint, texture) = Paint::from_brush(brush, resources);
 
                     device.stroke(
-                        &render_target,
+                        render_target,
                         &paint,
                         texture,
                         true,
@@ -192,7 +196,7 @@ impl Renderer {
                     );
                 }
 
-                &Primitive::Fill {
+                Primitive::Fill {
                     ref path,
                     ref brush,
                 } => {
@@ -202,7 +206,7 @@ impl Renderer {
                     let (paint, texture) = Paint::from_brush(brush, resources);
 
                     device.fill(
-                        &render_target,
+                        render_target,
                         &paint,
                         texture,
                         true,
@@ -216,7 +220,7 @@ impl Renderer {
                     );
                 }
 
-                &Primitive::ClipRect {
+                Primitive::ClipRect {
                     ref rect,
                     ref primitives,
                 } => {
@@ -227,11 +231,11 @@ impl Renderer {
                         resources,
                         antialiasing,
                         pixel_transform,
-                        scissor.intersect_with_rect(rect.clone(), &pixel_transform),
+                        scissor.intersect_with_rect(*rect, &pixel_transform),
                     )?;
                 }
 
-                &Primitive::ClipPath { .. } => {
+                Primitive::ClipPath { .. } => {
                     /*device.save_state();
 
                     device.set_clip_path(path);
@@ -240,7 +244,7 @@ impl Renderer {
                     device.restore_state();*/
                 }
 
-                &Primitive::Transform {
+                Primitive::Transform {
                     ref transform,
                     ref primitives,
                 } => {
@@ -255,7 +259,7 @@ impl Renderer {
                     )?;
                 }
 
-                &Primitive::Composite {
+                Primitive::Composite {
                     ref color,
                     ref primitives,
                 } => {
@@ -265,13 +269,13 @@ impl Renderer {
 
                     device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-                    self.draw(device, &texture2_view, &primitives, resources, antialiasing)?;
+                    self.draw(device, &texture2_view, primitives, resources, antialiasing)?;
 
                     device.rect_textured(
                         render_target,
                         &texture2,
                         false,
-                        &color,
+                        color,
                         Rect::new(
                             Point::new(0.0f32, 0.0f32),
                             Size::new(size.0 as f32, size.1 as f32),
@@ -287,7 +291,7 @@ impl Renderer {
     }
 
     fn get_stroke_path(
-        path: &Vec<PathElement>,
+        path: &[PathElement],
         stroke_width: PixelThickness,
         stroke_style: &StrokeStyle,
         aspect_ratio: f32,
@@ -318,11 +322,7 @@ impl Renderer {
         flattened_path
     }
 
-    fn get_fill_path(
-        path: &Vec<PathElement>,
-        aspect_ratio: f32,
-        antialiasing: bool,
-    ) -> FlattenedPath {
+    fn get_fill_path(path: &[PathElement], aspect_ratio: f32, antialiasing: bool) -> FlattenedPath {
         let mut flattened_path =
             FlattenedPath::new(path, 0.01f32 / aspect_ratio, 0.25f32 / aspect_ratio);
         let fringe_width = 1.0f32 / aspect_ratio;

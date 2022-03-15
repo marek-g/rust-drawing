@@ -126,7 +126,7 @@ impl FlattenedPath {
                 }
 
                 PathElement::BezierTo(c1, c2, point) => {
-                    if let Some(last) = flattened_path.points.last().map(|point| *point) {
+                    if let Some(last) = flattened_path.points.last().copied() {
                         flattened_path.tesselate_bezier(
                             last.xy,
                             c1.to_untyped(),
@@ -651,11 +651,9 @@ impl FlattenedPath {
     fn add_point(&mut self, pt: Point, flags: PointFlags, dist_tol: f32) {
         if let Some(path) = self.paths.last_mut() {
             if let Some(last_pt) = self.points.last_mut() {
-                if path.count > 0 {
-                    if last_pt.xy.equals(pt, dist_tol) {
-                        last_pt.flags |= flags;
-                        return;
-                    }
+                if path.count > 0 && last_pt.xy.equals(pt, dist_tol) {
+                    last_pt.flags |= flags;
+                    return;
                 }
             }
 

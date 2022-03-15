@@ -275,7 +275,7 @@ impl BitmapFont {
             width: image_width as u16,
             height: image_height as u16,
             chars: chars_info,
-            image: image,
+            image,
             font_height: ((face.size_metrics().unwrap().height + 32) >> 6) as u16,
         })
     }

@@ -8,6 +8,12 @@ pub struct Resources<D: Device, F: Font<D>> {
     last_texture_id: i32,
 }
 
+impl<D: Device, F: Font<D>> Default for Resources<D, F> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<D: Device, F: Font<D>> Resources<D, F> {
     pub fn new() -> Resources<D, F> {
         Resources {

@@ -196,8 +196,8 @@ impl<D: Device> FontSizeRenderer<D> {
         // |/
         // 1
         vertex_data.push(vert0);
-        vertex_data.push(vert1.clone());
-        vertex_data.push(vert3.clone());
+        vertex_data.push(vert1);
+        vertex_data.push(vert3);
         // Bottom-right triangle.
         //    3
         //   /|

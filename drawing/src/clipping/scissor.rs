@@ -56,7 +56,7 @@ impl Scissor {
         let [ex, ey] = self.extent;
         let invxorm = current_transform
             .inverse()
-            .unwrap_or_else(|| PixelTransform::identity());
+            .unwrap_or_else(PixelTransform::identity);
         let pxform = self.xform.then(&invxorm);
         let tex = ex * pxform.m11.abs() + ey * pxform.m21.abs();
         let tey = ex * pxform.m12.abs() + ey * pxform.m22.abs();

@@ -123,7 +123,7 @@ pub fn clip_image(
     clip_height: f32,
     uv: &[f32; 4],
 ) -> Option<(f32, f32, f32, f32, [f32; 4])> {
-    if let Some(clipped) = clip_rect(
+    clip_rect(
         x1,
         y1,
         width,
@@ -132,8 +132,9 @@ pub fn clip_image(
         clip_y1,
         clip_width,
         clip_height,
-    ) {
-        Some((
+    )
+    .map(|clipped| {
+        (
             clipped.0,
             clipped.1,
             clipped.2,
@@ -144,8 +145,6 @@ pub fn clip_image(
                 ((clipped.0 + clipped.2 - x1) / width) * (uv[2] - uv[0]) + uv[0],
                 ((clipped.1 + clipped.3 - y1) / height) * (uv[3] - uv[1]) + uv[1],
             ],
-        ))
-    } else {
-        None
-    }
+        )
+    })
 }
