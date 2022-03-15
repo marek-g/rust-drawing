@@ -12,17 +12,17 @@ pub struct GlContextData {
 impl Drop for GlContextData {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteVertexArrays(1, &mut self.colored_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.colored_pipeline_buffers.0);
+            gl::DeleteVertexArrays(1, &self.colored_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.colored_pipeline_buffers.0);
 
-            gl::DeleteVertexArrays(1, &mut self.textured_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.textured_pipeline_buffers.0);
+            gl::DeleteVertexArrays(1, &self.textured_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.textured_pipeline_buffers.0);
 
-            gl::DeleteVertexArrays(1, &mut self.textured_y8_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.textured_y8_pipeline_buffers.0);
+            gl::DeleteVertexArrays(1, &self.textured_y8_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.textured_y8_pipeline_buffers.0);
 
-            gl::DeleteVertexArrays(1, &mut self.universal_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &mut self.universal_pipeline_buffers.0);
+            gl::DeleteVertexArrays(1, &self.universal_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.universal_pipeline_buffers.0);
         }
     }
 }

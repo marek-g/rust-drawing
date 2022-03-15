@@ -1,6 +1,6 @@
 [package]
 name = "drawing_gl"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "OpenGL backend for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
 documentation = "https://docs.rs/drawing_gl"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 drawing = { path = "../drawing", version = "0.3" }

@@ -1,6 +1,6 @@
-use gl::types::*;
 use drawing::backend::RenderTarget;
 use drawing::units::PixelToDeviceTransform;
+use gl::types::*;
 
 pub struct GlRenderTarget {
     pub(crate) framebuffer_id: GLuint,
@@ -10,12 +10,12 @@ pub struct GlRenderTarget {
 }
 
 impl GlRenderTarget {
-    pub fn new(framebuffer_id: GLuint,
-               width: u16,
-               height: u16,
-               aspect_ratio: f32,) -> Self {
+    pub fn new(framebuffer_id: GLuint, width: u16, height: u16, aspect_ratio: f32) -> Self {
         Self {
-            framebuffer_id, width, height, aspect_ratio
+            framebuffer_id,
+            width,
+            height,
+            aspect_ratio,
         }
     }
 }
@@ -24,7 +24,7 @@ impl Drop for GlRenderTarget {
     fn drop(&mut self) {
         if self.framebuffer_id > 0 {
             unsafe {
-                gl::DeleteFramebuffers(1, &mut self.framebuffer_id);
+                gl::DeleteFramebuffers(1, &self.framebuffer_id);
             }
         }
     }

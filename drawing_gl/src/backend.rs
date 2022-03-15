@@ -167,7 +167,7 @@ impl GlDevice {
                 scissor
                     .xform
                     .inverse()
-                    .unwrap_or_else(|| PixelTransform::identity()),
+                    .unwrap_or_else(PixelTransform::identity),
             );
             frag.scissor_ext[0] = scissor.extent[0];
             frag.scissor_ext[1] = scissor.extent[1];
@@ -195,12 +195,12 @@ impl GlDevice {
                     .pre_translate(Vector2D::new(0.0, frag.extent[1] * 0.5))
                     .pre_scale(1.0f32, -1.0f32)
                     .pre_translate(Vector2D::new(0.0, -frag.extent[1] * 0.5));
-                invxform = m1.inverse().unwrap_or_else(|| PixelTransform::identity());
+                invxform = m1.inverse().unwrap_or_else(PixelTransform::identity);
             } else {
                 invxform = paint
                     .xform
                     .inverse()
-                    .unwrap_or_else(|| PixelTransform::identity());
+                    .unwrap_or_else(PixelTransform::identity);
             };
 
             match texture.gl_format {
@@ -215,7 +215,7 @@ impl GlDevice {
             invxform = paint
                 .xform
                 .inverse()
-                .unwrap_or_else(|| PixelTransform::identity());
+                .unwrap_or_else(PixelTransform::identity);
         }
 
         frag.paint_mat = xform_to_3x4(invxform);
@@ -317,7 +317,7 @@ impl drawing::backend::Device for GlDevice {
     }
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         unsafe {
             gl::ClearColor(color[0], color[1], color[2], color[3]);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
@@ -330,7 +330,7 @@ impl drawing::backend::Device for GlDevice {
         vertices: &[ColoredVertex],
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         let transform = [
             [transform.m11, transform.m12, 0.0, 0.0],
             [transform.m21, transform.m22, 0.0, 0.0],
@@ -341,7 +341,7 @@ impl drawing::backend::Device for GlDevice {
         if let Some(ref mut pipeline) = self.colored_pipeline {
             pipeline.apply();
             pipeline.set_transform(&transform);
-            pipeline.draw(&vertices);
+            pipeline.draw(vertices);
         }
     }
 
@@ -353,7 +353,7 @@ impl drawing::backend::Device for GlDevice {
         vertices: &[TexturedVertex],
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
             gl::BindTexture(gl::TEXTURE_2D, texture.id);
@@ -377,7 +377,7 @@ impl drawing::backend::Device for GlDevice {
             pipeline.apply();
             pipeline.set_transform(&transform);
             pipeline.set_flipped_y(texture.flipped_y);
-            pipeline.draw(&vertices);
+            pipeline.draw(vertices);
         }
     }
 
@@ -389,7 +389,7 @@ impl drawing::backend::Device for GlDevice {
         vertices: &[TexturedY8Vertex],
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
             gl::BindTexture(gl::TEXTURE_2D, texture.id);
@@ -413,7 +413,7 @@ impl drawing::backend::Device for GlDevice {
             pipeline.apply();
             pipeline.set_transform(&transform);
             pipeline.set_flipped_y(texture.flipped_y);
-            pipeline.draw(&vertices);
+            pipeline.draw(vertices);
         }
     }
 
@@ -426,7 +426,7 @@ impl drawing::backend::Device for GlDevice {
         end_point: Point,
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         // TODO:
         //if thickness == 1.0f32 {
         self.line_native(color, start_point, end_point, transform);
@@ -449,7 +449,7 @@ impl drawing::backend::Device for GlDevice {
         _composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
         if let Some(ref mut pipeline) = self.universal_pipeline {
             let transform = [
                 [transform.m11, transform.m12, 0.0, 0.0],
@@ -490,7 +490,7 @@ impl drawing::backend::Device for GlDevice {
                 for path in paths {
                     let stroke_vertices = path.get_stroke();
                     if !stroke_vertices.is_empty() {
-                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                        pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                     }
                 }
 
@@ -509,7 +509,7 @@ impl drawing::backend::Device for GlDevice {
                     for path in paths {
                         let stroke_vertices = path.get_stroke();
                         if !stroke_vertices.is_empty() {
-                            pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                            pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                         }
                     }
                 }
@@ -521,7 +521,7 @@ impl drawing::backend::Device for GlDevice {
                 for path in paths {
                     let stroke_vertices = path.get_stroke();
                     if !stroke_vertices.is_empty() {
-                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                        pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                     }
                 }
                 gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
@@ -545,7 +545,7 @@ impl drawing::backend::Device for GlDevice {
         _composite_operation_state: CompositeOperationState,
         transform: UnknownToDeviceTransform,
     ) {
-        self.set_render_target(&target);
+        self.set_render_target(target);
 
         if let Some(texture_id) = paint.image {
             unsafe {
@@ -582,14 +582,14 @@ impl drawing::backend::Device for GlDevice {
                 // fill shape
                 let fill_vertices = paths[0].get_fill();
                 if !fill_vertices.is_empty() {
-                    pipeline.draw(&fill_vertices, gl::TRIANGLE_FAN);
+                    pipeline.draw(fill_vertices, gl::TRIANGLE_FAN);
                 }
 
                 // antialias outline
                 if antialiasing {
                     let stroke_vertices = paths[0].get_stroke();
                     if !stroke_vertices.is_empty() {
-                        pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                        pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                     }
                 }
             }
@@ -627,7 +627,7 @@ impl drawing::backend::Device for GlDevice {
                     for path in paths {
                         let fill_vertices = path.get_fill();
                         if !fill_vertices.is_empty() {
-                            pipeline.draw(&fill_vertices, gl::TRIANGLE_FAN);
+                            pipeline.draw(fill_vertices, gl::TRIANGLE_FAN);
                         }
                     }
                     gl::Enable(gl::CULL_FACE);
@@ -644,7 +644,7 @@ impl drawing::backend::Device for GlDevice {
                         for path in paths {
                             let stroke_vertices = path.get_stroke();
                             if !stroke_vertices.is_empty() {
-                                pipeline.draw(&stroke_vertices, gl::TRIANGLE_STRIP);
+                                pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                             }
                         }
                     }

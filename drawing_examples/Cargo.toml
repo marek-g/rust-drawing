@@ -12,7 +12,7 @@ edition = "2018"
 
 [dependencies]
 drawing = { path = "../drawing", version = "0.3" }
-drawing_gl = { path = "../drawing_gl", version = "0.2" }
+drawing_gl = { path = "../drawing_gl", version = "0.3" }
 gl = "0.14"
 fui_system = { path = "../../rust-fui/fui_system", version = "0.1" }
 euclid = "0.22"
