@@ -43,7 +43,8 @@ fn main() {
     //
     let mut resources = Resources::new();
 
-    let font = DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().to_vec()).unwrap();
+    let font =
+        DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
 
     resources.fonts_mut().insert("F1".to_string(), font);
 

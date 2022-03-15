@@ -1,6 +1,6 @@
 [package]
 name = "drawing_examples"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "Examples for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
@@ -8,17 +8,17 @@ categories = ["graphics", "rendering::graphics-api", "visualization"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 drawing = { path = "../drawing", version = "0.3" }
 drawing_gl = { path = "../drawing_gl", version = "0.3" }
 gl = "0.14"
-fui_system = { path = "../../rust-fui/fui_system", version = "0.1" }
+fui_system = { path = "../../rust-fui/fui_system", version = "0.3" }
 euclid = "0.22"
-glutin = "0.25"
-winit = "0.23"
-rust-embed = "5.8.0"
+glutin = "0.28"
+winit = "0.26"
+rust-embed = "6.3"
 cpu-time = "1.0"
 
 [[bin]]

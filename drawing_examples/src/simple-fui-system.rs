@@ -131,7 +131,8 @@ fn setup_window(
 }
 
 fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDevice) {
-    let font = DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().to_vec()).unwrap();
+    let font =
+        DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
 
     app_resources
         .resources
