@@ -320,6 +320,7 @@ impl BitmapFont {
                 width += ch_info.x_advance;
             }
         }
+        max_width = max_width.max(width);
 
         (max_width, lines * (self.get_font_height() as i32))
     }
