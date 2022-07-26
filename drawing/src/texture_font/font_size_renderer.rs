@@ -89,47 +89,53 @@ impl<D: Device> FontSizeRenderer<D> {
     /// of the screen using pixel coordinates.
     pub fn add(&mut self, text: &str, pos: [i32; 2], clipping_rect: [f32; 4], color: [f32; 4]) {
         // `Result` is used here as an `Either` analogue.
-        let (mut x, y) = (pos[0] as f32, pos[1] as f32);
+        let (mut x, mut y) = (pos[0] as f32, pos[1] as f32);
+        let line_height = self.bitmap_font.get_font_height() as f32;
         for ch in text.chars() {
-            let ch_info = match self.bitmap_font.find_char(ch) {
-                Some(info) => info,
-                // Skip unknown chars from text string. Probably it would be
-                // better to place some "?" mark instead but it may not exist
-                // in the font too.
-                None => continue,
-            };
-            let x_offset = x + ch_info.x_offset as f32;
-            let y_offset = y + ch_info.y_offset as f32;
-            let tex = ch_info.tex;
+            if ch == '\n' {
+                x = pos[0] as f32;
+                y = y + line_height;
+            } else {
+                let ch_info = match self.bitmap_font.find_char(ch) {
+                    Some(info) => info,
+                    // Skip unknown chars from text string. Probably it would be
+                    // better to place some "?" mark instead but it may not exist
+                    // in the font too.
+                    None => continue,
+                };
+                let x_offset = x + ch_info.x_offset as f32;
+                let y_offset = y + ch_info.y_offset as f32;
+                let tex = ch_info.tex;
 
-            if let Some(clipped) = clip_image(
-                x_offset,
-                y_offset,
-                ch_info.width as f32,
-                ch_info.height as f32,
-                clipping_rect[0],
-                clipping_rect[1],
-                clipping_rect[2],
-                clipping_rect[3],
-                &[
-                    tex[0],
-                    tex[1],
-                    tex[0] + ch_info.tex_width,
-                    tex[1] + ch_info.tex_height,
-                ],
-            ) {
-                Self::add_image(
-                    &mut self.vertex_data,
-                    clipped.0,
-                    clipped.1,
-                    clipped.2,
-                    clipped.3,
-                    clipped.4,
-                    color,
-                );
+                if let Some(clipped) = clip_image(
+                    x_offset,
+                    y_offset,
+                    ch_info.width as f32,
+                    ch_info.height as f32,
+                    clipping_rect[0],
+                    clipping_rect[1],
+                    clipping_rect[2],
+                    clipping_rect[3],
+                    &[
+                        tex[0],
+                        tex[1],
+                        tex[0] + ch_info.tex_width,
+                        tex[1] + ch_info.tex_height,
+                    ],
+                ) {
+                    Self::add_image(
+                        &mut self.vertex_data,
+                        clipped.0,
+                        clipped.1,
+                        clipped.2,
+                        clipped.3,
+                        clipped.4,
+                        color,
+                    );
+                }
+
+                x += ch_info.x_advance as f32;
             }
-
-            x += ch_info.x_advance as f32;
         }
     }
 

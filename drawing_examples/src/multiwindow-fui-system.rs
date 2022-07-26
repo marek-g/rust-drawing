@@ -354,7 +354,7 @@ pub fn draw(
             position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
             clipping_rect,
             size: PixelThickness::new(12.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
         Primitive::Text {
@@ -363,7 +363,7 @@ pub fn draw(
             position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
             clipping_rect,
             size: PixelThickness::new(14.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk\nABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
         Primitive::Text {

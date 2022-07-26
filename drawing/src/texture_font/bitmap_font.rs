@@ -304,16 +304,24 @@ impl BitmapFont {
     /// Get the bounding box size of a string as rendered by this font.
     pub fn measure(&self, text: &str) -> (i32, i32) {
         let mut width = 0;
+        let mut max_width = 0;
+        let mut lines = 1;
 
         for ch in text.chars() {
-            let ch_info = match self.find_char(ch) {
-                Some(info) => info,
-                None => continue,
-            };
-            width += ch_info.x_advance;
+            if ch == '\n' {
+                lines += 1;
+                max_width = max_width.max(width);
+                width = 0;
+            } else {
+                let ch_info = match self.find_char(ch) {
+                    Some(info) => info,
+                    None => continue,
+                };
+                width += ch_info.x_advance;
+            }
         }
 
-        (width, self.get_font_height() as i32)
+        (max_width, lines * (self.get_font_height() as i32))
     }
 
     pub fn measure_each_char(&self, text: &str) -> (Vec<i16>, i32) {
