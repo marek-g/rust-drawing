@@ -95,6 +95,10 @@ impl<D: Device> FontSizeRenderer<D> {
             if ch == '\n' {
                 x = pos[0] as f32;
                 y = y + line_height;
+            } else if ch == '\t' {
+                if let Some(ch_info) = self.bitmap_font.find_char(' ') {
+                    x += (ch_info.x_advance * 4) as f32;
+                }
             } else {
                 let ch_info = match self.bitmap_font.find_char(ch) {
                     Some(info) => info,

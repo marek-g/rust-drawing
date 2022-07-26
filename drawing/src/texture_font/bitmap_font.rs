@@ -312,6 +312,10 @@ impl BitmapFont {
                 lines += 1;
                 max_width = max_width.max(width);
                 width = 0;
+            } else if ch == '\t' {
+                if let Some(ch_info) = self.find_char(' ') {
+                    width += ch_info.x_advance * 4;
+                }
             } else {
                 let ch_info = match self.find_char(ch) {
                     Some(info) => info,

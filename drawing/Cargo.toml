@@ -1,6 +1,6 @@
 [package]
 name = "drawing"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "API for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
