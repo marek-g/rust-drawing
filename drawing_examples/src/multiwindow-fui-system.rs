@@ -14,6 +14,7 @@ use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::error::Error;
+use std::ptr::null;
 use std::rc::Rc;
 
 use fui_system::{Application, ApplicationOptions};
@@ -121,7 +122,7 @@ fn setup_window(
                 let mut gl_window = gl_window_clone.borrow_mut();
                 gl_window.gl_context_data =
                     Some(device_clone.borrow_mut().init_context(|symbol| {
-                        gl_window.window.get_opengl_proc_address(symbol).unwrap()
+                        gl_window.window.get_opengl_proc_address(symbol).unwrap_or_else(|_| null())
                     }));
 
                 initialize_resources(

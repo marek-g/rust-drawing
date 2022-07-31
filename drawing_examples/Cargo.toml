@@ -1,6 +1,6 @@
 [package]
 name = "drawing_examples"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "Examples for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
