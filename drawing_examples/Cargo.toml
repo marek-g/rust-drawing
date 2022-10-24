@@ -14,7 +14,7 @@ edition = "2021"
 drawing = { path = "../drawing", version = "0.3" }
 drawing_gl = { path = "../drawing_gl", version = "0.3" }
 gl = "0.14"
-fui_system = { path = "../../rust-fui/fui_system", version = "0.5" }
+fui_system = "0.5"
 euclid = "0.22"
 glutin = "0.28"
 winit = "0.26"
