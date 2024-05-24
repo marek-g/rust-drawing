@@ -13,6 +13,7 @@ use rawpointer::ptrdistance;
 use std::f32::consts::PI;
 
 bitflags! {
+    #[derive(Copy, Clone)]
     struct PointFlags: u32 {
         const PT_CORNER = 0x1;
         const PT_LEFT = 0x2;
