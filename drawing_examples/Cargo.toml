@@ -1,10 +1,6 @@
 [package]
 name = "drawing_examples"
-<<<<<<< HEAD
-version = "0.3.1"
-=======
 version = "0.4.0"
->>>>>>> 3dd76bd (Update crates (except winit/glutin))
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "Examples for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
