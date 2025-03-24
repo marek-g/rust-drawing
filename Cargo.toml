@@ -1,5 +1,5 @@
 [workspace]
-
+resolver = "2"
 members = [
     "drawing",
     "drawing_examples",

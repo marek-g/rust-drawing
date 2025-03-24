@@ -84,6 +84,7 @@ fn setup_window(
 ) {
     let window = &mut gl_window_rc.borrow_mut().window;
     window.set_title("Example: simple (fui-system)").unwrap();
+    window.set_frame_position(800, 100);
     window.resize(800, 600);
 
     window.on_paint_gl({
@@ -97,7 +98,10 @@ fn setup_window(
                 let mut gl_window = gl_window_clone.borrow_mut();
                 gl_window.gl_context_data =
                     Some(device_clone.borrow_mut().init_context(|symbol| {
-                        gl_window.window.get_opengl_proc_address(symbol).unwrap_or_else(|_| null())
+                        gl_window
+                            .window
+                            .get_opengl_proc_address(symbol)
+                            .unwrap_or_else(|_| null())
                     }));
 
                 initialize_resources(
@@ -438,9 +442,10 @@ pub fn draw(
         },
     ];
 
-    unsafe {
+    // doesn't work on wayland?
+    /*unsafe {
         gl::BeginQuery(gl::TIME_ELAPSED, gl_window.time_query);
-    }
+    }*/
 
     device
         .begin(gl_window.gl_context_data.as_ref().unwrap())
@@ -466,7 +471,8 @@ pub fn draw(
     let cpu_time = cpu_time.elapsed();
     println!("CPU time: {:?}", cpu_time);
 
-    unsafe {
+    // doesn't work on wayland?
+    /*unsafe {
         gl::EndQuery(gl::TIME_ELAPSED);
 
         // retrieving the recorded elapsed time
@@ -480,5 +486,5 @@ pub fn draw(
         let mut elapsed_time: GLuint64 = 0;
         gl::GetQueryObjectui64v(gl_window.time_query, gl::QUERY_RESULT, &mut elapsed_time);
         println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
-    }
+    }*/
 }

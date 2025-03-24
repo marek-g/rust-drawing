@@ -8,10 +8,10 @@ use drawing::renderer::Renderer;
 use drawing::resources::Resources;
 use drawing::units::*;
 
+use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 use euclid::{Angle, Vector2D};
-use drawing_gl::{GlDevice, GlRenderTarget, GlContextData};
-use std::cell::{RefCell, Ref};
 use rust_embed::RustEmbed;
+use std::cell::{Ref, RefCell};
 
 use gl::types::*;
 
@@ -27,8 +27,8 @@ fn main() {
     let event_loop = winit::event_loop::EventLoop::new();
 
     let mut device = DrawingDevice::new().unwrap();
-    let mut window_target = create_window_target(&mut device, window_builder, &event_loop, None)
-        .unwrap();
+    let mut window_target =
+        create_window_target(&mut device, window_builder, &event_loop, None).unwrap();
     let mut renderer = Renderer::new();
 
     //
@@ -37,7 +37,8 @@ fn main() {
     let mut resources = Resources::new();
 
     // font
-    let font = DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
+    let font =
+        DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
 
     resources.fonts_mut().insert("F1".to_string(), font);
 
@@ -321,9 +322,10 @@ fn main() {
                     }
                 ];
 
-                unsafe {
+		// doesn't work on wayland?
+                /*unsafe {
                     gl::BeginQuery(gl::TIME_ELAPSED, window_target.time_query);
-                }
+                }*/
 
                 // make current context
                 window_target.make_current_context();
@@ -348,7 +350,8 @@ fn main() {
                 let cpu_time = cpu_time.elapsed();
                 println!("CPU time: {:?}", cpu_time);
 
-                unsafe {
+		// doesn't work on wayland?
+                /*unsafe {
                     gl::EndQuery(gl::TIME_ELAPSED);
 
                     // retrieving the recorded elapsed time
@@ -370,7 +373,7 @@ fn main() {
                         &mut elapsed_time,
                     );
                     println!("GPU time: {} ms", elapsed_time as f64 / 1000000.0);
-                }
+                }*/
 
                 window_target.swap_buffers();
             },
@@ -436,7 +439,7 @@ pub fn create_window_target(
     // make current gl context
     let windowed_context = if let Some(ref shared_window_target) = shared_window_target {
         if let Some(ref gl_windowed_context) =
-        shared_window_target.gl_windowed_context.borrow().as_ref()
+            shared_window_target.gl_windowed_context.borrow().as_ref()
         {
             unsafe {
                 context_builder
@@ -466,33 +469,32 @@ pub fn create_window_target(
     };
 
     // initialize gl context
-    let gl_context_data = device.init_context(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
+    let gl_context_data = device
+        .init_context(|symbol| windowed_context.context().get_proc_address(symbol) as *const _);
 
     let aspect_ratio = windowed_context.window().scale_factor() as f32;
 
-    let mut time_query: GLuint = 0;
+    // doesn't work on wayland?
+    /*let mut time_query: GLuint = 0;
     unsafe {
         gl::GenQueries(1, &mut time_query);
         gl::BeginQuery(gl::TIME_ELAPSED, time_query);
         gl::EndQuery(gl::TIME_ELAPSED);
     }
-    print!("time_query: {}", time_query);
+    print!("time_query: {}", time_query);*/
 
     Ok(GlWindowTarget {
         gl_windowed_context: RefCell::new(Some(windowed_context)),
         gl_context_data,
         gl_render_target: GlRenderTarget::new(0, 0, 0, aspect_ratio),
-        time_query,
     })
 }
 
 pub struct GlWindowTarget {
     gl_windowed_context:
-    RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
+        RefCell<Option<glutin::ContextWrapper<glutin::PossiblyCurrent, winit::window::Window>>>,
     gl_context_data: GlContextData,
     gl_render_target: GlRenderTarget,
-
-    time_query: GLuint,
 }
 
 impl GlWindowTarget {
