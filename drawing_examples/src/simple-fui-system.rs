@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
             .with_title("Example: simple (fui-system)")
-            .with_opengl_stencil_bits(8),
+            .with_opengl_stencil_bits(16),
     )
     .unwrap();
 

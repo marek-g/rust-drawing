@@ -696,7 +696,7 @@ impl drawing::backend::Device for GlDevice {
 impl GlTexture {
     pub fn from_external(id: GLuint, width: u16, height: u16, format: ColorFormat) -> GlTexture {
         let (gl_type, gl_format) = match format {
-            ColorFormat::RGBA => (gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
+            ColorFormat::RGBA => (gl::UNSIGNED_BYTE, gl::RGBA),
             ColorFormat::Y8 => (gl::UNSIGNED_BYTE, gl::RED),
         };
         GlTexture {
