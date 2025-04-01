@@ -254,7 +254,8 @@ impl drawing::backend::Device for GlDevice {
 
         let (gl_internal_format, gl_type, gl_format) = match format {
             //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_BYTE, gl::RGBA),
-            ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
+            ColorFormat::RGBA => (gl::SRGB8_ALPHA8, gl::UNSIGNED_BYTE, gl::RGBA),
+            //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
             ColorFormat::Y8 => (gl::R8, gl::UNSIGNED_BYTE, gl::RED),
         };
 
