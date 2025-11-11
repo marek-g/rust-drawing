@@ -1,0 +1,14 @@
+[package]
+name = "drawing_impeller"
+version = "0.6.0-pre"
+authors = ["Marek Gibek <marek-dev@yandex.com>"]
+description = "Impeller backend for 2D graphics library"
+keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
+categories = ["graphics", "rendering::graphics-api", "visualization"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/marek-g/rust-drawing"
+documentation = "https://docs.rs/drawing_impeller"
+readme = "README.md"
+edition = "2024"
+
+[dependencies]
