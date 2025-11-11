@@ -1,14 +1,14 @@
-use drawing::clipping::Scissor;
-use drawing::composite_operation_state::CompositeOperationState;
-use drawing::paint::Paint;
+use drawing_api::clipping::Scissor;
+use drawing_api::composite_operation_state::CompositeOperationState;
+use drawing_api::paint::Paint;
 use euclid::Vector2D;
 
 use crate::pipelines::*;
 use anyhow::Result;
-use drawing::backend::*;
-use drawing::color::*;
-use drawing::path::{Bounds, Path};
-use drawing::units::*;
+use drawing_api::backend::*;
+use drawing_api::color::*;
+use drawing_api::path::{Bounds, Path};
+use drawing_api::units::*;
 use gl::types::*;
 
 use crate::{GlContextData, GlRenderTarget, GlTexture};
@@ -224,7 +224,7 @@ impl GlDevice {
     }
 }
 
-impl drawing::backend::Device for GlDevice {
+impl drawing_api::backend::Device for GlDevice {
     type Texture = GlTexture;
     type RenderTarget = GlRenderTarget;
 

@@ -1,5 +1,5 @@
-use drawing::backend::RenderTarget;
-use drawing::units::PixelToDeviceTransform;
+use drawing_api::backend::RenderTarget;
+use drawing_api::units::PixelToDeviceTransform;
 use gl::types::*;
 
 pub struct GlRenderTarget {

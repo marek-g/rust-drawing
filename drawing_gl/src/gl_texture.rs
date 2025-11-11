@@ -1,5 +1,5 @@
-use gl::types::*;
 use anyhow::Result;
+use gl::types::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
@@ -12,7 +12,7 @@ pub struct GlTexture {
     pub(crate) flipped_y: bool,
 }
 
-impl drawing::backend::Texture for GlTexture {
+impl drawing_api::backend::Texture for GlTexture {
     fn update(
         &mut self,
         memory: &[u8],

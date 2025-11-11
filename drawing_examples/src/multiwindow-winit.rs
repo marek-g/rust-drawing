@@ -1,11 +1,11 @@
 #![windows_subsystem = "windows"]
 
-use drawing::backend::{Device, RenderTarget};
-use drawing::font::Font;
-use drawing::primitive::Primitive;
-use drawing::renderer::Renderer;
-use drawing::resources::Resources;
-use drawing::units::*;
+use drawing_api::backend::{Device, RenderTarget};
+use drawing_api::font::Font;
+use drawing_api::primitive::Primitive;
+use drawing_api::renderer::Renderer;
+use drawing_api::resources::Resources;
+use drawing_api::units::*;
 
 use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
 
@@ -13,7 +13,7 @@ use rust_embed::RustEmbed;
 use std::cell::{Ref, RefCell};
 
 type DrawingDevice = drawing_gl::GlDevice;
-type DrawingFont = drawing::TextureFont<DrawingDevice>;
+type DrawingFont = drawing_api::TextureFont<DrawingDevice>;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]

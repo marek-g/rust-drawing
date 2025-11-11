@@ -1,8 +1,8 @@
 use crate::utils::*;
-use drawing::color::Color;
+use drawing_api::color::Color;
 use std::os::raw::c_void;
 
-use drawing::backend::TexturedVertex;
+use drawing_api::backend::TexturedVertex;
 use gl::types::*;
 use std::ffi::CString;
 

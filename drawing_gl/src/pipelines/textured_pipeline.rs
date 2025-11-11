@@ -1,6 +1,6 @@
 use crate::utils::*;
 
-use drawing::backend::TexturedVertex;
+use drawing_api::backend::TexturedVertex;
 use gl::types::*;
 use std::ffi::CString;
 

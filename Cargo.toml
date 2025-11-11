@@ -1,7 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "drawing",
+    "drawing_api",
     "drawing_examples",
-    "drawing_gl", "drawing_impeller",
+    "drawing_gl",
+    "drawing_impeller",
 ]
