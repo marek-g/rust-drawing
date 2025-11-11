@@ -1,6 +1,6 @@
 [package]
 name = "drawing_examples"
-version = "0.5.0"
+version = "0.6.0-pre"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "Examples for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
@@ -11,8 +11,8 @@ readme = "README.md"
 edition = "2021"
 
 [dependencies]
-drawing = { path = "../drawing", version = "0.4" }
-drawing_gl = { path = "../drawing_gl", version = "0.5.0" }
+drawing = { path = "../drawing", version = "0.6.0-pre" }
+drawing_gl = { path = "../drawing_gl", version = "0.6.0-pre" }
 gl = "0.14"
 fui_system = { path = "../../rust-fui/fui_system", version = "0.14.0" }
 euclid = "0.22"

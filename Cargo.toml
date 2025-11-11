@@ -3,5 +3,5 @@ resolver = "2"
 members = [
     "drawing",
     "drawing_examples",
-    "drawing_gl",
+    "drawing_gl", "drawing_impeller",
 ]

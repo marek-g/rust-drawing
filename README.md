@@ -10,7 +10,11 @@
 
 ### `drawing_gl` [![Crates.io Version](https://img.shields.io/crates/v/drawing_gl.svg)](https://crates.io/crates/drawing_gl)
 
-OpenGL backend.
+Simple OpenGL backend.
+
+### `drawing_impeller` [![Crates.io Version](https://img.shields.io/crates/v/drawing_impeller.svg)](https://crates.io/crates/drawing_impeller)
+
+Flutter's Impeller backend.
 
 ## License
 
