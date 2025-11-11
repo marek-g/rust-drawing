@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
 documentation = "https://docs.rs/drawing_gl"
 readme = "README.md"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 drawing = { path = "../drawing", version = "0.6.0-pre" }

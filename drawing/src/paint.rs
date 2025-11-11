@@ -28,7 +28,7 @@ impl Paint {
         resources: &'a mut Resources<D, F>,
     ) -> (Self, Option<&'a D::Texture>) {
         match brush {
-            Brush::Color { ref color } => (
+            Brush::Color { color } => (
                 Paint {
                     xform: PixelTransform::identity(),
                     extent: [0.0, 0.0],

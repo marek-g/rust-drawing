@@ -23,62 +23,62 @@ impl Transformation for Vec<Primitive> {
         for primitive in self.iter_mut() {
             match primitive {
                 Primitive::Line {
-                    ref mut start_point,
-                    ref mut end_point,
+                    start_point,
+                    end_point,
                     ..
                 } => {
                     start_point.translate(offset);
                     end_point.translate(offset);
                 }
 
-                Primitive::Rectangle { ref mut rect, .. } => {
+                Primitive::Rectangle { rect, .. } => {
                     rect.translate(offset);
                 }
 
-                Primitive::Image { ref mut rect, .. } => {
+                Primitive::Image { rect, .. } => {
                     rect.translate(offset);
                 }
 
                 Primitive::Text {
-                    ref mut position,
-                    ref mut clipping_rect,
+                    position,
+                    clipping_rect,
                     ..
                 } => {
                     position.translate(offset);
                     clipping_rect.translate(offset);
                 }
 
-                Primitive::Stroke { ref mut path, .. } => path.translate(offset),
+                Primitive::Stroke { path, .. } => path.translate(offset),
 
-                Primitive::StrokeStyled { ref mut path, .. } => path.translate(offset),
+                Primitive::StrokeStyled { path, .. } => path.translate(offset),
 
-                Primitive::Fill { ref mut path, .. } => path.translate(offset),
+                Primitive::Fill { path, .. } => path.translate(offset),
 
                 Primitive::ClipRect {
-                    ref mut rect,
-                    ref mut primitives,
+                    rect,
+                    primitives,
                 } => {
                     rect.translate(offset);
                     primitives.translate(offset);
                 }
 
                 Primitive::ClipPath {
-                    ref mut path,
-                    ref mut primitives,
+                    path,
+                    primitives,
                 } => {
                     path.translate(offset);
                     primitives.translate(offset);
                 }
 
                 Primitive::Transform {
-                    ref mut transform, ..
+                    transform, ..
                 } => {
                     *transform =
                         transform.then_translate(euclid::Vector2D::new(offset.x, offset.y));
                 }
 
                 Primitive::Composite {
-                    ref mut primitives, ..
+                    primitives, ..
                 } => primitives.translate(offset),
             }
         }
@@ -89,11 +89,11 @@ impl Transformation for Vec<PathElement> {
     fn translate(&mut self, offset: PixelPoint) {
         for path_element in self.iter_mut() {
             match path_element {
-                PathElement::MoveTo(ref mut point) => point.translate(offset),
+                PathElement::MoveTo(point) => point.translate(offset),
 
-                PathElement::LineTo(ref mut point) => point.translate(offset),
+                PathElement::LineTo(point) => point.translate(offset),
 
-                PathElement::BezierTo(ref mut c1, ref mut c2, ref mut point) => {
+                PathElement::BezierTo(c1, c2, point) => {
                     c1.translate(offset);
                     c2.translate(offset);
                     point.translate(offset);

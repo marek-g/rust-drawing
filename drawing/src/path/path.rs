@@ -899,7 +899,7 @@ unsafe fn round_join(
     ru: f32,
     ncap: usize,
     _fringe: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let dlx0 = p0.d.y;
     let dly0 = -p0.d.x;
     let dlx1 = p1.d.y;
@@ -992,7 +992,7 @@ unsafe fn round_join(
     }
 
     dst
-}
+}}
 
 unsafe fn bevel_join(
     mut dst: *mut TexturedVertex,
@@ -1003,7 +1003,7 @@ unsafe fn bevel_join(
     lu: f32,
     ru: f32,
     _fringe: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let dlx0 = p0.d.y;
     let dly0 = -p0.d.x;
     let dlx1 = p1.d.y;
@@ -1157,7 +1157,7 @@ unsafe fn bevel_join(
     }
 
     dst
-}
+}}
 
 unsafe fn butt_cap_start(
     mut dst: *mut TexturedVertex,
@@ -1169,7 +1169,7 @@ unsafe fn butt_cap_start(
     aa: f32,
     u0: f32,
     u1: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let px = p.xy.x - dx * d;
     let py = p.xy.y - dy * d;
     let dlx = dy;
@@ -1204,7 +1204,7 @@ unsafe fn butt_cap_start(
     dst = dst.add(1);
 
     dst
-}
+}}
 
 unsafe fn butt_cap_end(
     mut dst: *mut TexturedVertex,
@@ -1216,7 +1216,7 @@ unsafe fn butt_cap_end(
     aa: f32,
     u0: f32,
     u1: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let px = p.xy.x - dx * d;
     let py = p.xy.y - dy * d;
     let dlx = dy;
@@ -1251,7 +1251,7 @@ unsafe fn butt_cap_end(
     dst = dst.add(1);
 
     dst
-}
+}}
 
 unsafe fn round_cap_start(
     mut dst: *mut TexturedVertex,
@@ -1263,7 +1263,7 @@ unsafe fn round_cap_start(
     _aa: f32,
     u0: f32,
     u1: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let px = p.xy.x;
     let py = p.xy.y;
     let dlx = dy;
@@ -1300,7 +1300,7 @@ unsafe fn round_cap_start(
     dst = dst.add(1);
 
     dst
-}
+}}
 
 unsafe fn round_cap_end(
     mut dst: *mut TexturedVertex,
@@ -1312,7 +1312,7 @@ unsafe fn round_cap_end(
     _aa: f32,
     u0: f32,
     u1: f32,
-) -> *mut TexturedVertex {
+) -> *mut TexturedVertex { unsafe {
     let px = p.xy.x;
     let py = p.xy.y;
     let dlx = dy;
@@ -1349,4 +1349,4 @@ unsafe fn round_cap_end(
     }
 
     dst
-}
+}}
