@@ -474,6 +474,10 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "drawing"
+version = "0.6.0-obsolete"
+
+[[package]]
+name = "drawing_api"
 version = "0.6.0-pre"
 dependencies = [
  "anyhow",
@@ -490,7 +494,7 @@ name = "drawing_examples"
 version = "0.6.0-pre"
 dependencies = [
  "cpu-time",
- "drawing",
+ "drawing_api",
  "drawing_gl",
  "euclid",
  "fui_system",
@@ -505,7 +509,7 @@ name = "drawing_gl"
 version = "0.6.0-pre"
 dependencies = [
  "anyhow",
- "drawing",
+ "drawing_api",
  "euclid",
  "gl",
 ]

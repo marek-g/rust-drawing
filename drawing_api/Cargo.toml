@@ -1,18 +1,21 @@
 [package]
-name = "drawing_gl"
+name = "drawing_api"
 version = "0.6.0-pre"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
-description = "OpenGL backend for 2D graphics library"
+description = "API for 2D graphics library"
 keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
 categories = ["graphics", "rendering::graphics-api", "visualization"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
-documentation = "https://docs.rs/drawing_gl"
-readme = "README.md"
+documentation = "https://docs.rs/drawing"
+readme = "../README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
+bitflags = "2.5"
 anyhow = "1.0"
+thiserror = "1.0"
 euclid = "0.22"
-gl = "0.14"
+freetype-rs = "0.36"
+rawpointer = "0.2"
+clamped = "1.0"
