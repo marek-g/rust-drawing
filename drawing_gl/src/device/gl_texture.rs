@@ -1,6 +1,8 @@
 use anyhow::Result;
 use gl::types::*;
 
+use crate::generic::device::Texture;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct GlTexture {
     pub(crate) id: GLuint,
@@ -12,7 +14,7 @@ pub struct GlTexture {
     pub(crate) flipped_y: bool,
 }
 
-impl drawing_api::backend::Texture for GlTexture {
+impl Texture for GlTexture {
     fn update(
         &mut self,
         memory: &[u8],

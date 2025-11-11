@@ -1,5 +1,6 @@
-use crate::color::*;
-use crate::units::*;
+use drawing_api::{PixelPoint, PixelRect, PixelThickness, PixelTransform};
+
+use crate::generic::device::Color;
 
 #[derive(Debug)]
 pub enum Primitive {

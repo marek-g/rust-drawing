@@ -1,19 +1,17 @@
-#[macro_use]
-extern crate bitflags;
+mod backend;
+pub use backend::*;
 
-pub mod backend;
-pub mod clipping;
-pub mod color;
-pub mod composite_operation_state;
-pub mod font;
-pub mod paint;
-pub mod path;
-pub mod primitive;
-pub mod primitive_extensions;
-pub mod renderer;
-pub mod resources;
-pub mod transformation;
-pub mod units;
+mod color;
+pub use color::*;
 
-mod texture_font;
-pub use texture_font::TextureFont;
+mod display_list_builder;
+pub use display_list_builder::*;
+
+mod paint;
+pub use paint::*;
+
+mod surface;
+pub use surface::*;
+
+mod units;
+pub use units::*;

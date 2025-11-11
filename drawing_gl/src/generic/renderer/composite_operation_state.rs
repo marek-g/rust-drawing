@@ -1,6 +1,6 @@
-use crate::primitive::BasicCompositeOperation;
-use crate::primitive::BlendFactor;
-use crate::primitive::CompositeOperation;
+use crate::generic::renderer::BasicCompositeOperation;
+use crate::generic::renderer::BlendFactor;
+use crate::generic::renderer::CompositeOperation;
 
 #[derive(Debug, Copy, Clone)]
 pub struct CompositeOperationState {

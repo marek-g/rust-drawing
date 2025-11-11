@@ -1,8 +1,7 @@
 use anyhow::Result;
 
-use crate::backend::Device;
-use crate::color::*;
-use crate::units::*;
+use crate::generic::device::Device;
+use drawing_api::*;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct FontParams {
@@ -36,7 +35,7 @@ pub trait Font<D: Device> {
         &mut self,
         device: &mut D,
         target: &D::RenderTarget,
-        color: &Color,
+        color: &crate::generic::device::Color,
         text: &str,
         pos: Point,
         clipping_rect: Rect,

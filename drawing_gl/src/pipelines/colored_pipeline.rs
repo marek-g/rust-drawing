@@ -1,6 +1,6 @@
 use crate::utils::*;
 
-use drawing_api::backend::ColoredVertex;
+use crate::generic::device::ColoredVertex;
 use gl::types::*;
 use std::ffi::CString;
 

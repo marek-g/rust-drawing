@@ -1,17 +1,19 @@
+use crate::generic::clipping::Scissor;
+use crate::generic::device::colored_vertex::ColoredVertex;
+use crate::generic::device::textured_vertex::TexturedVertex;
+use crate::generic::device::textured_y8_vertex::TexturedY8Vertex;
+use crate::generic::device::Paint;
+use crate::generic::device::{RenderTarget, Texture};
+use crate::generic::path::{Bounds, Path};
+use crate::generic::renderer::CompositeOperationState;
+use crate::generic::renderer::PathElement;
 use anyhow::Result;
 use core::marker::Sized;
 use core::option::Option;
-use crate::backend::{RenderTarget, Texture};
-use crate::backend::colored_vertex::ColoredVertex;
-use crate::backend::textured_vertex::TexturedVertex;
-use crate::backend::textured_y8_vertex::TexturedY8Vertex;
-use crate::clipping::Scissor;
-use crate::color::{Color, ColorFormat};
-use crate::composite_operation_state::CompositeOperationState;
-use crate::paint::Paint;
-use crate::path::{Bounds, Path};
-use crate::primitive::PathElement;
-use crate::units::{DeviceThickness, PixelRect, Point, Rect, UnknownToDeviceTransform};
+use drawing_api::ColorFormat;
+use drawing_api::{DeviceThickness, PixelRect, Point, Rect, UnknownToDeviceTransform};
+
+use super::Color;
 
 pub trait Device {
     type Texture: Texture;

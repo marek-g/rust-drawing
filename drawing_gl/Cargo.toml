@@ -14,5 +14,10 @@ edition = "2024"
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
 anyhow = "1.0"
+thiserror = "2.0"
 euclid = "0.22"
 gl = "0.14"
+rawpointer = "0.2"
+clamped = "1.0"
+freetype-rs = "0.38"
+bitflags = "2.10"

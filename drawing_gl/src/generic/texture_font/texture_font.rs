@@ -1,10 +1,9 @@
 use anyhow::Result;
+use font_size_renderer::FontSizeRenderer;
 
-use crate::backend::*;
-use crate::color::*;
-use crate::font::*;
-use crate::texture_font::font_size_renderer::FontSizeRenderer;
-use crate::units::*;
+use crate::generic::device::*;
+use crate::generic::texture_font::*;
+use drawing_api::*;
 
 use std::collections::HashMap;
 
@@ -40,7 +39,7 @@ impl<D: Device> Font<D> for TextureFont<D> {
         &mut self,
         device: &mut D,
         target: &D::RenderTarget,
-        color: &Color,
+        color: &crate::generic::device::Color,
         text: &str,
         pos: Point,
         clipping_rect: Rect,

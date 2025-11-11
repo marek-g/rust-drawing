@@ -1,5 +1,5 @@
-use crate::backend::Device;
-use crate::font::Font;
+use crate::generic::device::Device;
+use crate::generic::texture_font::Font;
 use std::collections::HashMap;
 
 pub struct Resources<D: Device, F: Font<D>> {

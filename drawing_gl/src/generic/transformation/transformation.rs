@@ -1,5 +1,5 @@
-use crate::primitive::*;
-use crate::units::*;
+use crate::generic::renderer::*;
+use drawing_api::*;
 
 pub trait Transformation {
     fn translate(&mut self, offset: PixelPoint);
@@ -54,32 +54,22 @@ impl Transformation for Vec<Primitive> {
 
                 Primitive::Fill { path, .. } => path.translate(offset),
 
-                Primitive::ClipRect {
-                    rect,
-                    primitives,
-                } => {
+                Primitive::ClipRect { rect, primitives } => {
                     rect.translate(offset);
                     primitives.translate(offset);
                 }
 
-                Primitive::ClipPath {
-                    path,
-                    primitives,
-                } => {
+                Primitive::ClipPath { path, primitives } => {
                     path.translate(offset);
                     primitives.translate(offset);
                 }
 
-                Primitive::Transform {
-                    transform, ..
-                } => {
+                Primitive::Transform { transform, .. } => {
                     *transform =
                         transform.then_translate(euclid::Vector2D::new(offset.x, offset.y));
                 }
 
-                Primitive::Composite {
-                    primitives, ..
-                } => primitives.translate(offset),
+                Primitive::Composite { primitives, .. } => primitives.translate(offset),
             }
         }
     }

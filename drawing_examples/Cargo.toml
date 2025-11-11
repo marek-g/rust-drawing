@@ -20,9 +20,13 @@ rust-embed = "8.4"
 cpu-time = "1.0"
 
 [[bin]]
-name = "simple"
-path = "src/simple.rs"
+name = "simple-gl"
+path = "src/simple-gl.rs"
 
 [[bin]]
-name = "multiwindow"
-path = "src/multiwindow.rs"
+name = "simple2-gl"
+path = "src/simple2-gl.rs"
+
+[[bin]]
+name = "multiwindow-gl"
+path = "src/multiwindow-gl.rs"

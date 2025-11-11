@@ -25,13 +25,13 @@
 
 #![deny(missing_docs)]
 
-use crate::backend::Device;
-use crate::backend::TexturedY8Vertex;
-use crate::clipping::clip_image;
-use crate::color::ColorFormat;
-use crate::texture_font::bitmap_font::BitmapFont;
-pub use crate::texture_font::bitmap_font::FontError;
-use crate::units::UnknownToDeviceTransform;
+use crate::generic::clipping::clip_image;
+use crate::generic::device::Device;
+use crate::generic::device::TexturedY8Vertex;
+use crate::generic::texture_font::bitmap_font::BitmapFont;
+pub use crate::generic::texture_font::bitmap_font::FontError;
+use drawing_api::ColorFormat;
+use drawing_api::UnknownToDeviceTransform;
 
 use thiserror::Error;
 

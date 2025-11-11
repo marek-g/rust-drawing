@@ -1,6 +1,8 @@
-use crate::clipping::utils::*;
-use crate::primitive::*;
-use crate::units::*;
+use drawing_api::{PixelPoint, PixelRect, PixelSize};
+
+use crate::generic::renderer::{PathElement, Primitive};
+
+use super::{clip_image, clip_line, clip_rect};
 
 pub trait Clipping {
     fn clip(self, rect: PixelRect) -> Self;

@@ -1,14 +1,14 @@
-use crate::backend::Device;
-use crate::backend::RenderTarget;
-use crate::clipping::Scissor;
-use crate::font::Font;
-use crate::font::FontParams;
-use crate::paint::Paint;
-use crate::path::FlattenedPath;
-use crate::primitive::*;
-use crate::resources::*;
-use crate::units::*;
+use crate::generic::clipping::Scissor;
+use crate::generic::device::Device;
+use crate::generic::device::Paint;
+use crate::generic::device::RenderTarget;
+use crate::generic::path::FlattenedPath;
+use crate::generic::renderer::*;
+use crate::generic::resources::*;
+use crate::generic::texture_font::Font;
+use crate::generic::texture_font::FontParams;
 use anyhow::Result;
+use drawing_api::*;
 
 use std::convert::Into;
 

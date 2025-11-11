@@ -1,14 +1,14 @@
-use drawing_api::clipping::Scissor;
-use drawing_api::composite_operation_state::CompositeOperationState;
-use drawing_api::paint::Paint;
+use crate::generic::device::{Color, ColoredVertex, Paint, TexturedVertex, TexturedY8Vertex};
+use crate::generic::path::{Bounds, Path};
+use crate::generic::renderer::CompositeOperationState;
+use crate::pipelines::{
+    FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline, UniversalPipeline,
+};
+use crate::{generic::clipping::Scissor, pipelines::ColoredPipeline};
+use drawing_api::{ColorFormat, DeviceThickness, PixelTransform, Point, UnknownToDeviceTransform};
 use euclid::Vector2D;
 
-use crate::pipelines::*;
 use anyhow::Result;
-use drawing_api::backend::*;
-use drawing_api::color::*;
-use drawing_api::path::{Bounds, Path};
-use drawing_api::units::*;
 use gl::types::*;
 
 use crate::{GlContextData, GlRenderTarget, GlTexture};
@@ -224,7 +224,7 @@ impl GlDevice {
     }
 }
 
-impl drawing_api::backend::Device for GlDevice {
+impl crate::generic::device::Device for GlDevice {
     type Texture = GlTexture;
     type RenderTarget = GlRenderTarget;
 

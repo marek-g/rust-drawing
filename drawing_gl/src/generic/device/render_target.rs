@@ -1,5 +1,5 @@
 use core::marker::Sized;
-use crate::units::PixelToDeviceTransform;
+use drawing_api::PixelToDeviceTransform;
 
 pub trait RenderTarget: Sized {
     fn update_size(&mut self, width: u16, height: u16);

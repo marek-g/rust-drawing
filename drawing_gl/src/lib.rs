@@ -1,14 +1,12 @@
-mod backend;
-pub use backend::*;
+mod device;
+pub use device::*;
 
-mod gl_context_data;
-pub use gl_context_data::*;
+mod gl_backend;
+pub use gl_backend::*;
 
-mod gl_render_target;
-pub use gl_render_target::*;
+mod gl_surface;
+pub use gl_surface::*;
 
-mod gl_texture;
-pub use gl_texture::*;
-
+mod generic;
 mod pipelines;
 mod utils;
