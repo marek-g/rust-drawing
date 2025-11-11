@@ -11,7 +11,8 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
+#drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
+drawing_api = { path = "../drawing_api", version = "0.5.0" }
 drawing_gl = { path = "../drawing_gl", version = "0.6.0-pre" }
 gl = "0.14"
 fui_system = { path = "../../rust-fui/fui_system", version = "0.14.0" }
