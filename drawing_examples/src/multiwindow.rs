@@ -17,8 +17,8 @@ use std::error::Error;
 use std::ptr::null;
 use std::rc::Rc;
 
-use fui_system::{Application, ApplicationOptions};
 use gl::types::*;
+use windowing_qt::{Application, ApplicationOptions};
 
 type DrawingDevice = drawing_gl::GlDevice;
 type DrawingFont = drawing_api::TextureFont<DrawingDevice>;
@@ -28,7 +28,7 @@ type DrawingFont = drawing_api::TextureFont<DrawingDevice>;
 struct Assets;
 
 pub struct GlWindow {
-    pub window: fui_system::Window,
+    pub window: windowing_qt::Window,
     pub gl_context_data: Option<GlContextData>,
 
     pub time_query: GLuint,
@@ -36,6 +36,8 @@ pub struct GlWindow {
 }
 
 pub struct AppResources {
+    pub initialized: bool,
+
     pub resources: Resources<DrawingDevice, TextureFont<DrawingDevice>>,
 
     pub image1_resource_id: i32,
@@ -45,6 +47,7 @@ pub struct AppResources {
 impl AppResources {
     pub fn new() -> Self {
         AppResources {
+            initialized: false,
             resources: Resources::new(),
             image1_resource_id: 0,
             image2_resource_id: 0,
@@ -55,22 +58,44 @@ impl AppResources {
 fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
-            .with_title("Example: simple (fui-system)")
+            .with_title("Example: multiwindow (fui-system)")
+            .with_opengl_share_contexts(true)
             .with_opengl_stencil_bits(8),
-    )
-    .unwrap();
+    )?;
 
     let device_rc = Rc::new(RefCell::new(DrawingDevice::new().unwrap()));
     let app_resources_rc = Rc::new(RefCell::new(AppResources::new()));
 
-    let gl_window_rc = Rc::new(RefCell::new(GlWindow {
-        window: fui_system::Window::new(None).unwrap(),
+    let gl_window1_rc = Rc::new(RefCell::new(GlWindow {
+        window: windowing_qt::Window::new(None).unwrap(),
         gl_context_data: None,
         time_query: 0,
         pos_y: 0.0f32,
     }));
 
-    setup_window(&gl_window_rc, &device_rc, &app_resources_rc);
+    let gl_window2_rc = Rc::new(RefCell::new(GlWindow {
+        window: windowing_qt::Window::new(None).unwrap(),
+        gl_context_data: None,
+        time_query: 0,
+        pos_y: 0.0f32,
+    }));
+
+    gl_window1_rc
+        .borrow_mut()
+        .window
+        .set_title("Window 1 (fui-system)")
+        .unwrap();
+    gl_window2_rc
+        .borrow_mut()
+        .window
+        .set_title("Window 2 (fui-system)")
+        .unwrap();
+
+    setup_window(&gl_window1_rc, &device_rc, &app_resources_rc);
+    setup_window(&gl_window2_rc, &device_rc, &app_resources_rc);
+
+    gl_window1_rc.borrow_mut().window.set_visible(true).unwrap();
+    gl_window2_rc.borrow_mut().window.set_visible(true).unwrap();
 
     app.message_loop();
 
@@ -83,8 +108,6 @@ fn setup_window(
     app_resources_rc: &Rc<RefCell<AppResources>>,
 ) {
     let window = &mut gl_window_rc.borrow_mut().window;
-    window.set_title("Example: simple (fui-system)").unwrap();
-    window.set_frame_position(800, 100);
     window.resize(800, 600);
 
     window.on_paint_gl({
@@ -95,6 +118,7 @@ fn setup_window(
 
         move || {
             if !initialized {
+                // initialize gl context
                 let mut gl_window = gl_window_clone.borrow_mut();
                 gl_window.gl_context_data =
                     Some(device_clone.borrow_mut().init_context(|symbol| {
@@ -131,11 +155,14 @@ fn setup_window(
             gl_window_clone.borrow_mut().window.update();
         }
     });
-
-    window.set_visible(true).unwrap();
 }
 
 fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDevice) {
+    if app_resources.initialized {
+        return;
+    }
+
+    // font
     let font =
         DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
 
@@ -158,6 +185,8 @@ fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDe
         .resources
         .textures_mut()
         .insert(app_resources.image2_resource_id, texture);
+
+    app_resources.initialized = true;
 }
 
 pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Texture {

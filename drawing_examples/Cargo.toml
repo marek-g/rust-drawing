@@ -13,26 +13,16 @@ edition = "2024"
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
 drawing_gl = { path = "../drawing_gl", version = "0.6.0-pre" }
+windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.14.0" }
 gl = "0.14"
-fui_system = { path = "../../rust-fui/fui_system", version = "0.14.0" }
 euclid = "0.22"
-glutin = "0.28"
-winit = "0.26"
 rust-embed = "8.4"
 cpu-time = "1.0"
 
 [[bin]]
-name = "simple-winit"
-path = "src/simple-winit.rs"
+name = "simple"
+path = "src/simple.rs"
 
 [[bin]]
-name = "simple-fui-system"
-path = "src/simple-fui-system.rs"
-
-[[bin]]
-name = "multiwindow-winit"
-path = "src/multiwindow-winit.rs"
-
-[[bin]]
-name = "multiwindow-fui-system"
-path = "src/multiwindow-fui-system.rs"
+name = "multiwindow"
+path = "src/multiwindow.rs"
