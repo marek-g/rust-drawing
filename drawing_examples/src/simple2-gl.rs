@@ -1,6 +1,6 @@
 #![windows_subsystem = "windows"]
 
-use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
+use drawing_gl::GlRenderTarget;
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
@@ -116,5 +116,7 @@ pub fn draw(
         return;
     }
 
-    context.draw();
+    let render_target = GlRenderTarget::new(0, 100u16, 100u16, 1.0f32);
+    context.set_render_target(&render_target);
+    //context.clear(&render_target, [1.0f32, 0.66f32, 0.33f32, 1.0f32]);
 }

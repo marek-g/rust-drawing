@@ -1,4 +1,5 @@
 use anyhow::Result;
+use drawing_api::ColorFormat;
 use gl::types::*;
 
 use crate::generic::device::Texture;
@@ -12,6 +13,24 @@ pub struct GlTexture {
     pub(crate) gl_format: GLuint,
     pub(crate) gl_type: GLuint,
     pub(crate) flipped_y: bool,
+}
+
+impl GlTexture {
+    pub fn from_external(id: GLuint, width: u16, height: u16, format: ColorFormat) -> GlTexture {
+        let (gl_type, gl_format) = match format {
+            ColorFormat::RGBA => (gl::UNSIGNED_BYTE, gl::RGBA),
+            ColorFormat::Y8 => (gl::UNSIGNED_BYTE, gl::RED),
+        };
+        GlTexture {
+            id,
+            is_owned: false,
+            width,
+            height,
+            gl_format,
+            gl_type,
+            flipped_y: false,
+        }
+    }
 }
 
 impl Texture for GlTexture {

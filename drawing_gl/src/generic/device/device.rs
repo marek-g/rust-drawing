@@ -19,10 +19,6 @@ pub trait Device {
     type Texture: Texture;
     type RenderTarget: RenderTarget;
 
-    fn new() -> Result<Self>
-    where
-        Self: Sized;
-
     fn create_texture(
         &mut self,
         memory: Option<&[u8]>,
