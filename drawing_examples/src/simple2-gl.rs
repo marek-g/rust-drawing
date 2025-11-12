@@ -50,7 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn setup_window(
     gl_window_rc: &Rc<RefCell<GlWindow>>,
-    device_rc: &Rc<RefCell<Option<DrawingContext>>>,
+    drawing_context_rc: &Rc<RefCell<Option<DrawingContext>>>,
 ) {
     let window = &mut gl_window_rc.borrow_mut().window;
     window.set_title("Example: simple2").unwrap();
@@ -59,8 +59,8 @@ fn setup_window(
 
     window.on_paint_gl({
         let gl_window_clone = gl_window_rc.clone();
-        let device_clone = device_rc.clone();
-        let app_resources_clone = app_resources_rc.clone();
+        let drawing_context_clone = drawing_context_rc.clone();
+        //let app_resources_clone = app_resources_rc.clone();
         let mut initialized = false;
 
         move || {
@@ -71,7 +71,10 @@ fn setup_window(
                         .window
                         .get_opengl_proc_address(symbol)
                         .unwrap_or_else(|_| null())
-                });
+                })
+                .unwrap();
+
+                drawing_context_clone.borrow_mut().insert(drawing_context);
 
                 let mut time_query: GLuint = 0;
                 unsafe {
@@ -85,11 +88,13 @@ fn setup_window(
                 initialized = true;
             }
 
-            draw(
-                &mut device_clone.borrow_mut(),
-                &mut gl_window_clone.borrow_mut(),
-                //&mut app_resources_clone.borrow_mut(),
-            );
+            if let Some(drawing_context) = drawing_context_clone.borrow_mut().as_mut() {
+                draw(
+                    drawing_context,
+                    &mut gl_window_clone.borrow_mut(),
+                    //&mut app_resources_clone.borrow_mut(),
+                );
+            }
 
             // continue animation
             gl_window_clone.borrow_mut().window.update();
@@ -100,7 +105,7 @@ fn setup_window(
 }
 
 pub fn draw(
-    context: &mut DrawingDevice,
+    context: &mut DrawingContext,
     gl_window: &mut GlWindow,
     //app_resources: &mut AppResources,
 ) {
@@ -110,4 +115,6 @@ pub fn draw(
     if width <= 0 || height <= 0 {
         return;
     }
+
+    context.draw();
 }
