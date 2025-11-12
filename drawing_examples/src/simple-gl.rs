@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(, windows_subsystem = "windows")]
 
 use drawing_api::backend::Device;
 use drawing_api::color::*;
