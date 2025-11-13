@@ -8,7 +8,7 @@ use std::error::Error;
 use std::ptr::null;
 use std::rc::Rc;
 
-use drawing_api::Surface;
+use drawing_api::{Context, PixelPoint, PixelThickness, Surface};
 use drawing_gl::Device;
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -118,18 +118,25 @@ pub fn draw(
         return;
     }
 
-    let drawing_surface = GlSurface::wrap_framebuffer(
+    let drawing_surface = drawing_context.wrap_framebuffer(
         gl_window.window.get_default_framebuffer_id(),
-        100u16,
-        100u16,
+        width as u16,
+        height as u16,
         drawing_api::ColorFormat::RGBA,
     );
 
     //drawing_context.
 
-    let drawing_list = Vec::<Primitive>::new();
+    let display_list = vec![Primitive::Line {
+        color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+        thickness: PixelThickness::new(1.0f32),
+        start_point: PixelPoint::new(100.0f32, 100.0f32),
+        end_point: PixelPoint::new(300.5f32, 100.5f32),
+    }];
 
-    drawing_surface.draw(&drawing_list);
+    //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
     drawing_context.clear(&drawing_surface, &[1.0f32, 0.66f32, 0.33f32, 1.0f32]);
+
+    drawing_context.draw(&drawing_surface, &display_list);
 }

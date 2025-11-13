@@ -2,7 +2,17 @@ use drawing_api::Point;
 
 use super::Primitive;
 
-pub struct DisplayListBuilder;
+pub struct DisplayListBuilder {
+    display_list: Vec<Primitive>,
+}
+
+impl DisplayListBuilder {
+    pub fn new() -> Self {
+        Self {
+            display_list: Vec::new(),
+        }
+    }
+}
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive>;

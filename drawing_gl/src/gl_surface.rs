@@ -10,23 +10,6 @@ pub struct GlSurface {
     pub(crate) is_owner: bool,
 }
 
-impl GlSurface {
-    pub fn wrap_framebuffer(
-        framebuffer_id: GLuint,
-        width: u16,
-        height: u16,
-        color_format: ColorFormat,
-    ) -> Self {
-        Self {
-            framebuffer_id,
-            width,
-            height,
-            color_format,
-            is_owner: false,
-        }
-    }
-}
-
 /*impl Drop for GlSurface {
     fn drop(&mut self) {
         if self.is_owner {

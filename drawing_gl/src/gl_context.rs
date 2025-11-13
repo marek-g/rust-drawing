@@ -7,12 +7,15 @@ use crate::{
     generic::{
         clipping::Scissor,
         device::{convert_color, ColoredVertex, Device, Paint, TexturedVertex},
+        renderer::{DisplayListBuilder, Renderer},
+        resources::Resources,
+        texture_font::TextureFont,
     },
     pipelines::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
-    GlSurface, GlTexture,
+    GlSurface, GlTexture, Primitive,
 };
 
 pub struct GlContext {
@@ -74,15 +77,21 @@ impl GlContext {
         })
     }
 
-    /*pub fn surface_from_framebuffer(
+    pub fn wrap_framebuffer(
         &self,
-        fbo: u32,
+        framebuffer_id: u32,
         width: u16,
         height: u16,
-        format: ColorFormat,
+        color_format: ColorFormat,
     ) -> GlSurface {
-
-    }*/
+        GlSurface {
+            framebuffer_id,
+            width,
+            height,
+            color_format,
+            is_owner: false,
+        }
+    }
 
     pub fn set_render_target(&mut self, target: &GlSurface) {
         unsafe {
@@ -678,18 +687,28 @@ impl Device for GlContext {
 }
 
 impl Context for GlContext {
+    type DisplayList = Vec<Primitive>;
     type DisplayListBuilder = crate::generic::renderer::DisplayListBuilder;
-
     type Paint = crate::generic::device::Paint;
-
     type Surface = GlSurface;
 
     fn create_display_list_builder(&self) -> Result<Self::DisplayListBuilder, &'static str> {
-        todo!()
+        Ok(DisplayListBuilder::new())
     }
 
     fn create_paint(&self) -> Result<Self::Paint, &'static str> {
         todo!()
+    }
+
+    fn draw(
+        &mut self,
+        surface: &Self::Surface,
+        display_list: &Self::DisplayList,
+    ) -> Result<(), &'static str> {
+        let mut renderer = Renderer::new();
+        let mut resources = Resources::<GlContext, TextureFont<GlContext>>::new();
+        renderer.draw(self, surface, display_list, &mut resources, true);
+        Ok(())
     }
 }
 
