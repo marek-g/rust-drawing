@@ -118,8 +118,12 @@ pub fn draw(
         return;
     }
 
-    let drawing_surface =
-        GlSurface::wrap_framebuffer(0, 100u16, 100u16, drawing_api::ColorFormat::RGBA);
+    let drawing_surface = GlSurface::wrap_framebuffer(
+        gl_window.window.get_default_framebuffer_id(),
+        100u16,
+        100u16,
+        drawing_api::ColorFormat::RGBA,
+    );
 
     //drawing_context.
 
