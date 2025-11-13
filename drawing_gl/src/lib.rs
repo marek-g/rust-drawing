@@ -8,5 +8,8 @@ mod gl_surface;
 pub use gl_surface::*;
 
 mod generic;
+pub use generic::device::Device;
+pub use generic::renderer::Primitive;
+
 mod pipelines;
 mod utils;

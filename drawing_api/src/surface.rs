@@ -1,5 +1,5 @@
 pub trait Surface {
     type DisplayList;
 
-    fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str>;
+    fn draw(&self, display_list: &Self::DisplayList) -> Result<(), &'static str>;
 }

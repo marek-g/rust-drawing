@@ -1,6 +1,6 @@
 #![windows_subsystem = "windows"]
 
-use drawing_gl::GlRenderTarget;
+use drawing_gl::{GlSurface, Primitive};
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
@@ -8,6 +8,8 @@ use std::error::Error;
 use std::ptr::null;
 use std::rc::Rc;
 
+use drawing_api::Surface;
+use drawing_gl::Device;
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
@@ -105,7 +107,7 @@ fn setup_window(
 }
 
 pub fn draw(
-    context: &mut DrawingContext,
+    drawing_context: &mut DrawingContext,
     gl_window: &mut GlWindow,
     //app_resources: &mut AppResources,
 ) {
@@ -116,7 +118,14 @@ pub fn draw(
         return;
     }
 
-    let render_target = GlRenderTarget::new(0, 100u16, 100u16, 1.0f32);
-    context.set_render_target(&render_target);
-    //context.clear(&render_target, [1.0f32, 0.66f32, 0.33f32, 1.0f32]);
+    let drawing_surface =
+        GlSurface::wrap_framebuffer(0, 100u16, 100u16, drawing_api::ColorFormat::RGBA);
+
+    //drawing_context.
+
+    let drawing_list = Vec::<Primitive>::new();
+
+    drawing_surface.draw(&drawing_list);
+    //drawing_context.set_render_target(&render_target);
+    drawing_context.clear(&drawing_surface, &[1.0f32, 0.66f32, 0.33f32, 1.0f32]);
 }

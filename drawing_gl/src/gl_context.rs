@@ -12,7 +12,7 @@ use crate::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
-    GlRenderTarget, GlSurface, GlTexture,
+    GlSurface, GlTexture,
 };
 
 pub struct GlContext {
@@ -74,7 +74,17 @@ impl GlContext {
         })
     }
 
-    pub fn set_render_target(&mut self, target: &GlRenderTarget) {
+    /*pub fn surface_from_framebuffer(
+        &self,
+        fbo: u32,
+        width: u16,
+        height: u16,
+        format: ColorFormat,
+    ) -> GlSurface {
+
+    }*/
+
+    pub fn set_render_target(&mut self, target: &GlSurface) {
         unsafe {
             gl::BindFramebuffer(gl::FRAMEBUFFER, target.framebuffer_id);
             gl::Viewport(0, 0, target.width as GLint, target.height as GLint);
@@ -216,7 +226,7 @@ impl Drop for GlContext {
 
 impl Device for GlContext {
     type Texture = GlTexture;
-    type RenderTarget = GlRenderTarget;
+    type RenderTarget = GlSurface;
 
     fn create_texture(
         &mut self,
@@ -288,11 +298,12 @@ impl Device for GlContext {
         }
         Ok((
             texture,
-            GlRenderTarget {
+            GlSurface {
                 framebuffer_id,
                 width,
                 height,
-                aspect_ratio: self.aspect_ratio,
+                color_format: ColorFormat::RGBA,
+                is_owner: true,
             },
         ))
     }
