@@ -1,10 +1,10 @@
-use crate::Point;
+use crate::{PixelPoint, Point};
 
 pub trait DisplayListBuilder {
     type DisplayList;
     type Paint: crate::Paint;
 
-    fn draw_line(&self, from: Point, to: Point, paint: &Self::Paint);
+    fn draw_line(&mut self, from: PixelPoint, to: PixelPoint, paint: &Self::Paint);
 
-    fn build(&self) -> Result<Self::DisplayList, &'static str>;
+    fn build(self) -> Result<Self::DisplayList, &'static str>;
 }

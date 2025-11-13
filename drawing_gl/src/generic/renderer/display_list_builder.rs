@@ -1,4 +1,4 @@
-use drawing_api::Point;
+use drawing_api::{Paint, PixelPoint, PixelThickness, Point, Thickness};
 
 use super::Primitive;
 
@@ -16,11 +16,18 @@ impl DisplayListBuilder {
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive>;
-    type Paint = crate::generic::device::Paint;
+    type Paint = crate::Paint;
 
-    fn draw_line(&self, from: Point, to: Point, paint: &Self::Paint) {}
+    fn draw_line(&mut self, from: PixelPoint, to: PixelPoint, paint: &Self::Paint) {
+        self.display_list.push(Primitive::Line {
+            color: paint.color,
+            thickness: PixelThickness::new(1.0f32),
+            start_point: from,
+            end_point: to,
+        });
+    }
 
-    fn build(&self) -> Result<Self::DisplayList, &'static str> {
-        todo!()
+    fn build(self) -> Result<Self::DisplayList, &'static str> {
+        Ok(self.display_list)
     }
 }

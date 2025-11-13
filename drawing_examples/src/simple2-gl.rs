@@ -8,12 +8,16 @@ use std::error::Error;
 use std::ptr::null;
 use std::rc::Rc;
 
-use drawing_api::{Context, PixelPoint, PixelThickness, Surface};
+use drawing_api::{
+    Color, Context, DisplayListBuilder, Paint, PixelPoint, PixelThickness, Point, Surface,
+};
 use drawing_gl::Device;
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
 type DrawingContext = drawing_gl::GlContext;
+type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
+type Paint1 = drawing_gl::Paint;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -125,14 +129,22 @@ pub fn draw(
         drawing_api::ColorFormat::RGBA,
     );
 
-    //drawing_context.
+    let mut display_list_builder = DisplayListBuilder1::new();
+    let mut paint = Paint1::new();
+    paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    display_list_builder.draw_line(
+        PixelPoint::new(100.0f32, 100.0f32),
+        PixelPoint::new(300.5f32, 100.5f32),
+        &paint,
+    );
+    let display_list = display_list_builder.build().unwrap();
 
-    let display_list = vec![Primitive::Line {
+    /*let display_list = vec![Primitive::Line {
         color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
         thickness: PixelThickness::new(1.0f32),
         start_point: PixelPoint::new(100.0f32, 100.0f32),
         end_point: PixelPoint::new(300.5f32, 100.5f32),
-    }];
+    }];*/
 
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
