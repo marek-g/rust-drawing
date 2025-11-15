@@ -10,7 +10,7 @@ pub struct GlSurface {
     pub(crate) is_owner: bool,
 }
 
-/*impl Drop for GlSurface {
+impl Drop for GlSurface {
     fn drop(&mut self) {
         if self.is_owner {
             unsafe {
@@ -18,7 +18,7 @@ pub struct GlSurface {
             }
         }
     }
-}*/
+}
 
 impl RenderTarget for GlSurface {
     fn update_size(&mut self, width: u16, height: u16) {
