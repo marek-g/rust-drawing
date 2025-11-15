@@ -9,7 +9,8 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, Context, DisplayListBuilder, Paint, PixelPoint, PixelThickness, Point, Surface,
+    Color, Context, DisplayListBuilder, Paint, PixelPoint, PixelRect, PixelSize, PixelThickness,
+    Point, Surface,
 };
 use drawing_gl::Device;
 use gl::types::*;
@@ -129,7 +130,7 @@ pub fn draw(
         drawing_api::ColorFormat::RGBA,
     );
 
-    let mut display_list_builder = DisplayListBuilder1::new();
+    /*let mut display_list_builder = DisplayListBuilder1::new();
     let mut paint = Paint1::new();
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     display_list_builder.draw_line(
@@ -137,14 +138,240 @@ pub fn draw(
         PixelPoint::new(300.5f32, 100.5f32),
         &paint,
     );
-    let display_list = display_list_builder.build().unwrap();
+    let display_list = display_list_builder.build().unwrap();*/
 
-    /*let display_list = vec![Primitive::Line {
-        color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-        thickness: PixelThickness::new(1.0f32),
-        start_point: PixelPoint::new(100.0f32, 100.0f32),
-        end_point: PixelPoint::new(300.5f32, 100.5f32),
-    }];*/
+    let display_list = vec![
+        Primitive::Rectangle {
+            color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
+            rect: PixelRect::new(
+                PixelPoint::new(100.5f32, 101.5f32),
+                PixelSize::new(200.0f32, 50.0f32),
+            ),
+        },
+        Primitive::Line {
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(100.0f32, 100.0f32),
+            end_point: PixelPoint::new(300.5f32, 100.5f32),
+        },
+        /*Primitive::Image {
+            resource_key: app_resources.image2_resource_id,
+            rect: PixelRect::new(
+                PixelPoint::new(100.0f32, 150.0f32),
+                PixelSize::new(200.0f32, 200.0f32),
+            ),
+            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+        },*/
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(100.0f32, 350.0f32),
+            end_point: PixelPoint::new(300.0f32, 150.0f32),
+        },
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(100.0f32, 150.0f32),
+            end_point: PixelPoint::new(300.0f32, 350.0f32),
+        },
+        /*Primitive::Fill {
+            path: vec![
+                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
+                PathElement::LineTo(PixelPoint::new(300.0f32, 350.0f32)),
+                PathElement::LineTo(PixelPoint::new(300.0f32, 550.0f32)),
+                PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
+            ],
+            brush: Brush::ImagePattern {
+                resource_key: app_resources.image2_resource_id,
+                transform: PixelTransform::identity()
+                    .pre_translate(Vector2D::new(100.0f32, 350.0f32))
+                    .pre_rotate(Angle::radians(pos_y / 100.0f32)),
+                alpha: 1.0f32,
+            },
+        },
+        Primitive::Image {
+            resource_key: app_resources.image1_resource_id,
+            rect: PixelRect::new(
+                PixelPoint::new(0.0f32, 0.0f32),
+                PixelSize::new(4.0f32, 4.0f32),
+            ),
+            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+        },*/
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(0.0f32, 0.0f32),
+            end_point: PixelPoint::new(4.0f32, 4.0f32),
+        },
+        /*Primitive::Image {
+            resource_key: app_resources.image1_resource_id,
+            rect: PixelRect::new(
+                PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
+                PixelSize::new(4.0f32, 4.0f32),
+            ),
+            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+        },*/
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(width as f32, 0.0f32),
+            end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
+        },
+        /*Primitive::Image {
+            resource_key: app_resources.image1_resource_id,
+            rect: PixelRect::new(
+                PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
+                PixelSize::new(4.0f32, 4.0f32),
+            ),
+            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+        },*/
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(width as f32, height as f32),
+            end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
+        },
+        /*Primitive::Image {
+            resource_key: app_resources.image1_resource_id,
+            rect: PixelRect::new(
+                PixelPoint::new(0.0f32, height as f32 - 4.0f32),
+                PixelSize::new(4.0f32, 4.0f32),
+            ),
+            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
+        },*/
+        Primitive::Line {
+            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
+            thickness: PixelThickness::new(1.0f32),
+            start_point: PixelPoint::new(0.0f32, height as f32),
+            end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
+        },
+        /*Primitive::Text {
+            resource_key: "F1".to_string(),
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
+            clipping_rect,
+            size: PixelThickness::new(10.0f32),
+            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+                .to_string(),
+        },
+        Primitive::Text {
+            resource_key: "F1".to_string(),
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
+            clipping_rect,
+            size: PixelThickness::new(12.0f32),
+            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+                .to_string(),
+        },
+        Primitive::Text {
+            resource_key: "F1".to_string(),
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
+            clipping_rect,
+            size: PixelThickness::new(14.0f32),
+            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk\nABCDEFGHIJK XYZ xyz"
+                .to_string(),
+        },
+        Primitive::Text {
+            resource_key: "F1".to_string(),
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
+            clipping_rect,
+            size: PixelThickness::new(16.0f32),
+            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+                .to_string(),
+        },
+        Primitive::Text {
+            resource_key: "F1".to_string(),
+            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+            position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
+            clipping_rect,
+            size: PixelThickness::new(18.0f32),
+            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
+                .to_string(),
+        },*/
+        /*Primitive::Fill {
+            path: vec![
+                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
+                PathElement::BezierTo(
+                    PixelPoint::new(120.0f32, 50.0f32),
+                    PixelPoint::new(180.0f32, 50.0f32),
+                    PixelPoint::new(300.0f32, 150.0f32),
+                ),
+            ],
+            brush: Brush::LinearGradient {
+                start_point: PixelPoint::new(100.0f32, 150.0f32),
+                end_point: PixelPoint::new(350.0f32, 350.0f32),
+                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+            },
+        },*/
+        /*Primitive::Fill {
+            path: vec![
+                PathElement::MoveTo(PixelPoint::new(500.0f32, 350.0f32)),
+                PathElement::BezierTo(
+                    PixelPoint::new(520.0f32, 50.0f32),
+                    PixelPoint::new(580.0f32, 50.0f32),
+                    PixelPoint::new(700.0f32, 150.0f32),
+                ),
+                PathElement::ClosePath,
+                PathElement::MoveTo(PixelPoint::new(550.0f32, 250.0f32)),
+                PathElement::BezierTo(
+                    PixelPoint::new(580.0f32, 150.0f32),
+                    PixelPoint::new(620.0f32, 150.0f32),
+                    PixelPoint::new(650.0f32, 180.0f32),
+                ),
+                PathElement::ClosePath,
+                PathElement::Solidity(Solidity::Hole),
+            ],
+            brush: Brush::LinearGradient {
+                start_point: PixelPoint::new(500.0f32, 150.0f32),
+                end_point: PixelPoint::new(750.0f32, 350.0f32),
+                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+            },
+        },*/
+        /*Primitive::Stroke {
+            path: vec![
+                PathElement::MoveTo(PixelPoint::new(300.0f32, 550.0f32)),
+                PathElement::BezierTo(
+                    PixelPoint::new(320.0f32, 250.0f32),
+                    PixelPoint::new(380.0f32, 250.0f32),
+                    PixelPoint::new(500.0f32, 350.0f32),
+                ),
+                PathElement::ClosePath,
+            ],
+            thickness: PixelThickness::new(1.0f32),
+            //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
+            brush: Brush::LinearGradient {
+                start_point: PixelPoint::new(200.0f32, 450.0f32),
+                end_point: PixelPoint::new(450.0f32, 650.0f32),
+                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
+                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
+            },
+        },*/
+        // render target test
+        Primitive::Composite {
+            color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
+            primitives: vec![
+                Primitive::Rectangle {
+                    color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
+                    rect: PixelRect::new(
+                        PixelPoint::new(200.5f32, 220.5f32),
+                        PixelSize::new(200.0f32, 50.0f32),
+                    ),
+                },
+                /*Primitive::Text {
+                    resource_key: "F1".to_string(),
+                    color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
+                    position: PixelPoint::new(207.0f32, 232.0f32),
+                    clipping_rect,
+                    size: PixelThickness::new(22.0f32),
+                    text: "Render target test".to_string(),
+                },*/
+            ],
+        },
+    ];
 
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
