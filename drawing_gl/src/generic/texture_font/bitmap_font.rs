@@ -53,11 +53,17 @@ impl From<FreetypeError> for FontError {
 pub type FontResult = Result<BitmapFont, FontError>;
 
 impl BitmapFont {
-    pub fn from_bytes(data: &[u8], font_size: u8, chars: Option<&[char]>) -> FontResult {
+    pub fn from_bytes(
+        data: &[u8],
+        font_size: u8,
+        chars: Option<&[char]>,
+    ) -> Result<BitmapFont, &'static str> {
         use std::rc::Rc;
 
-        let library = ft::Library::init()?;
-        let face = library.new_memory_face(Rc::new(data.into()), 0)?;
+        let library = ft::Library::init().map_err(|err| "cannot init freetype library")?;
+        let face = library
+            .new_memory_face(Rc::new(data.into()), 0)
+            .map_err(|err| "face: cannot allocate memory")?;
         Self::new(face, font_size, chars)
     }
 
@@ -82,15 +88,20 @@ impl BitmapFont {
     // overflows.
     /// Construct new BitMap font using provided parameters (this is general
     /// method, called via `from_` helpers).
-    fn new(mut face: ft::Face, font_size: u8, chars: Option<&[char]>) -> FontResult {
+    fn new(
+        mut face: ft::Face,
+        font_size: u8,
+        chars: Option<&[char]>,
+    ) -> Result<BitmapFont, &'static str> {
         let needed_chars = chars
             .map(|sl| HashSet::from_iter(sl.iter().cloned()))
             .unwrap_or_else(|| Self::get_all_face_chars(&mut face));
         if needed_chars.is_empty() {
-            return Err(FontError::EmptyFont);
+            return Err("empty font"); //Err(FontError::EmptyFont);
         }
 
-        face.set_pixel_sizes(0, font_size as u32)?;
+        face.set_pixel_sizes(0, font_size as u32)
+            .map_err(|err| "face: unable set pixel size")?;
 
         // FreeType representation of rendered glyph 'j':
         //
@@ -155,7 +166,8 @@ impl BitmapFont {
         // debug!("Start building the bitmap (chars: {})", chars_len);
 
         for ch in needed_chars {
-            face.load_char(ch as usize, ft::face::LoadFlag::RENDER)?;
+            face.load_char(ch as usize, ft::face::LoadFlag::RENDER)
+                .map_err(|err| "cannot load char")?;
             let glyph = face.glyph();
             let bitmap = glyph.bitmap();
             let ch_width = bitmap.width();

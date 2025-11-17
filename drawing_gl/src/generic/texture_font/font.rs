@@ -12,14 +12,18 @@ pub trait Font<D: Device> {
     /// Safe to call from any thread for any device type (even for OpenGL).
     /// To achieve it the device specific resources creation (like texture)
     /// is delayed to the first draw() call.
-    fn create(bytes: Vec<u8>) -> Result<Self>
+    fn create(bytes: Vec<u8>) -> Result<Self, &'static str>
     where
         Self: Sized;
 
     /// Safe to call from any thread for any device type (even for OpenGL).
     /// To achieve it the device specific resources creation (like texture)
     /// is delayed to the first draw() call.
-    fn get_dimensions(&mut self, params: FontParams, text: &str) -> Result<(u16, u16)>;
+    fn get_dimensions(
+        &mut self,
+        params: FontParams,
+        text: &str,
+    ) -> Result<(u16, u16), &'static str>;
 
     /// Safe to call from any thread for any device type (even for OpenGL).
     /// To achieve it the device specific resources creation (like texture)
@@ -28,7 +32,7 @@ pub trait Font<D: Device> {
         &mut self,
         params: FontParams,
         text: &str,
-    ) -> Result<(Vec<i16>, u16)>;
+    ) -> Result<(Vec<i16>, u16), &'static str>;
 
     // Not safe to call from any thread for some device types (like OpenGL).
     fn draw(
@@ -41,5 +45,5 @@ pub trait Font<D: Device> {
         clipping_rect: Rect,
         font_params: FontParams,
         transform: UnknownToDeviceTransform,
-    ) -> Result<()>;
+    ) -> Result<(), &'static str>;
 }

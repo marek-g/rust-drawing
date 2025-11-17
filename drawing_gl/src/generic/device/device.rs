@@ -8,7 +8,6 @@ use crate::generic::path::{Bounds, Path};
 use crate::generic::renderer::CompositeOperationState;
 use crate::generic::renderer::PathElement;
 use anyhow::Result;
-use core::marker::Sized;
 use core::option::Option;
 use drawing_api::ColorFormat;
 use drawing_api::Texture;
@@ -21,19 +20,18 @@ pub trait Device {
     type RenderTarget: RenderTarget;
 
     fn create_texture(
-        &mut self,
-        memory: Option<&[u8]>,
+        &self,
+        contents: &[u8],
         width: u16,
         height: u16,
         format: ColorFormat,
-        updatable: bool,
-    ) -> Result<Self::Texture>;
+    ) -> Result<Self::Texture, &'static str>;
 
     fn create_render_target(
         &mut self,
         width: u16,
         height: u16,
-    ) -> Result<(Self::Texture, Self::RenderTarget)>;
+    ) -> Result<(Self::Texture, Self::RenderTarget), &'static str>;
 
     fn clear(&mut self, target: &Self::RenderTarget, color: &Color);
 

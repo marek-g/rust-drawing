@@ -103,6 +103,58 @@ impl GlContext {
         }
     }
 
+    fn create_texture(
+        &self,
+        contents: Option<&[u8]>,
+        width: u16,
+        height: u16,
+        format: drawing_api::ColorFormat,
+    ) -> Result<GlTexture, &'static str> {
+        let mut texture_id: GLuint = 0;
+        unsafe {
+            gl::GenTextures(1, &mut texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, texture_id);
+        }
+
+        let (gl_internal_format, gl_type, gl_format) = match format {
+            //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_BYTE, gl::RGBA),
+            ColorFormat::RGBA => (gl::SRGB8_ALPHA8, gl::UNSIGNED_BYTE, gl::RGBA),
+            //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
+            ColorFormat::Y8 => (gl::R8, gl::UNSIGNED_BYTE, gl::RED),
+        };
+
+        let texture = GlTexture {
+            data: Arc::new(Mutex::new(GlTextureData {
+                id: texture_id,
+                is_owned: true,
+                width,
+                height,
+                gl_format,
+                gl_type,
+                flipped_y: false,
+            })),
+        };
+
+        unsafe {
+            gl::TexImage2D(
+                gl::TEXTURE_2D,
+                0,
+                gl_internal_format as GLint,
+                width as GLsizei,
+                height as GLsizei,
+                0,
+                gl_format,
+                gl_type,
+                match contents {
+                    Some(contents) => contents.as_ptr() as *const GLvoid,
+                    None => std::ptr::null(),
+                },
+            );
+        }
+
+        Ok(texture)
+    }
+
     fn line_native(
         &mut self,
         color: &crate::generic::device::Color,
@@ -243,69 +295,26 @@ impl Device for GlContext {
     type RenderTarget = GlSurface;
 
     fn create_texture(
-        &mut self,
-        memory: Option<&[u8]>,
+        &self,
+        contents: &[u8],
         width: u16,
         height: u16,
-        format: drawing_api::ColorFormat,
-        updatable: bool,
-    ) -> anyhow::Result<Self::Texture> {
-        let mut texture_id: GLuint = 0;
-        unsafe {
-            gl::GenTextures(1, &mut texture_id);
-            gl::BindTexture(gl::TEXTURE_2D, texture_id);
-        }
-
-        let (gl_internal_format, gl_type, gl_format) = match format {
-            //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_BYTE, gl::RGBA),
-            ColorFormat::RGBA => (gl::SRGB8_ALPHA8, gl::UNSIGNED_BYTE, gl::RGBA),
-            //ColorFormat::RGBA => (gl::RGBA, gl::UNSIGNED_INT_8_8_8_8_REV, gl::BGRA),
-            ColorFormat::Y8 => (gl::R8, gl::UNSIGNED_BYTE, gl::RED),
-        };
-
-        let texture = GlTexture {
-            data: Arc::new(Mutex::new(GlTextureData {
-                id: texture_id,
-                is_owned: true,
-                width,
-                height,
-                gl_format,
-                gl_type,
-                flipped_y: false,
-            })),
-        };
-
-        unsafe {
-            gl::TexImage2D(
-                gl::TEXTURE_2D,
-                0,
-                gl_internal_format as GLint,
-                width as GLsizei,
-                height as GLsizei,
-                0,
-                gl_format,
-                gl_type,
-                match memory {
-                    Some(memory) => memory.as_ptr() as *const GLvoid,
-                    None => std::ptr::null(),
-                },
-            );
-        }
-
-        Ok(texture)
+        format: ColorFormat,
+    ) -> Result<Self::Texture, &'static str> {
+        self.create_texture(Some(contents), width, height, format)
     }
 
     fn create_render_target(
         &mut self,
         width: u16,
         height: u16,
-    ) -> anyhow::Result<(Self::Texture, Self::RenderTarget)> {
+    ) -> Result<(Self::Texture, Self::RenderTarget), &'static str> {
         let mut framebuffer_id: GLuint = 0;
         unsafe {
             gl::GenFramebuffers(1, &mut framebuffer_id);
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
-        let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA, false)?;
+        let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA)?;
         texture.data.lock().unwrap().flipped_y = true;
         unsafe {
             gl::FramebufferTexture(
@@ -701,10 +710,11 @@ impl Device for GlContext {
 }
 
 impl Context for GlContext {
-    type DisplayList = Vec<Primitive>;
+    type DisplayList = Vec<Primitive<Self::Texture>>;
     type DisplayListBuilder = crate::generic::renderer::DisplayListBuilder;
     type Paint = crate::generic::device::Paint;
     type Surface = GlSurface;
+    type Texture = GlTexture;
 
     fn create_display_list_builder(&self) -> Result<Self::DisplayListBuilder, &'static str> {
         Ok(DisplayListBuilder::new())
@@ -712,6 +722,16 @@ impl Context for GlContext {
 
     fn create_paint(&self) -> Result<Self::Paint, &'static str> {
         todo!()
+    }
+
+    fn create_texture(
+        &self,
+        contents: &[u8],
+        width: u16,
+        height: u16,
+        format: drawing_api::ColorFormat,
+    ) -> Result<Self::Texture, &'static str> {
+        self.create_texture(Some(contents), width, height, format)
     }
 
     fn draw(

@@ -9,10 +9,9 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, Context, DisplayListBuilder, Paint, PixelPoint, PixelRect, PixelSize, PixelThickness,
-    Point, Surface,
+    Color, ColorFormat, Context, DisplayListBuilder, Paint, PixelPoint, PixelRect, PixelSize,
+    PixelThickness, Point, Surface,
 };
-use drawing_gl::Device;
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
@@ -77,6 +76,7 @@ fn setup_window(
         let drawing_context_clone = drawing_context_rc.clone();
         //let app_resources_clone = app_resources_rc.clone();
         let mut initialized = false;
+        let mut resources = None;
 
         move || {
             if !initialized {
@@ -88,6 +88,8 @@ fn setup_window(
                         .unwrap_or_else(|_| null())
                 })
                 .unwrap();
+
+                resources = Some(initialize_resources(&drawing_context));
 
                 drawing_context_clone.borrow_mut().insert(drawing_context);
 
@@ -104,11 +106,13 @@ fn setup_window(
             }
 
             if let Some(drawing_context) = drawing_context_clone.borrow_mut().as_mut() {
-                draw(
-                    drawing_context,
-                    &mut gl_window_clone.borrow_mut(),
-                    //&mut app_resources_clone.borrow_mut(),
-                );
+                if let Some(resources) = &resources {
+                    draw(
+                        drawing_context,
+                        &mut gl_window_clone.borrow_mut(),
+                        resources,
+                    );
+                }
             }
 
             // continue animation
@@ -119,11 +123,35 @@ fn setup_window(
     window.set_visible(true).unwrap();
 }
 
-pub fn draw(
-    drawing_context: &mut DrawingContext,
-    gl_window: &mut GlWindow,
-    //app_resources: &mut AppResources,
-) {
+fn initialize_resources(drawing_context: &DrawingContext) -> Resources {
+    Resources {
+        image1: create_chessboard(drawing_context, 4, 4),
+        image2: create_chessboard(drawing_context, 200, 200),
+    }
+}
+
+pub fn create_chessboard(drawing_context: &DrawingContext, w: usize, h: usize) -> Texture1 {
+    let mut data: Vec<u8> = Vec::with_capacity(w * h * 4);
+    for y in 0..h {
+        for x in 0..w {
+            let color: u8 = if ((x + y) / 1 % 2) == 0 {
+                255 - x as u8
+            } else {
+                0
+            };
+            data.push(color);
+            data.push(color);
+            data.push(color);
+            data.push(255);
+        }
+    }
+
+    drawing_context
+        .create_texture(&data, w as u16, h as u16, ColorFormat::RGBA)
+        .unwrap()
+}
+
+pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, resources: &Resources) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
 
@@ -162,14 +190,14 @@ pub fn draw(
             start_point: PixelPoint::new(100.0f32, 100.0f32),
             end_point: PixelPoint::new(300.5f32, 100.5f32),
         },
-        /*Primitive::Image {
-            resource_key: app_resources.image2_resource_id,
+        Primitive::Image {
+            texture: resources.image2.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(100.0f32, 150.0f32),
                 PixelSize::new(200.0f32, 200.0f32),
             ),
             uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },*/
+        },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
             thickness: PixelThickness::new(1.0f32),
@@ -383,7 +411,7 @@ pub fn draw(
 
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
-    drawing_context.clear(&drawing_surface, &[1.0f32, 0.66f32, 0.33f32, 1.0f32]);
+    //drawing_context.clear(&drawing_surface, &[1.0f32, 0.66f32, 0.33f32, 1.0f32]);
 
     drawing_context.draw(&drawing_surface, &display_list);
 }

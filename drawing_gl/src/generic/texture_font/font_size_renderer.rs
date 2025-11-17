@@ -75,7 +75,7 @@ pub struct FontSizeRenderer<D: Device> {
 }
 
 impl<D: Device> FontSizeRenderer<D> {
-    pub fn new(font_data: &[u8], font_size: u8) -> Result<Self, Error> {
+    pub fn new(font_data: &[u8], font_size: u8) -> Result<Self, &'static str> {
         let bitmap_font = BitmapFont::from_bytes(font_data, font_size, None)?;
 
         Ok(FontSizeRenderer {
@@ -157,14 +157,13 @@ impl<D: Device> FontSizeRenderer<D> {
         device: &mut D,
         target: &D::RenderTarget,
         transform: UnknownToDeviceTransform,
-    ) -> Result<(), Error> {
+    ) -> Result<(), &'static str> {
         if self.texture.is_none() {
             self.texture = Some(device.create_texture(
-                Some(self.bitmap_font.get_image()),
+                self.bitmap_font.get_image(),
                 self.bitmap_font.get_width(),
                 self.bitmap_font.get_height(),
                 ColorFormat::Y8,
-                false,
             )?);
         }
         device.triangles_textured_y8(

@@ -29,10 +29,10 @@ impl Renderer {
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &[Primitive],
+        primitives: &[Primitive<D::Texture>],
         resources: &mut Resources<D, F>,
         antialiasing: bool,
-    ) -> Result<()> {
+    ) -> Result<(), &'static str> {
         self.draw_internal(
             device,
             render_target,
@@ -48,20 +48,20 @@ impl Renderer {
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &[Primitive],
+        primitives: &[Primitive<D::Texture>],
         resources: &mut Resources<D, F>,
         antialiasing: bool,
         pixel_transform: PixelTransform,
         scissor: Scissor,
-    ) -> Result<()> {
+    ) -> Result<(), &'static str> {
         let pixel_to_device_transform = pixel_transform.then(&render_target.get_device_transform());
         let unknown_to_device_transform =
             UnknownToDeviceTransform::from_array(pixel_to_device_transform.to_array());
 
         for primitive in primitives {
-            match *primitive {
+            match primitive {
                 Primitive::Line {
-                    ref color,
+                    color,
                     thickness,
                     start_point,
                     end_point,
@@ -80,38 +80,32 @@ impl Renderer {
                     );
                 }
 
-                Primitive::Rectangle { ref color, rect } => device.rect_colored(
+                Primitive::Rectangle { color, rect } => device.rect_colored(
                     render_target,
                     color,
                     rect.to_untyped(),
                     unknown_to_device_transform,
                 ),
 
-                Primitive::Image {
-                    resource_key,
-                    rect,
-                    uv,
-                } => {
-                    if let Some(texture) = resources.textures_mut().get(&resource_key) {
-                        device.rect_textured(
-                            render_target,
-                            texture,
-                            false,
-                            &[1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                            rect.to_untyped(),
-                            &uv,
-                            unknown_to_device_transform,
-                        );
-                    }
+                Primitive::Image { texture, rect, uv } => {
+                    device.rect_textured(
+                        render_target,
+                        &texture,
+                        false,
+                        &[1.0f32, 1.0f32, 1.0f32, 1.0f32],
+                        rect.to_untyped(),
+                        &uv,
+                        unknown_to_device_transform,
+                    );
                 }
 
                 Primitive::Text {
-                    ref resource_key,
-                    ref color,
+                    resource_key,
+                    color,
                     position,
                     clipping_rect,
                     size,
-                    ref text,
+                    text,
                 } => {
                     if let Some(font) = resources.fonts_mut().get_mut(resource_key) {
                         font.draw(
@@ -130,9 +124,9 @@ impl Renderer {
                 }
 
                 Primitive::Stroke {
-                    ref path,
-                    ref thickness,
-                    ref brush,
+                    path,
+                    thickness,
+                    brush,
                 } => {
                     let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
                     let stroke_width = *thickness * scale; //.clamped(0.0, 200.0);
@@ -163,10 +157,10 @@ impl Renderer {
                 }
 
                 Primitive::StrokeStyled {
-                    ref path,
-                    ref thickness,
-                    ref brush,
-                    ref style,
+                    path,
+                    thickness,
+                    brush,
+                    style,
                 } => {
                     let scale = 1.0f32; // TODO: take from transform? xform.average_scale()?
                     let stroke_width = *thickness * scale; //.clamped(0.0, 200.0);
@@ -196,10 +190,7 @@ impl Renderer {
                     );
                 }
 
-                Primitive::Fill {
-                    ref path,
-                    ref brush,
-                } => {
+                Primitive::Fill { path, brush } => {
                     let aspect_ratio = render_target.get_aspect_ratio();
                     let flattened_path = Self::get_fill_path(path, aspect_ratio, antialiasing);
 
@@ -220,10 +211,7 @@ impl Renderer {
                     );
                 }
 
-                Primitive::ClipRect {
-                    ref rect,
-                    ref primitives,
-                } => {
+                Primitive::ClipRect { rect, primitives } => {
                     self.draw_internal(
                         device,
                         render_target,
@@ -245,8 +233,8 @@ impl Renderer {
                 }
 
                 Primitive::Transform {
-                    ref transform,
-                    ref primitives,
+                    transform,
+                    primitives,
                 } => {
                     self.draw_internal(
                         device,
@@ -259,10 +247,7 @@ impl Renderer {
                     )?;
                 }
 
-                Primitive::Composite {
-                    ref color,
-                    ref primitives,
-                } => {
+                Primitive::Composite { color, primitives } => {
                     let size = render_target.get_size();
                     let (texture2, texture2_view) =
                         device.create_render_target(size.0 as u16, size.1 as u16)?;

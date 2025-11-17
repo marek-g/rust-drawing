@@ -1,24 +1,28 @@
 use crate::generic::renderer::*;
 use drawing_api::*;
+use euclid::Point2D;
 
-pub trait Transformation {
+pub trait Transformation<T>
+where
+    T: Texture,
+{
     fn translate(&mut self, offset: PixelPoint);
 }
 
-impl Transformation for PixelPoint {
+impl<T: Texture> Transformation<T> for PixelPoint {
     fn translate(&mut self, offset: PixelPoint) {
         self.x += offset.x;
         self.y += offset.y;
     }
 }
 
-impl Transformation for PixelRect {
+impl<T: Texture> Transformation<T> for PixelRect {
     fn translate(&mut self, offset: PixelPoint) {
-        self.origin.translate(offset);
+        <Point2D<f32, PixelUnit> as Transformation<T>>::translate(&mut self.origin, offset);
     }
 }
 
-impl Transformation for Vec<Primitive> {
+impl<T: Texture> Transformation<T> for Vec<Primitive<T>> {
     fn translate(&mut self, offset: PixelPoint) {
         for primitive in self.iter_mut() {
             match primitive {
@@ -27,16 +31,20 @@ impl Transformation for Vec<Primitive> {
                     end_point,
                     ..
                 } => {
-                    start_point.translate(offset);
-                    end_point.translate(offset);
+                    <Point2D<f32, PixelUnit> as Transformation<T>>::translate(start_point, offset);
+                    <Point2D<f32, PixelUnit> as Transformation<T>>::translate(end_point, offset);
                 }
 
                 Primitive::Rectangle { rect, .. } => {
-                    rect.translate(offset);
+                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        rect, offset,
+                    );
                 }
 
                 Primitive::Image { rect, .. } => {
-                    rect.translate(offset);
+                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        rect, offset,
+                    );
                 }
 
                 Primitive::Text {
@@ -44,23 +52,36 @@ impl Transformation for Vec<Primitive> {
                     clipping_rect,
                     ..
                 } => {
-                    position.translate(offset);
-                    clipping_rect.translate(offset);
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        position, offset,
+                    );
+                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        clipping_rect,
+                        offset,
+                    );
                 }
 
-                Primitive::Stroke { path, .. } => path.translate(offset),
+                Primitive::Stroke { path, .. } => {
+                    <Vec<PathElement> as Transformation<T>>::translate(path, offset)
+                }
 
-                Primitive::StrokeStyled { path, .. } => path.translate(offset),
+                Primitive::StrokeStyled { path, .. } => {
+                    <Vec<PathElement> as Transformation<T>>::translate(path, offset)
+                }
 
-                Primitive::Fill { path, .. } => path.translate(offset),
+                Primitive::Fill { path, .. } => {
+                    <Vec<PathElement> as Transformation<T>>::translate(path, offset)
+                }
 
                 Primitive::ClipRect { rect, primitives } => {
-                    rect.translate(offset);
+                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        rect, offset,
+                    );
                     primitives.translate(offset);
                 }
 
                 Primitive::ClipPath { path, primitives } => {
-                    path.translate(offset);
+                    <Vec<PathElement> as Transformation<T>>::translate(path, offset);
                     primitives.translate(offset);
                 }
 
@@ -75,18 +96,32 @@ impl Transformation for Vec<Primitive> {
     }
 }
 
-impl Transformation for Vec<PathElement> {
+impl<T: Texture> Transformation<T> for Vec<PathElement> {
     fn translate(&mut self, offset: PixelPoint) {
         for path_element in self.iter_mut() {
             match path_element {
-                PathElement::MoveTo(point) => point.translate(offset),
+                PathElement::MoveTo(point) => {
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        point, offset,
+                    )
+                }
 
-                PathElement::LineTo(point) => point.translate(offset),
+                PathElement::LineTo(point) => {
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        point, offset,
+                    )
+                }
 
                 PathElement::BezierTo(c1, c2, point) => {
-                    c1.translate(offset);
-                    c2.translate(offset);
-                    point.translate(offset);
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        c1, offset,
+                    );
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        c2, offset,
+                    );
+                    <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        point, offset,
+                    );
                 }
 
                 PathElement::ClosePath => (),

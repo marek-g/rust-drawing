@@ -13,7 +13,10 @@ pub struct TextureFont<D: Device> {
 }
 
 impl<D: Device> TextureFont<D> {
-    fn get_or_create_font_renderer(&mut self, size: u8) -> Result<&mut FontSizeRenderer<D>> {
+    fn get_or_create_font_renderer(
+        &mut self,
+        size: u8,
+    ) -> Result<&mut FontSizeRenderer<D>, &'static str> {
         if !self.font_renderers.contains_key(&size) {
             let renderer = self.create_font_renderer(size)?;
             Ok(self.font_renderers.entry(size).or_insert(renderer))
@@ -22,13 +25,13 @@ impl<D: Device> TextureFont<D> {
         }
     }
 
-    fn create_font_renderer(&self, size: u8) -> Result<FontSizeRenderer<D>> {
+    fn create_font_renderer(&self, size: u8) -> Result<FontSizeRenderer<D>, &'static str> {
         Ok(FontSizeRenderer::new(&self.bytes, size)?)
     }
 }
 
 impl<D: Device> Font<D> for TextureFont<D> {
-    fn create(bytes: Vec<u8>) -> Result<Self> {
+    fn create(bytes: Vec<u8>) -> Result<Self, &'static str> {
         Ok(TextureFont {
             bytes,
             font_renderers: HashMap::new(),
@@ -45,7 +48,7 @@ impl<D: Device> Font<D> for TextureFont<D> {
         clipping_rect: Rect,
         font_params: FontParams,
         transform: UnknownToDeviceTransform,
-    ) -> Result<()> {
+    ) -> Result<(), &'static str> {
         let renderer = self.get_or_create_font_renderer(font_params.size)?;
         renderer.add(
             text,
@@ -62,7 +65,11 @@ impl<D: Device> Font<D> for TextureFont<D> {
         Ok(())
     }
 
-    fn get_dimensions(&mut self, params: FontParams, text: &str) -> Result<(u16, u16)> {
+    fn get_dimensions(
+        &mut self,
+        params: FontParams,
+        text: &str,
+    ) -> Result<(u16, u16), &'static str> {
         let renderer = self.get_or_create_font_renderer(params.size)?;
         let dims = renderer.get_bitmap_font().measure(text);
         Ok((dims.0 as u16, dims.1 as u16))
@@ -72,7 +79,7 @@ impl<D: Device> Font<D> for TextureFont<D> {
         &mut self,
         params: FontParams,
         text: &str,
-    ) -> Result<(Vec<i16>, u16)> {
+    ) -> Result<(Vec<i16>, u16), &'static str> {
         let renderer = self.get_or_create_font_renderer(params.size)?;
         let dims = renderer.get_bitmap_font().measure_each_char(text);
         Ok((dims.0, dims.1 as u16))

@@ -1,14 +1,14 @@
-use drawing_api::{PixelPoint, PixelRect, PixelSize};
+use drawing_api::{PixelPoint, PixelRect, PixelSize, Texture};
 
 use crate::generic::renderer::{PathElement, Primitive};
 
 use super::{clip_image, clip_line, clip_rect};
 
-pub trait Clipping {
+pub trait Clipping<T: Texture> {
     fn clip(self, rect: PixelRect) -> Self;
 }
 
-impl Clipping for Vec<Primitive> {
+impl<T: Texture> Clipping<T> for Vec<Primitive<T>> {
     fn clip(self, clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         let mut need_scissors = false;
@@ -61,11 +61,7 @@ impl Clipping for Vec<Primitive> {
                     }
                 }
 
-                Primitive::Image {
-                    resource_key,
-                    rect,
-                    uv,
-                } => {
+                Primitive::Image { texture, rect, uv } => {
                     if let Some(clipped) = clip_image(
                         rect.origin.x,
                         rect.origin.y,
@@ -78,7 +74,7 @@ impl Clipping for Vec<Primitive> {
                         &uv,
                     ) {
                         res.push(Primitive::Image {
-                            resource_key,
+                            texture,
                             rect: PixelRect::new(
                                 PixelPoint::new(clipped.0, clipped.1),
                                 PixelSize::new(clipped.2, clipped.3),
@@ -219,7 +215,7 @@ impl Clipping for Vec<Primitive> {
     }
 }
 
-impl Clipping for Vec<PathElement> {
+impl<T: Texture> Clipping<T> for Vec<PathElement> {
     fn clip(self, _clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         for path_element in self.into_iter() {

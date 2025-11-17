@@ -5,6 +5,7 @@ use drawing_api::ColorFormat;
 use drawing_api::Texture;
 use gl::types::*;
 
+#[derive(Debug)]
 pub(crate) struct GlTextureData {
     pub id: GLuint,
     pub is_owned: bool,
@@ -25,7 +26,7 @@ impl Drop for GlTextureData {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GlTexture {
     pub data: Arc<Mutex<GlTextureData>>,
 }
@@ -51,7 +52,7 @@ impl GlTexture {
 }
 
 impl Texture for GlTexture {
-    fn update(
+    /*fn update(
         &mut self,
         memory: &[u8],
         offset_x: u16,
@@ -75,7 +76,7 @@ impl Texture for GlTexture {
             );
         }
         Ok(())
-    }
+    }*/
 
     fn get_size(&self) -> (u16, u16) {
         (
