@@ -1,7 +1,10 @@
 use drawing_api::{Color, ColorFormat, Context, PixelTransform, Point, UnknownToDeviceTransform};
 use euclid::Vector2D;
 use gl::types::*;
-use std::ffi::c_void;
+use std::{
+    ffi::c_void,
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     generic::{
@@ -15,7 +18,7 @@ use crate::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
-    GlSurface, GlTexture, Primitive,
+    GlSurface, GlTexture, GlTextureData, Primitive,
 };
 
 pub struct GlContext {
@@ -178,6 +181,8 @@ impl GlContext {
         let invxform;
 
         if let Some(texture) = texture {
+            let texture = texture.data.lock().unwrap();
+
             frag.type_ = ShaderType::FillImage as i32;
 
             if texture.flipped_y {
@@ -259,13 +264,15 @@ impl Device for GlContext {
         };
 
         let texture = GlTexture {
-            id: texture_id,
-            is_owned: true,
-            width,
-            height,
-            gl_format,
-            gl_type,
-            flipped_y: false,
+            data: Arc::new(Mutex::new(GlTextureData {
+                id: texture_id,
+                is_owned: true,
+                width,
+                height,
+                gl_format,
+                gl_type,
+                flipped_y: false,
+            })),
         };
 
         unsafe {
@@ -299,9 +306,14 @@ impl Device for GlContext {
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
         let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA, false)?;
-        texture.flipped_y = true;
+        texture.data.lock().unwrap().flipped_y = true;
         unsafe {
-            gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.id, 0);
+            gl::FramebufferTexture(
+                gl::FRAMEBUFFER,
+                gl::COLOR_ATTACHMENT0,
+                texture.data.lock().unwrap().id,
+                0,
+            );
             let draw_buffers = gl::COLOR_ATTACHMENT0;
             gl::DrawBuffers(1, &draw_buffers);
         }
@@ -355,7 +367,7 @@ impl Device for GlContext {
         self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
-            gl::BindTexture(gl::TEXTURE_2D, texture.id);
+            gl::BindTexture(gl::TEXTURE_2D, texture.data.lock().unwrap().id);
             if filtering {
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -374,7 +386,8 @@ impl Device for GlContext {
 
         self.textured_pipeline.apply();
         self.textured_pipeline.set_transform(&transform);
-        self.textured_pipeline.set_flipped_y(texture.flipped_y);
+        self.textured_pipeline
+            .set_flipped_y(texture.data.lock().unwrap().flipped_y);
         self.textured_pipeline.draw(vertices);
     }
 
@@ -389,7 +402,7 @@ impl Device for GlContext {
         self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
-            gl::BindTexture(gl::TEXTURE_2D, texture.id);
+            gl::BindTexture(gl::TEXTURE_2D, texture.data.lock().unwrap().id);
             if filtering {
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -408,7 +421,8 @@ impl Device for GlContext {
 
         self.textured_y8_pipeline.apply();
         self.textured_y8_pipeline.set_transform(&transform);
-        self.textured_y8_pipeline.set_flipped_y(texture.flipped_y);
+        self.textured_y8_pipeline
+            .set_flipped_y(texture.data.lock().unwrap().flipped_y);
         self.textured_y8_pipeline.draw(vertices);
     }
 

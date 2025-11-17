@@ -19,6 +19,7 @@ use windowing_qt::{Application, ApplicationOptions};
 type DrawingContext = drawing_gl::GlContext;
 type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
 type Paint1 = drawing_gl::Paint;
+type Texture1 = drawing_gl::GlTexture;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -29,6 +30,11 @@ pub struct GlWindow {
     //pub gl_context: Option<DrawingContext>,
     pub time_query: GLuint,
     pub pos_y: f32,
+}
+
+pub struct Resources {
+    pub image1: Texture1,
+    pub image2: Texture1,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -63,6 +69,8 @@ fn setup_window(
     window.set_title("Example: simple2").unwrap();
     window.set_frame_position(800, 100);
     window.resize(800, 600);
+
+    //let resources
 
     window.on_paint_gl({
         let gl_window_clone = gl_window_rc.clone();

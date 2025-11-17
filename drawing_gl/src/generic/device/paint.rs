@@ -3,12 +3,12 @@
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
 use crate::generic::device::Device;
-use crate::generic::device::Texture;
 use crate::generic::renderer::Brush;
 use crate::generic::resources::Resources;
 use crate::generic::texture_font::Font;
 use drawing_api::PixelRect;
 use drawing_api::PixelTransform;
+use drawing_api::Texture;
 
 use super::convert_color;
 use super::Color;

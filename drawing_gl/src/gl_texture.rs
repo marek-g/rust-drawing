@@ -1,18 +1,33 @@
+use std::sync::{Arc, Mutex};
+
 use anyhow::Result;
 use drawing_api::ColorFormat;
+use drawing_api::Texture;
 use gl::types::*;
 
-use crate::generic::device::Texture;
+pub(crate) struct GlTextureData {
+    pub id: GLuint,
+    pub is_owned: bool,
+    pub width: u16,
+    pub height: u16,
+    pub gl_format: GLuint,
+    pub gl_type: GLuint,
+    pub flipped_y: bool,
+}
 
-#[derive(Clone, Debug, PartialEq)]
+impl Drop for GlTextureData {
+    fn drop(&mut self) {
+        if self.is_owned && self.id > 0 {
+            unsafe {
+                gl::DeleteTextures(1, &self.id);
+            }
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct GlTexture {
-    pub(crate) id: GLuint,
-    pub(crate) is_owned: bool,
-    pub(crate) width: u16,
-    pub(crate) height: u16,
-    pub(crate) gl_format: GLuint,
-    pub(crate) gl_type: GLuint,
-    pub(crate) flipped_y: bool,
+    pub data: Arc<Mutex<GlTextureData>>,
 }
 
 impl GlTexture {
@@ -22,13 +37,15 @@ impl GlTexture {
             ColorFormat::Y8 => (gl::UNSIGNED_BYTE, gl::RED),
         };
         GlTexture {
-            id,
-            is_owned: false,
-            width,
-            height,
-            gl_format,
-            gl_type,
-            flipped_y: false,
+            data: Arc::new(Mutex::new(GlTextureData {
+                id,
+                is_owned: false,
+                width,
+                height,
+                gl_format,
+                gl_type,
+                flipped_y: false,
+            })),
         }
     }
 }
@@ -42,6 +59,8 @@ impl Texture for GlTexture {
         width: u16,
         height: u16,
     ) -> Result<()> {
+        let gl_format = self.data.lock().unwrap().gl_format;
+        let gl_type = self.data.lock().unwrap().gl_type;
         unsafe {
             gl::TexSubImage2D(
                 gl::TEXTURE_2D,
@@ -50,8 +69,8 @@ impl Texture for GlTexture {
                 offset_y as GLint,
                 width as GLsizei,
                 height as GLsizei,
-                self.gl_format,
-                self.gl_type,
+                gl_format,
+                gl_type,
                 memory.as_ptr() as *const GLvoid,
             );
         }
@@ -59,16 +78,9 @@ impl Texture for GlTexture {
     }
 
     fn get_size(&self) -> (u16, u16) {
-        (self.width, self.height)
-    }
-}
-
-impl Drop for GlTexture {
-    fn drop(&mut self) {
-        if self.is_owned && self.id > 0 {
-            unsafe {
-                gl::DeleteTextures(1, &self.id);
-            }
-        }
+        (
+            self.data.lock().unwrap().width,
+            self.data.lock().unwrap().height,
+        )
     }
 }
