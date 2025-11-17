@@ -2,33 +2,27 @@
 // released on MIT license
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
-use crate::generic::device::Device;
 use crate::generic::renderer::Brush;
-use crate::generic::resources::Resources;
-use crate::generic::texture_font::Font;
+use crate::GlTexture;
 use drawing_api::PixelRect;
 use drawing_api::PixelTransform;
-use drawing_api::Texture;
 
 use super::convert_color;
 use super::Color;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Paint {
+pub struct Paint<Texture1: drawing_api::Texture> {
     pub xform: PixelTransform,
     pub extent: [f32; 2],
     pub radius: f32,
     pub feather: f32,
     pub inner_color: Color,
     pub outer_color: Color,
-    pub image: Option<i32>,
+    pub image: Option<Texture1>,
 }
 
-impl Paint {
-    pub fn from_brush<'a, D: Device, F: Font<D>>(
-        brush: &Brush,
-        resources: &'a mut Resources<D, F>,
-    ) -> (Self, Option<&'a D::Texture>) {
+impl<Texture1: drawing_api::Texture> Paint<Texture1> {
+    pub fn from_brush(brush: &Brush<Texture1>) -> (Self, Option<Texture1>) {
         match brush {
             Brush::Color { color } => (
                 Paint {
@@ -144,16 +138,13 @@ impl Paint {
             }
 
             Brush::ImagePattern {
-                resource_key,
+                texture,
                 transform,
                 alpha,
             } => {
-                let texture = resources.textures_mut().get(resource_key);
-                let extent_size = if let Some(texture) = texture {
+                let extent_size = {
                     let size = texture.get_size();
                     [size.0 as f32, size.1 as f32]
-                } else {
-                    [1.0f32, 1.0f32]
                 };
                 (
                     Paint {
@@ -163,16 +154,16 @@ impl Paint {
                         feather: 0.0,
                         inner_color: [1.0, 1.0, 1.0, *alpha],
                         outer_color: [1.0, 1.0, 1.0, *alpha],
-                        image: Some(*resource_key),
+                        image: Some(texture.clone()),
                     },
-                    texture,
+                    Some(texture.clone()),
                 )
             }
         }
     }
 }
 
-impl drawing_api::Paint for Paint {
+impl drawing_api::Paint for Paint<GlTexture> {
     fn set_color(&mut self, color: drawing_api::Color) {
         self.xform = PixelTransform::identity();
         self.extent = [0.0, 0.0];

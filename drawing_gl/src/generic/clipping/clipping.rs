@@ -15,6 +15,13 @@ impl<T: Texture> Clipping<T> for Vec<Primitive<T>> {
 
         for primitive in self.into_iter() {
             match primitive {
+                Primitive::Clear { color } => {
+                    res.push(Primitive::Rectangle {
+                        color: color,
+                        rect: clipping_rect,
+                    });
+                }
+
                 Primitive::Line {
                     color,
                     thickness,

@@ -9,7 +9,7 @@ pub use gl_texture::*;
 
 mod generic;
 pub use generic::device::Device;
-pub use generic::renderer::{DisplayListBuilder, Paint, Primitive};
+pub use generic::renderer::{Brush, DisplayListBuilder, Paint, PathElement, Primitive, Solidity};
 
 mod pipelines;
 mod utils;

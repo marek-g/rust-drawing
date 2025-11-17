@@ -166,7 +166,7 @@ pub trait Device {
     fn stroke(
         &mut self,
         target: &Self::RenderTarget,
-        paint: &Paint,
+        paint: &Paint<Self::Texture>,
         texture: Option<&Self::Texture>,
         filtering: bool,
         paths: &[Path],
@@ -181,7 +181,7 @@ pub trait Device {
     fn fill(
         &mut self,
         target: &Self::RenderTarget,
-        paint: &Paint,
+        paint: &Paint<Self::Texture>,
         texture: Option<&Self::Texture>,
         filtering: bool,
         paths: &[Path],

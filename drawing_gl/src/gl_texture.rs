@@ -28,7 +28,7 @@ impl Drop for GlTextureData {
 
 #[derive(Clone, Debug)]
 pub struct GlTexture {
-    pub data: Arc<Mutex<GlTextureData>>,
+    pub(crate) data: Arc<GlTextureData>,
 }
 
 impl GlTexture {
@@ -38,7 +38,7 @@ impl GlTexture {
             ColorFormat::Y8 => (gl::UNSIGNED_BYTE, gl::RED),
         };
         GlTexture {
-            data: Arc::new(Mutex::new(GlTextureData {
+            data: Arc::new(GlTextureData {
                 id,
                 is_owned: false,
                 width,
@@ -46,7 +46,7 @@ impl GlTexture {
                 gl_format,
                 gl_type,
                 flipped_y: false,
-            })),
+            }),
         }
     }
 }
@@ -79,9 +79,10 @@ impl Texture for GlTexture {
     }*/
 
     fn get_size(&self) -> (u16, u16) {
-        (
-            self.data.lock().unwrap().width,
-            self.data.lock().unwrap().height,
-        )
+        (self.data.width, self.data.height)
+    }
+
+    fn get_native_handle(&self) -> usize {
+        self.data.id as usize
     }
 }

@@ -1,4 +1,6 @@
-use drawing_api::{Color, ColorFormat, Context, PixelTransform, Point, UnknownToDeviceTransform};
+use drawing_api::{
+    Color, ColorFormat, Context, PixelTransform, Point, Texture, UnknownToDeviceTransform,
+};
 use euclid::Vector2D;
 use gl::types::*;
 use std::{
@@ -109,6 +111,7 @@ impl GlContext {
         width: u16,
         height: u16,
         format: drawing_api::ColorFormat,
+        flipped_y: bool,
     ) -> Result<GlTexture, &'static str> {
         let mut texture_id: GLuint = 0;
         unsafe {
@@ -124,15 +127,15 @@ impl GlContext {
         };
 
         let texture = GlTexture {
-            data: Arc::new(Mutex::new(GlTextureData {
+            data: Arc::new(GlTextureData {
                 id: texture_id,
                 is_owned: true,
                 width,
                 height,
                 gl_format,
                 gl_type,
-                flipped_y: false,
-            })),
+                flipped_y,
+            }),
         };
 
         unsafe {
@@ -179,7 +182,7 @@ impl GlContext {
     }
 
     fn convert_paint(
-        paint: &Paint,
+        paint: &Paint<GlTexture>,
         texture: Option<&GlTexture>,
         scissor: &Scissor,
         width: f32,
@@ -233,11 +236,9 @@ impl GlContext {
         let invxform;
 
         if let Some(texture) = texture {
-            let texture = texture.data.lock().unwrap();
-
             frag.type_ = ShaderType::FillImage as i32;
 
-            if texture.flipped_y {
+            if texture.data.flipped_y {
                 let m1 = paint
                     .xform
                     .pre_translate(Vector2D::new(0.0, frag.extent[1] * 0.5))
@@ -251,7 +252,7 @@ impl GlContext {
                     .unwrap_or_else(PixelTransform::identity);
             };
 
-            match texture.gl_format {
+            match texture.data.gl_format {
                 gl::BGRA => frag.tex_type = 0,
                 gl::RED => frag.tex_type = 1,
                 _ => frag.tex_type = 0,
@@ -301,7 +302,7 @@ impl Device for GlContext {
         height: u16,
         format: ColorFormat,
     ) -> Result<Self::Texture, &'static str> {
-        self.create_texture(Some(contents), width, height, format)
+        self.create_texture(Some(contents), width, height, format, false)
     }
 
     fn create_render_target(
@@ -314,15 +315,9 @@ impl Device for GlContext {
             gl::GenFramebuffers(1, &mut framebuffer_id);
             gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer_id);
         }
-        let mut texture = self.create_texture(None, width, height, ColorFormat::RGBA)?;
-        texture.data.lock().unwrap().flipped_y = true;
+        let texture = self.create_texture(None, width, height, ColorFormat::RGBA, true)?;
         unsafe {
-            gl::FramebufferTexture(
-                gl::FRAMEBUFFER,
-                gl::COLOR_ATTACHMENT0,
-                texture.data.lock().unwrap().id,
-                0,
-            );
+            gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.data.id, 0);
             let draw_buffers = gl::COLOR_ATTACHMENT0;
             gl::DrawBuffers(1, &draw_buffers);
         }
@@ -376,7 +371,7 @@ impl Device for GlContext {
         self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
-            gl::BindTexture(gl::TEXTURE_2D, texture.data.lock().unwrap().id);
+            gl::BindTexture(gl::TEXTURE_2D, texture.data.id);
             if filtering {
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -395,8 +390,7 @@ impl Device for GlContext {
 
         self.textured_pipeline.apply();
         self.textured_pipeline.set_transform(&transform);
-        self.textured_pipeline
-            .set_flipped_y(texture.data.lock().unwrap().flipped_y);
+        self.textured_pipeline.set_flipped_y(texture.data.flipped_y);
         self.textured_pipeline.draw(vertices);
     }
 
@@ -411,7 +405,7 @@ impl Device for GlContext {
         self.set_render_target(target);
         unsafe {
             gl::Enable(gl::TEXTURE_2D);
-            gl::BindTexture(gl::TEXTURE_2D, texture.data.lock().unwrap().id);
+            gl::BindTexture(gl::TEXTURE_2D, texture.data.id);
             if filtering {
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                 gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -431,7 +425,7 @@ impl Device for GlContext {
         self.textured_y8_pipeline.apply();
         self.textured_y8_pipeline.set_transform(&transform);
         self.textured_y8_pipeline
-            .set_flipped_y(texture.data.lock().unwrap().flipped_y);
+            .set_flipped_y(texture.data.flipped_y);
         self.textured_y8_pipeline.draw(vertices);
     }
 
@@ -456,7 +450,7 @@ impl Device for GlContext {
     fn stroke(
         &mut self,
         target: &Self::RenderTarget,
-        paint: &crate::generic::device::Paint,
+        paint: &crate::generic::device::Paint<Self::Texture>,
         texture: Option<&Self::Texture>,
         filtering: bool,
         paths: &[crate::generic::path::Path],
@@ -556,7 +550,7 @@ impl Device for GlContext {
     fn fill(
         &mut self,
         target: &Self::RenderTarget,
-        paint: &crate::generic::device::Paint,
+        paint: &crate::generic::device::Paint<Self::Texture>,
         texture: Option<&Self::Texture>,
         filtering: bool,
         paths: &[crate::generic::path::Path],
@@ -569,10 +563,10 @@ impl Device for GlContext {
     ) {
         self.set_render_target(target);
 
-        if let Some(texture_id) = paint.image {
+        if let Some(ref texture) = paint.image {
             unsafe {
                 gl::Enable(gl::TEXTURE_2D);
-                gl::BindTexture(gl::TEXTURE_2D, texture_id as GLuint);
+                gl::BindTexture(gl::TEXTURE_2D, texture.get_native_handle() as GLuint);
                 if filtering {
                     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -712,7 +706,7 @@ impl Device for GlContext {
 impl Context for GlContext {
     type DisplayList = Vec<Primitive<Self::Texture>>;
     type DisplayListBuilder = crate::generic::renderer::DisplayListBuilder;
-    type Paint = crate::generic::device::Paint;
+    type Paint = crate::generic::device::Paint<Self::Texture>;
     type Surface = GlSurface;
     type Texture = GlTexture;
 
@@ -731,7 +725,7 @@ impl Context for GlContext {
         height: u16,
         format: drawing_api::ColorFormat,
     ) -> Result<Self::Texture, &'static str> {
-        self.create_texture(Some(contents), width, height, format)
+        self.create_texture(Some(contents), width, height, format, false)
     }
 
     fn draw(

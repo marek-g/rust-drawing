@@ -26,6 +26,8 @@ impl<T: Texture> Transformation<T> for Vec<Primitive<T>> {
     fn translate(&mut self, offset: PixelPoint) {
         for primitive in self.iter_mut() {
             match primitive {
+                Primitive::Clear { .. } => {}
+
                 Primitive::Line {
                     start_point,
                     end_point,

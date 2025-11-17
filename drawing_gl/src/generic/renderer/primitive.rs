@@ -4,6 +4,10 @@ use crate::generic::device::Color;
 
 #[derive(Debug)]
 pub enum Primitive<Texture: drawing_api::Texture> {
+    Clear {
+        color: Color,
+    },
+
     Line {
         color: Color,
         thickness: PixelThickness,
@@ -34,19 +38,19 @@ pub enum Primitive<Texture: drawing_api::Texture> {
     Stroke {
         path: Vec<PathElement>,
         thickness: PixelThickness,
-        brush: Brush,
+        brush: Brush<Texture>,
     },
 
     StrokeStyled {
         path: Vec<PathElement>,
         thickness: PixelThickness,
-        brush: Brush,
+        brush: Brush<Texture>,
         style: StrokeStyle,
     },
 
     Fill {
         path: Vec<PathElement>,
-        brush: Brush,
+        brush: Brush<Texture>,
     },
 
     ClipRect {
@@ -84,7 +88,7 @@ pub enum PathElement {
 }
 
 #[derive(Debug)]
-pub enum Brush {
+pub enum Brush<Texture: drawing_api::Texture> {
     Color {
         color: Color,
     },
@@ -113,7 +117,7 @@ pub enum Brush {
     },
 
     ImagePattern {
-        resource_key: i32,
+        texture: Texture,
         transform: PixelTransform,
         alpha: f32,
     },

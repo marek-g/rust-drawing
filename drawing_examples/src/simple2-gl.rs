@@ -1,6 +1,6 @@
 #![windows_subsystem = "windows"]
 
-use drawing_gl::{GlSurface, Primitive};
+use drawing_gl::{Brush, PathElement, Primitive, Solidity};
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Paint, PixelPoint, PixelRect, PixelSize,
-    PixelThickness, Point, Surface,
+    PixelThickness, PixelTransform, Point, Surface,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -68,8 +68,6 @@ fn setup_window(
     window.set_title("Example: simple2").unwrap();
     window.set_frame_position(800, 100);
     window.resize(800, 600);
-
-    //let resources
 
     window.on_paint_gl({
         let gl_window_clone = gl_window_rc.clone();
@@ -176,7 +174,13 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
     );
     let display_list = display_list_builder.build().unwrap();*/
 
+    gl_window.pos_y += 1.0f32;
+    let pos_y = gl_window.pos_y;
+
     let display_list = vec![
+        Primitive::Clear {
+            color: [1.0f32, 0.66f32, 0.33f32, 1.0f32],
+        },
         Primitive::Rectangle {
             color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
             rect: PixelRect::new(
@@ -210,7 +214,7 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
             start_point: PixelPoint::new(100.0f32, 150.0f32),
             end_point: PixelPoint::new(300.0f32, 350.0f32),
         },
-        /*Primitive::Fill {
+        Primitive::Fill {
             path: vec![
                 PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
                 PathElement::LineTo(PixelPoint::new(300.0f32, 350.0f32)),
@@ -218,7 +222,7 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
                 PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
             ],
             brush: Brush::ImagePattern {
-                resource_key: app_resources.image2_resource_id,
+                texture: resources.image2.clone(),
                 transform: PixelTransform::identity()
                     .pre_translate(Vector2D::new(100.0f32, 350.0f32))
                     .pre_rotate(Angle::radians(pos_y / 100.0f32)),
@@ -226,55 +230,55 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
             },
         },
         Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(0.0f32, 0.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
             ),
             uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },*/
+        },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
             thickness: PixelThickness::new(1.0f32),
             start_point: PixelPoint::new(0.0f32, 0.0f32),
             end_point: PixelPoint::new(4.0f32, 4.0f32),
         },
-        /*Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+        Primitive::Image {
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
             ),
             uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },*/
+        },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
             thickness: PixelThickness::new(1.0f32),
             start_point: PixelPoint::new(width as f32, 0.0f32),
             end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
         },
-        /*Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+        Primitive::Image {
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
             ),
             uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },*/
+        },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
             thickness: PixelThickness::new(1.0f32),
             start_point: PixelPoint::new(width as f32, height as f32),
             end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
         },
-        /*Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+        Primitive::Image {
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(0.0f32, height as f32 - 4.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
             ),
             uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },*/
+        },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
             thickness: PixelThickness::new(1.0f32),
@@ -326,7 +330,7 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
             text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },*/
-        /*Primitive::Fill {
+        Primitive::Fill {
             path: vec![
                 PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
                 PathElement::BezierTo(
@@ -341,8 +345,8 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
                 inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                 outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
             },
-        },*/
-        /*Primitive::Fill {
+        },
+        Primitive::Fill {
             path: vec![
                 PathElement::MoveTo(PixelPoint::new(500.0f32, 350.0f32)),
                 PathElement::BezierTo(
@@ -366,8 +370,8 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
                 inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                 outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
             },
-        },*/
-        /*Primitive::Stroke {
+        },
+        Primitive::Stroke {
             path: vec![
                 PathElement::MoveTo(PixelPoint::new(300.0f32, 550.0f32)),
                 PathElement::BezierTo(
@@ -385,7 +389,7 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
                 inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
                 outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
             },
-        },*/
+        },
         // render target test
         Primitive::Composite {
             color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
@@ -411,7 +415,6 @@ pub fn draw(drawing_context: &mut DrawingContext, gl_window: &mut GlWindow, reso
 
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
-    //drawing_context.clear(&drawing_surface, &[1.0f32, 0.66f32, 0.33f32, 1.0f32]);
 
     drawing_context.draw(&drawing_surface, &display_list);
 }
