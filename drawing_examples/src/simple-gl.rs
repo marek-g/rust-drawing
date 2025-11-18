@@ -422,7 +422,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
 
-    if let Some(ref mut drawing_context) = gl_window.gl_context {
+    if let Some(ref drawing_context) = gl_window.gl_context {
         let drawing_surface = drawing_context.wrap_framebuffer(
             framebuffer_id,
             width as u16,

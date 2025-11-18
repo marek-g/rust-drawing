@@ -19,7 +19,7 @@ type DrawingContext = drawing_gl::GlContext;
 type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
 type Paint1 = drawing_gl::Paint;
 type Texture1 = drawing_gl::GlTexture;
-type Fonts1 = drawing_gl::Fonts<drawing_gl::GlContext>;
+type Fonts1 = drawing_gl::Fonts<drawing_gl::GlContextData>;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -440,7 +440,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);
 
-    if let Some(ref mut drawing_context) = gl_window.gl_context {
+    if let Some(ref drawing_context) = gl_window.gl_context {
         let drawing_surface = drawing_context.wrap_framebuffer(
             framebuffer_id,
             width as u16,
