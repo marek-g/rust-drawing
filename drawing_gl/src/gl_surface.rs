@@ -47,7 +47,7 @@ impl RenderTarget for GlSurface {
 }
 
 impl drawing_api::Surface for GlSurface {
-    type DisplayList = Vec<crate::generic::renderer::Primitive<GlTexture>>;
+    type DisplayList = Vec<crate::Primitive<GlTexture>>;
 
     fn draw(&self, display_list: &Self::DisplayList) -> Result<(), &'static str> {
         //todo!()

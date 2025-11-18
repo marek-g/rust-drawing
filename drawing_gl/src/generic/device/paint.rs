@@ -2,7 +2,7 @@
 // released on MIT license
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
-use crate::generic::renderer::Brush;
+use crate::Brush;
 use crate::GlTexture;
 use drawing_api::PixelRect;
 use drawing_api::PixelTransform;

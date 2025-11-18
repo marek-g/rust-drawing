@@ -4,11 +4,7 @@ pub use context::*;
 mod color;
 pub use color::*;
 
-mod display_list_builder;
-pub use display_list_builder::*;
-
-mod paint;
-pub use paint::*;
+mod display_list;
 
 mod surface;
 pub use surface::*;
@@ -18,3 +14,5 @@ pub use texture::*;
 
 mod units;
 pub use units::*;
+
+pub use display_list::{DisplayListBuilder, Fonts, Paint};

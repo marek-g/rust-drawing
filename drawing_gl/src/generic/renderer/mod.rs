@@ -1,15 +1,6 @@
 mod composite_operation_state;
 pub use composite_operation_state::*;
 
-mod display_list_builder;
-pub use display_list_builder::*;
-
-mod paint;
-pub use paint::*;
-
-mod primitive;
-pub use primitive::*;
-
 mod primitive_extensions;
 pub use primitive_extensions::*;
 

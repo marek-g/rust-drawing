@@ -1,4 +1,4 @@
-use crate::generic::renderer::*;
+use crate::{generic::renderer::*, PathElement, Primitive};
 use drawing_api::*;
 use euclid::Point2D;
 

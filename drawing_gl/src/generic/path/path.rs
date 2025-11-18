@@ -3,10 +3,10 @@
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
 use crate::generic::device::TexturedVertex;
-use crate::generic::renderer::LineCap;
-use crate::generic::renderer::LineJoin;
-use crate::generic::renderer::PathElement;
-use crate::generic::renderer::Solidity;
+use crate::LineCap;
+use crate::LineJoin;
+use crate::PathElement;
+use crate::Solidity;
 use bitflags::bitflags;
 use clamped::Clamp;
 use drawing_api::Point;

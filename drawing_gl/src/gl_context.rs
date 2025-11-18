@@ -12,7 +12,7 @@ use crate::{
     generic::{
         clipping::Scissor,
         device::{convert_color, ColoredVertex, Device, Paint, TexturedVertex},
-        renderer::{DisplayListBuilder, Renderer},
+        renderer::Renderer,
         resources::Resources,
         texture_font::TextureFont,
     },
@@ -705,13 +705,13 @@ impl Device for GlContext {
 
 impl Context for GlContext {
     type DisplayList = Vec<Primitive<Self::Texture>>;
-    type DisplayListBuilder = crate::generic::renderer::DisplayListBuilder;
+    type DisplayListBuilder = crate::DisplayListBuilder;
     type Paint = crate::generic::device::Paint<Self::Texture>;
     type Surface = GlSurface;
     type Texture = GlTexture;
 
     fn create_display_list_builder(&self) -> Result<Self::DisplayListBuilder, &'static str> {
-        Ok(DisplayListBuilder::new())
+        Ok(crate::DisplayListBuilder::new())
     }
 
     fn create_paint(&self) -> Result<Self::Paint, &'static str> {

@@ -6,7 +6,7 @@ use crate::generic::device::Paint;
 use crate::generic::device::RenderTarget;
 use crate::generic::path::{Bounds, Path};
 use crate::generic::renderer::CompositeOperationState;
-use crate::generic::renderer::PathElement;
+use crate::PathElement;
 use anyhow::Result;
 use core::option::Option;
 use drawing_api::ColorFormat;

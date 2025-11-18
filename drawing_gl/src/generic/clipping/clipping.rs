@@ -1,6 +1,6 @@
 use drawing_api::{PixelPoint, PixelRect, PixelSize, Texture};
 
-use crate::generic::renderer::{PathElement, Primitive};
+use crate::{PathElement, Primitive};
 
 use super::{clip_image, clip_line, clip_rect};
 

@@ -1,12 +1,14 @@
-use crate::generic::clipping::Scissor;
-use crate::generic::device::Device;
-use crate::generic::device::Paint;
-use crate::generic::device::RenderTarget;
-use crate::generic::path::FlattenedPath;
-use crate::generic::renderer::*;
-use crate::generic::resources::*;
-use crate::generic::texture_font::Font;
-use crate::generic::texture_font::FontParams;
+use crate::generic::device::{Device, RenderTarget};
+use crate::{
+    display_list::StrokeStyle,
+    generic::{
+        clipping::Scissor,
+        path::FlattenedPath,
+        resources::Resources,
+        texture_font::{Font, FontParams},
+    },
+    BasicCompositeOperation, CompositeOperation, LineJoin, PathElement, Primitive,
+};
 use anyhow::Result;
 use drawing_api::*;
 
@@ -143,7 +145,7 @@ impl Renderer {
                         antialiasing,
                     );
 
-                    let (paint, texture) = Paint::from_brush(brush);
+                    let (paint, texture) = crate::generic::device::Paint::from_brush(brush);
 
                     device.stroke(
                         render_target,
@@ -177,7 +179,7 @@ impl Renderer {
                         antialiasing,
                     );
 
-                    let (paint, texture) = Paint::from_brush(brush);
+                    let (paint, texture) = crate::generic::device::Paint::from_brush(brush);
 
                     device.stroke(
                         render_target,
@@ -198,7 +200,7 @@ impl Renderer {
                     let aspect_ratio = render_target.get_aspect_ratio();
                     let flattened_path = Self::get_fill_path(path, aspect_ratio, antialiasing);
 
-                    let (paint, texture) = Paint::from_brush(brush);
+                    let (paint, texture) = crate::generic::device::Paint::from_brush(brush);
 
                     device.fill(
                         render_target,

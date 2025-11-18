@@ -1,4 +1,4 @@
-use crate::generic::renderer::*;
+use crate::PathElement;
 use drawing_api::*;
 
 const KAPPA90: f32 = 0.5522847493;
