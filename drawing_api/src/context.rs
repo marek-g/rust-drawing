@@ -1,6 +1,6 @@
 use crate::ColorFormat;
 
-pub trait Context {
+pub trait Context: Clone {
     type DisplayList;
     type DisplayListBuilder;
     type Fonts;

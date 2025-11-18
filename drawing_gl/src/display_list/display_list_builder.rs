@@ -1,4 +1,4 @@
-use drawing_api::{Paint, PixelPoint, PixelThickness, Point, Thickness};
+use drawing_api::{PixelPoint, PixelThickness};
 
 use crate::{GlContext, GlTexture};
 

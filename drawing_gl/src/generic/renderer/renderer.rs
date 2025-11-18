@@ -6,7 +6,6 @@ use crate::{
     generic::{clipping::Scissor, path::FlattenedPath, texture_font::FontParams},
     BasicCompositeOperation, CompositeOperation, LineJoin, PathElement, Primitive,
 };
-use anyhow::Result;
 use drawing_api::*;
 
 use std::convert::Into;

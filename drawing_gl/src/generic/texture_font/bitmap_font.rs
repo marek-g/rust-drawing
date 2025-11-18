@@ -3,7 +3,6 @@
 //! about available font characters to map them into texture.
 
 use freetype as ft;
-use freetype::Error as FreetypeError;
 use freetype::Face;
 use std::char::from_u32;
 use std::cmp::max;
@@ -35,23 +34,6 @@ pub struct BitmapChar {
     data: Option<Vec<u8>>,
 }
 
-/// Represents possible errors which may occur during the font loading.
-#[derive(Debug)]
-pub enum FontError {
-    /// Character set is empty
-    EmptyFont,
-    /// FreeType library error
-    FreetypeError(FreetypeError),
-}
-
-impl From<FreetypeError> for FontError {
-    fn from(e: FreetypeError) -> FontError {
-        FontError::FreetypeError(e)
-    }
-}
-
-pub type FontResult = Result<BitmapFont, FontError>;
-
 impl BitmapFont {
     pub fn from_bytes(
         data: &[u8],
@@ -60,10 +42,10 @@ impl BitmapFont {
     ) -> Result<BitmapFont, &'static str> {
         use std::rc::Rc;
 
-        let library = ft::Library::init().map_err(|err| "cannot init freetype library")?;
+        let library = ft::Library::init().map_err(|_| "cannot init freetype library")?;
         let face = library
             .new_memory_face(Rc::new(data.into()), 0)
-            .map_err(|err| "face: cannot allocate memory")?;
+            .map_err(|_| "face: cannot allocate memory")?;
         Self::new(face, font_size, chars)
     }
 
@@ -101,7 +83,7 @@ impl BitmapFont {
         }
 
         face.set_pixel_sizes(0, font_size as u32)
-            .map_err(|err| "face: unable set pixel size")?;
+            .map_err(|_| "face: unable set pixel size")?;
 
         // FreeType representation of rendered glyph 'j':
         //
@@ -167,7 +149,7 @@ impl BitmapFont {
 
         for ch in needed_chars {
             face.load_char(ch as usize, ft::face::LoadFlag::RENDER)
-                .map_err(|err| "cannot load char")?;
+                .map_err(|_| "cannot load char")?;
             let glyph = face.glyph();
             let bitmap = glyph.bitmap();
             let ch_width = bitmap.width();

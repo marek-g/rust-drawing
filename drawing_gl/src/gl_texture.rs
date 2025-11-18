@@ -1,6 +1,5 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-use anyhow::Result;
 use drawing_api::ColorFormat;
 use drawing_api::Texture;
 use gl::types::*;

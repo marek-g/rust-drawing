@@ -429,7 +429,9 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             drawing_api::ColorFormat::RGBA,
         );
 
-        drawing_context.draw(&drawing_surface, &display_list);
+        drawing_context
+            .draw(&drawing_surface, &display_list)
+            .unwrap();
     }
 
     // end

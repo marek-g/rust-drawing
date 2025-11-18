@@ -29,33 +29,8 @@ use crate::generic::clipping::clip_image;
 use crate::generic::device::Device;
 use crate::generic::device::TexturedY8Vertex;
 use crate::generic::texture_font::bitmap_font::BitmapFont;
-pub use crate::generic::texture_font::bitmap_font::FontError;
 use drawing_api::ColorFormat;
 use drawing_api::UnknownToDeviceTransform;
-
-use thiserror::Error;
-
-/// General error type returned by the library. Wraps all other errors.
-#[derive(Error, Debug)]
-pub enum Error {
-    /// Font loading error
-    #[error("Font decoding error")]
-    FontError(FontError),
-    #[error("Texture creation error")]
-    TextureError(anyhow::Error),
-}
-
-impl From<FontError> for Error {
-    fn from(e: FontError) -> Error {
-        Error::FontError(e)
-    }
-}
-
-impl From<anyhow::Error> for Error {
-    fn from(e: anyhow::Error) -> Error {
-        Error::TextureError(e)
-    }
-}
 
 /// Text renderer.
 ///

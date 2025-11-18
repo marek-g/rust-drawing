@@ -1,21 +1,13 @@
-use drawing_api::{
-    Color, ColorFormat, Context, PixelTransform, Point, Texture, UnknownToDeviceTransform,
-};
+use drawing_api::{ColorFormat, Context, PixelTransform, Point, Texture, UnknownToDeviceTransform};
 use euclid::Vector2D;
 use gl::types::*;
-use std::{
-    cell::RefCell,
-    ffi::c_void,
-    rc::Rc,
-    sync::{Arc, Mutex},
-};
+use std::{cell::RefCell, ffi::c_void, rc::Rc, sync::Arc};
 
 use crate::{
     generic::{
         clipping::Scissor,
-        device::{convert_color, ColoredVertex, Device, Paint, TexturedVertex},
+        device::{ColoredVertex, Device, Paint, TexturedVertex},
         renderer::Renderer,
-        texture_font::TextureFont,
     },
     pipelines::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
@@ -24,7 +16,7 @@ use crate::{
     GlSurface, GlTexture, GlTextureData, Primitive,
 };
 
-pub struct GlContext {
+pub struct GlContextData {
     colored_pipeline: ColoredPipeline,
     colored_pipeline_buffers: (GLuint, GLuint),
 
@@ -36,8 +28,29 @@ pub struct GlContext {
 
     universal_pipeline: UniversalPipeline,
     universal_pipeline_buffers: (GLuint, GLuint),
+}
 
-    aspect_ratio: f32,
+impl Drop for GlContextData {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteVertexArrays(1, &self.colored_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.colored_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &self.textured_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.textured_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &self.textured_y8_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.textured_y8_pipeline_buffers.0);
+
+            gl::DeleteVertexArrays(1, &self.universal_pipeline_buffers.1);
+            gl::DeleteBuffers(1, &self.universal_pipeline_buffers.0);
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct GlContext {
+    data: Rc<RefCell<GlContextData>>,
 }
 
 impl GlContext {
@@ -71,15 +84,16 @@ impl GlContext {
         universal_pipeline.set_buffers(universal_pipeline_buffers);
 
         Ok(Self {
-            colored_pipeline,
-            colored_pipeline_buffers,
-            textured_pipeline,
-            textured_pipeline_buffers,
-            textured_y8_pipeline,
-            textured_y8_pipeline_buffers,
-            universal_pipeline,
-            universal_pipeline_buffers,
-            aspect_ratio: 1.0f32,
+            data: Rc::new(RefCell::new(GlContextData {
+                colored_pipeline,
+                colored_pipeline_buffers,
+                textured_pipeline,
+                textured_pipeline_buffers,
+                textured_y8_pipeline,
+                textured_y8_pipeline_buffers,
+                universal_pipeline,
+                universal_pipeline_buffers,
+            })),
         })
     }
 
@@ -177,9 +191,10 @@ impl GlContext {
         let v2 = ColoredVertex::new([end_point.x, end_point.y], *color);
         let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
 
-        self.colored_pipeline.apply();
-        self.colored_pipeline.set_transform(&transform);
-        self.colored_pipeline.draw_lines(&[v1, v2, v3]);
+        let colored_pipeline = &mut self.data.borrow_mut().colored_pipeline;
+        colored_pipeline.apply();
+        colored_pipeline.set_transform(&transform);
+        colored_pipeline.draw_lines(&[v1, v2, v3]);
     }
 
     fn convert_paint(
@@ -274,24 +289,6 @@ impl GlContext {
     }
 }
 
-impl Drop for GlContext {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteVertexArrays(1, &self.colored_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &self.colored_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &self.textured_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &self.textured_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &self.textured_y8_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &self.textured_y8_pipeline_buffers.0);
-
-            gl::DeleteVertexArrays(1, &self.universal_pipeline_buffers.1);
-            gl::DeleteBuffers(1, &self.universal_pipeline_buffers.0);
-        }
-    }
-}
-
 impl Device for GlContext {
     type Texture = GlTexture;
     type RenderTarget = GlSurface;
@@ -356,9 +353,10 @@ impl Device for GlContext {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.colored_pipeline.apply();
-        self.colored_pipeline.set_transform(&transform);
-        self.colored_pipeline.draw(vertices);
+        let colored_pipeline = &mut self.data.borrow_mut().colored_pipeline;
+        colored_pipeline.apply();
+        colored_pipeline.set_transform(&transform);
+        colored_pipeline.draw(vertices);
     }
 
     fn triangles_textured(
@@ -389,10 +387,11 @@ impl Device for GlContext {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.textured_pipeline.apply();
-        self.textured_pipeline.set_transform(&transform);
-        self.textured_pipeline.set_flipped_y(texture.data.flipped_y);
-        self.textured_pipeline.draw(vertices);
+        let textured_pipeline = &mut self.data.borrow_mut().textured_pipeline;
+        textured_pipeline.apply();
+        textured_pipeline.set_transform(&transform);
+        textured_pipeline.set_flipped_y(texture.data.flipped_y);
+        textured_pipeline.draw(vertices);
     }
 
     fn triangles_textured_y8(
@@ -423,11 +422,11 @@ impl Device for GlContext {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.textured_y8_pipeline.apply();
-        self.textured_y8_pipeline.set_transform(&transform);
-        self.textured_y8_pipeline
-            .set_flipped_y(texture.data.flipped_y);
-        self.textured_y8_pipeline.draw(vertices);
+        let textured_y8_pipeline = &mut self.data.borrow_mut().textured_y8_pipeline;
+        textured_y8_pipeline.apply();
+        textured_y8_pipeline.set_transform(&transform);
+        textured_y8_pipeline.set_flipped_y(texture.data.flipped_y);
+        textured_y8_pipeline.draw(vertices);
     }
 
     fn line(
@@ -470,8 +469,9 @@ impl Device for GlContext {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.universal_pipeline.apply();
-        self.universal_pipeline.set_transform(&transform);
+        let universal_pipeline = &mut self.data.borrow_mut().universal_pipeline;
+        universal_pipeline.apply();
+        universal_pipeline.set_transform(&transform);
 
         unsafe {
             gl::Enable(gl::STENCIL_TEST);
@@ -481,52 +481,47 @@ impl Device for GlContext {
             gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
             gl::StencilOp(gl::KEEP, gl::KEEP, gl::INCR);
             if antialiasing {
-                self.universal_pipeline
-                    .apply_frag_uniforms(&Self::convert_paint(
-                        paint,
-                        texture,
-                        &scissor,
-                        thickness,
-                        fringe_width,
-                        1.0 - 0.5 / 255.0,
-                    ));
+                universal_pipeline.apply_frag_uniforms(&Self::convert_paint(
+                    paint,
+                    texture,
+                    &scissor,
+                    thickness,
+                    fringe_width,
+                    1.0 - 0.5 / 255.0,
+                ));
             } else {
-                self.universal_pipeline
-                    .apply_frag_uniforms(&Self::convert_paint(
-                        paint,
-                        texture,
-                        &scissor,
-                        thickness,
-                        fringe_width,
-                        -1.0,
-                    ));
+                universal_pipeline.apply_frag_uniforms(&Self::convert_paint(
+                    paint,
+                    texture,
+                    &scissor,
+                    thickness,
+                    fringe_width,
+                    -1.0,
+                ));
             }
             for path in paths {
                 let stroke_vertices = path.get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
-                        .draw(stroke_vertices, gl::TRIANGLE_STRIP);
+                    universal_pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
 
             // Draw anti-aliased pixels.
             if antialiasing {
-                self.universal_pipeline
-                    .apply_frag_uniforms(&Self::convert_paint(
-                        paint,
-                        texture,
-                        &scissor,
-                        thickness,
-                        fringe_width,
-                        -1.0,
-                    ));
+                universal_pipeline.apply_frag_uniforms(&Self::convert_paint(
+                    paint,
+                    texture,
+                    &scissor,
+                    thickness,
+                    fringe_width,
+                    -1.0,
+                ));
                 gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
                 gl::StencilOp(gl::KEEP, gl::KEEP, gl::KEEP);
                 for path in paths {
                     let stroke_vertices = path.get_stroke();
                     if !stroke_vertices.is_empty() {
-                        self.universal_pipeline
-                            .draw(stroke_vertices, gl::TRIANGLE_STRIP);
+                        universal_pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                     }
                 }
             }
@@ -538,8 +533,7 @@ impl Device for GlContext {
             for path in paths {
                 let stroke_vertices = path.get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
-                        .draw(stroke_vertices, gl::TRIANGLE_STRIP);
+                    universal_pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
             gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
@@ -590,24 +584,23 @@ impl Device for GlContext {
                 [transform.m31, transform.m32, 0.0, 1.0],
             ];
 
-            self.universal_pipeline.apply();
-            self.universal_pipeline.set_transform(&transform);
+            let universal_pipeline = &mut self.data.borrow_mut().universal_pipeline;
+            universal_pipeline.apply();
+            universal_pipeline.set_transform(&transform);
 
-            self.universal_pipeline.apply_frag_uniforms(&uniforms);
+            universal_pipeline.apply_frag_uniforms(&uniforms);
 
             // fill shape
             let fill_vertices = paths[0].get_fill();
             if !fill_vertices.is_empty() {
-                self.universal_pipeline
-                    .draw(fill_vertices, gl::TRIANGLE_FAN);
+                universal_pipeline.draw(fill_vertices, gl::TRIANGLE_FAN);
             }
 
             // antialias outline
             if antialiasing {
                 let stroke_vertices = paths[0].get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
-                        .draw(stroke_vertices, gl::TRIANGLE_STRIP);
+                    universal_pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
         } else {
@@ -621,8 +614,9 @@ impl Device for GlContext {
                 [transform.m31, transform.m32, 0.0, 1.0],
             ];
 
-            self.universal_pipeline.apply();
-            self.universal_pipeline.set_transform(&transform);
+            let universal_pipeline = &mut self.data.borrow_mut().universal_pipeline;
+            universal_pipeline.apply();
+            universal_pipeline.set_transform(&transform);
 
             unsafe {
                 // Draw shapes on stencil buffer
@@ -631,7 +625,7 @@ impl Device for GlContext {
                 gl::StencilFunc(gl::ALWAYS, 0, 0xff);
                 gl::ColorMask(gl::FALSE, gl::FALSE, gl::FALSE, gl::FALSE);
 
-                self.universal_pipeline.apply_frag_uniforms(&FragUniforms {
+                universal_pipeline.apply_frag_uniforms(&FragUniforms {
                     stroke_thr: -1.0,
                     type_: ShaderType::Simple as i32,
                     ..FragUniforms::default()
@@ -643,8 +637,7 @@ impl Device for GlContext {
                 for path in paths {
                     let fill_vertices = path.get_fill();
                     if !fill_vertices.is_empty() {
-                        self.universal_pipeline
-                            .draw(fill_vertices, gl::TRIANGLE_FAN);
+                        universal_pipeline.draw(fill_vertices, gl::TRIANGLE_FAN);
                     }
                 }
                 gl::Enable(gl::CULL_FACE);
@@ -652,7 +645,7 @@ impl Device for GlContext {
 
                 gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
 
-                self.universal_pipeline.apply_frag_uniforms(&uniforms);
+                universal_pipeline.apply_frag_uniforms(&uniforms);
 
                 // Draw anti-aliased pixels
                 if antialiasing {
@@ -661,8 +654,7 @@ impl Device for GlContext {
                     for path in paths {
                         let stroke_vertices = path.get_stroke();
                         if !stroke_vertices.is_empty() {
-                            self.universal_pipeline
-                                .draw(stroke_vertices, gl::TRIANGLE_STRIP);
+                            universal_pipeline.draw(stroke_vertices, gl::TRIANGLE_STRIP);
                         }
                     }
                 }
@@ -695,8 +687,7 @@ impl Device for GlContext {
 
                 gl::StencilFunc(gl::NOTEQUAL, 0x00, 0xff);
                 gl::StencilOp(gl::ZERO, gl::ZERO, gl::ZERO);
-                self.universal_pipeline
-                    .draw(&rect_verts, gl::TRIANGLE_STRIP);
+                universal_pipeline.draw(&rect_verts, gl::TRIANGLE_STRIP);
 
                 gl::Disable(gl::STENCIL_TEST);
             }
@@ -736,7 +727,7 @@ impl Context for GlContext {
         display_list: &Self::DisplayList,
     ) -> Result<(), &'static str> {
         let mut renderer = Renderer::new();
-        renderer.draw(self, surface, display_list, true);
+        renderer.draw(self, surface, display_list, true)?;
         Ok(())
     }
 }

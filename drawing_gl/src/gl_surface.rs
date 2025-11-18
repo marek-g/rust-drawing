@@ -1,4 +1,4 @@
-use crate::{generic::device::RenderTarget, Fonts, GlContext, GlTexture};
+use crate::generic::device::RenderTarget;
 use drawing_api::{ColorFormat, PixelToDeviceTransform};
 use gl::types::GLuint;
 
@@ -46,11 +46,4 @@ impl RenderTarget for GlSurface {
     }
 }
 
-impl drawing_api::Surface for GlSurface {
-    type DisplayList = Vec<crate::Primitive<GlTexture, Fonts<GlContext>>>;
-
-    fn draw(&self, display_list: &Self::DisplayList) -> Result<(), &'static str> {
-        //todo!()
-        Ok(())
-    }
-}
+impl drawing_api::Surface for GlSurface {}

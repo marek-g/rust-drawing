@@ -1,14 +1,9 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use crate::{
-    generic::{
-        device::Device,
-        texture_font::{Font, TextureFont},
-    },
-    GlContext,
+use crate::generic::{
+    device::Device,
+    texture_font::{Font, TextureFont},
 };
-
-pub type GlFonts = Fonts<GlContext>;
 
 pub(crate) struct FontsData<D: Device> {
     pub fonts: HashMap<String, TextureFont<D>>,

@@ -1,4 +1,3 @@
-use anyhow::Result;
 use font_size_renderer::FontSizeRenderer;
 
 use crate::generic::device::*;

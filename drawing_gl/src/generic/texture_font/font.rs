@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 use crate::generic::device::Device;
 use drawing_api::*;
 

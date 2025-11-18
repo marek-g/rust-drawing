@@ -1,4 +1,4 @@
-use crate::{PixelPoint, Point};
+use crate::PixelPoint;
 
 pub trait DisplayListBuilder {
     type DisplayList;
