@@ -15,6 +15,6 @@ mod pipelines;
 mod utils;
 
 pub use display_list::{
-    BasicCompositeOperation, BlendFactor, Brush, CompositeOperation, DisplayListBuilder, LineCap,
-    LineJoin, Paint, PathElement, Primitive, Solidity,
+    BasicCompositeOperation, BlendFactor, Brush, CompositeOperation, DisplayListBuilder, Fonts,
+    LineCap, LineJoin, Paint, PathElement, Primitive, Solidity,
 };

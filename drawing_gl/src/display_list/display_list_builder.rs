@@ -1,11 +1,11 @@
 use drawing_api::{Paint, PixelPoint, PixelThickness, Point, Thickness};
 
-use crate::GlTexture;
+use crate::{GlContext, GlTexture};
 
 use super::Primitive;
 
 pub struct DisplayListBuilder {
-    display_list: Vec<Primitive<GlTexture>>,
+    display_list: Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>,
 }
 
 impl DisplayListBuilder {
@@ -17,7 +17,7 @@ impl DisplayListBuilder {
 }
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
-    type DisplayList = Vec<Primitive<GlTexture>>;
+    type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>;
     type Paint = crate::Paint;
 
     fn draw_line(&mut self, from: PixelPoint, to: PixelPoint, paint: &Self::Paint) {

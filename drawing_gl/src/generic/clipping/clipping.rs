@@ -1,4 +1,4 @@
-use drawing_api::{PixelPoint, PixelRect, PixelSize, Texture};
+use drawing_api::{Fonts, PixelPoint, PixelRect, PixelSize, Texture};
 
 use crate::{PathElement, Primitive};
 
@@ -8,7 +8,7 @@ pub trait Clipping<T: Texture> {
     fn clip(self, rect: PixelRect) -> Self;
 }
 
-impl<T: Texture> Clipping<T> for Vec<Primitive<T>> {
+impl<T: Texture, F: Fonts> Clipping<T> for Vec<Primitive<T, F>> {
     fn clip(self, clipping_rect: PixelRect) -> Self {
         let mut res = Vec::new();
         let mut need_scissors = false;
@@ -92,7 +92,8 @@ impl<T: Texture> Clipping<T> for Vec<Primitive<T>> {
                 }
 
                 Primitive::Text {
-                    resource_key,
+                    fonts,
+                    family_name,
                     size,
                     color,
                     position,
@@ -110,7 +111,8 @@ impl<T: Texture> Clipping<T> for Vec<Primitive<T>> {
                         clipping_rect.size.height,
                     ) {
                         res.push(Primitive::Text {
-                            resource_key,
+                            fonts: fonts.clone(),
+                            family_name,
                             size,
                             color,
                             position,

@@ -3,6 +3,7 @@ use crate::ColorFormat;
 pub trait Context {
     type DisplayList;
     type DisplayListBuilder;
+    type Fonts;
     type Paint;
     type Surface;
     type Texture;

@@ -1,12 +1,9 @@
 use crate::generic::device::{Device, RenderTarget};
+use crate::generic::texture_font::Font;
+use crate::Fonts;
 use crate::{
     display_list::StrokeStyle,
-    generic::{
-        clipping::Scissor,
-        path::FlattenedPath,
-        resources::Resources,
-        texture_font::{Font, FontParams},
-    },
+    generic::{clipping::Scissor, path::FlattenedPath, texture_font::FontParams},
     BasicCompositeOperation, CompositeOperation, LineJoin, PathElement, Primitive,
 };
 use anyhow::Result;
@@ -27,31 +24,28 @@ impl Renderer {
         Renderer {}
     }
 
-    pub fn draw<D: Device, F: Font<D>>(
+    pub fn draw<D: Device>(
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &[Primitive<D::Texture>],
-        resources: &mut Resources<D, F>,
+        primitives: &[Primitive<D::Texture, Fonts<D>>],
         antialiasing: bool,
     ) -> Result<(), &'static str> {
         self.draw_internal(
             device,
             render_target,
             primitives,
-            resources,
             antialiasing,
             PixelTransform::identity(),
             Scissor::empty(),
         )
     }
 
-    fn draw_internal<D: Device, F: Font<D>>(
+    fn draw_internal<D: Device>(
         &mut self,
         device: &mut D,
         render_target: &D::RenderTarget,
-        primitives: &[Primitive<D::Texture>],
-        resources: &mut Resources<D, F>,
+        primitives: &[Primitive<D::Texture, Fonts<D>>],
         antialiasing: bool,
         pixel_transform: PixelTransform,
         scissor: Scissor,
@@ -106,14 +100,15 @@ impl Renderer {
                 }
 
                 Primitive::Text {
-                    resource_key,
+                    fonts,
+                    family_name,
                     color,
                     position,
                     clipping_rect,
                     size,
                     text,
                 } => {
-                    if let Some(font) = resources.fonts_mut().get_mut(resource_key) {
+                    if let Some(font) = fonts.data.borrow_mut().fonts.get_mut(family_name) {
                         font.draw(
                             device,
                             render_target,
@@ -222,7 +217,6 @@ impl Renderer {
                         device,
                         render_target,
                         primitives,
-                        resources,
                         antialiasing,
                         pixel_transform,
                         scissor.intersect_with_rect(*rect, &pixel_transform),
@@ -246,7 +240,6 @@ impl Renderer {
                         device,
                         render_target,
                         primitives,
-                        resources,
                         antialiasing,
                         transform.then(&pixel_transform),
                         scissor.apply_transform(transform),
@@ -260,7 +253,7 @@ impl Renderer {
 
                     device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-                    self.draw(device, &texture2_view, primitives, resources, antialiasing)?;
+                    self.draw(device, &texture2_view, primitives, antialiasing)?;
 
                     device.rect_textured(
                         render_target,

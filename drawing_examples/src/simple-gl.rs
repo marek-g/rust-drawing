@@ -1,15 +1,6 @@
-#![cfg_attr(, windows_subsystem = "windows")]
+#![windows_subsystem = "windows"]
 
-use drawing_api::backend::Device;
-use drawing_api::color::*;
-use drawing_api::font::Font;
-use drawing_api::primitive::*;
-use drawing_api::renderer::Renderer;
-use drawing_api::resources::Resources;
-use drawing_api::units::*;
-use drawing_api::TextureFont;
-
-use drawing_gl::{GlContextData, GlDevice, GlRenderTarget};
+use drawing_gl::{Brush, PathElement, Primitive, Solidity};
 use euclid::{Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
@@ -17,11 +8,18 @@ use std::error::Error;
 use std::ptr::null;
 use std::rc::Rc;
 
+use drawing_api::{
+    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, PixelPoint, PixelRect,
+    PixelSize, PixelThickness, PixelTransform, Point, Surface,
+};
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
-type DrawingDevice = drawing_gl::GlDevice;
-type DrawingFont = drawing_api::TextureFont<DrawingDevice>;
+type DrawingContext = drawing_gl::GlContext;
+type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
+type Paint1 = drawing_gl::Paint;
+type Texture1 = drawing_gl::GlTexture;
+type Fonts1 = drawing_gl::Fonts<drawing_gl::GlContext>;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -29,85 +27,66 @@ struct Assets;
 
 pub struct GlWindow {
     pub window: windowing_qt::Window,
-    pub gl_context_data: Option<GlContextData>,
+    pub gl_context: Option<DrawingContext>,
 
     pub time_query: GLuint,
     pub pos_y: f32,
 }
 
-pub struct AppResources {
-    pub resources: Resources<DrawingDevice, TextureFont<DrawingDevice>>,
-
-    pub image1_resource_id: i32,
-    pub image2_resource_id: i32,
-}
-
-impl AppResources {
-    pub fn new() -> Self {
-        AppResources {
-            resources: Resources::new(),
-            image1_resource_id: 0,
-            image2_resource_id: 0,
-        }
-    }
+pub struct Resources {
+    pub image1: Texture1,
+    pub image2: Texture1,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
-            .with_title("Example: simple (fui-system)")
+            .with_title("Example: simple2")
             .with_opengl_stencil_bits(8),
     )
     .unwrap();
 
-    let device_rc = Rc::new(RefCell::new(DrawingDevice::new().unwrap()));
-    let app_resources_rc = Rc::new(RefCell::new(AppResources::new()));
-
     let gl_window_rc = Rc::new(RefCell::new(GlWindow {
         window: windowing_qt::Window::new(None).unwrap(),
-        gl_context_data: None,
+        gl_context: None,
         time_query: 0,
         pos_y: 0.0f32,
     }));
 
-    setup_window(&gl_window_rc, &device_rc, &app_resources_rc);
+    setup_window(&gl_window_rc);
 
     app.message_loop();
 
     Ok(())
 }
 
-fn setup_window(
-    gl_window_rc: &Rc<RefCell<GlWindow>>,
-    device_rc: &Rc<RefCell<GlDevice>>,
-    app_resources_rc: &Rc<RefCell<AppResources>>,
-) {
+fn setup_window(gl_window_rc: &Rc<RefCell<GlWindow>>) {
     let window = &mut gl_window_rc.borrow_mut().window;
-    window.set_title("Example: simple (fui-system)").unwrap();
+    window.set_title("Example: simple2").unwrap();
     window.set_frame_position(800, 100);
     window.resize(800, 600);
 
     window.on_paint_gl({
         let gl_window_clone = gl_window_rc.clone();
-        let device_clone = device_rc.clone();
-        let app_resources_clone = app_resources_rc.clone();
         let mut initialized = false;
+        let mut resources = None;
+        let fonts = Fonts1::new();
 
         move || {
             if !initialized {
                 let mut gl_window = gl_window_clone.borrow_mut();
-                gl_window.gl_context_data =
-                    Some(device_clone.borrow_mut().init_context(|symbol| {
-                        gl_window
-                            .window
-                            .get_opengl_proc_address(symbol)
-                            .unwrap_or_else(|_| null())
-                    }));
+                let drawing_context = DrawingContext::new_gl_context(|symbol| {
+                    gl_window
+                        .window
+                        .get_opengl_proc_address(symbol)
+                        .unwrap_or_else(|_| null())
+                })
+                .unwrap();
 
-                initialize_resources(
-                    &mut app_resources_clone.borrow_mut(),
-                    &mut device_clone.borrow_mut(),
-                );
+                register_fonts(&fonts).unwrap();
+                resources = Some(initialize_resources(&drawing_context));
+
+                gl_window.gl_context = Some(drawing_context);
 
                 let mut time_query: GLuint = 0;
                 unsafe {
@@ -121,11 +100,9 @@ fn setup_window(
                 initialized = true;
             }
 
-            draw(
-                &mut device_clone.borrow_mut(),
-                &mut gl_window_clone.borrow_mut(),
-                &mut app_resources_clone.borrow_mut(),
-            );
+            if let Some(resources) = &resources {
+                draw(&mut gl_window_clone.borrow_mut(), &resources, &fonts);
+            }
 
             // continue animation
             gl_window_clone.borrow_mut().window.update();
@@ -135,32 +112,21 @@ fn setup_window(
     window.set_visible(true).unwrap();
 }
 
-fn initialize_resources(app_resources: &mut AppResources, device: &mut DrawingDevice) {
-    let font =
-        DrawingFont::create(Assets::get("OpenSans-Regular.ttf").unwrap().data.to_vec()).unwrap();
-
-    app_resources
-        .resources
-        .fonts_mut()
-        .insert("F1".to_string(), font);
-
-    // image
-    app_resources.image1_resource_id = app_resources.resources.get_next_texture_id();
-    let texture = create_chessboard(device, 4, 4);
-    app_resources
-        .resources
-        .textures_mut()
-        .insert(app_resources.image1_resource_id, texture);
-
-    app_resources.image2_resource_id = app_resources.resources.get_next_texture_id();
-    let texture = create_chessboard(device, 200, 200);
-    app_resources
-        .resources
-        .textures_mut()
-        .insert(app_resources.image2_resource_id, texture);
+fn register_fonts(fonts: &Fonts1) -> Result<(), &'static str> {
+    fonts.register_font(
+        &Assets::get("OpenSans-Regular.ttf").unwrap().data,
+        Some("F1"),
+    )
 }
 
-pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Texture {
+fn initialize_resources(drawing_context: &DrawingContext) -> Resources {
+    Resources {
+        image1: create_chessboard(drawing_context, 4, 4),
+        image2: create_chessboard(drawing_context, 200, 200),
+    }
+}
+
+pub fn create_chessboard(drawing_context: &DrawingContext, w: usize, h: usize) -> Texture1 {
     let mut data: Vec<u8> = Vec::with_capacity(w * h * 4);
     for y in 0..h {
         for x in 0..w {
@@ -176,16 +142,12 @@ pub fn create_chessboard<D: Device>(device: &mut D, w: usize, h: usize) -> D::Te
         }
     }
 
-    device
-        .create_texture(Some(&data), w as u16, h as u16, ColorFormat::RGBA, false)
+    drawing_context
+        .create_texture(&data, w as u16, h as u16, ColorFormat::RGBA)
         .unwrap()
 }
 
-pub fn draw(
-    device: &mut DrawingDevice,
-    gl_window: &mut GlWindow,
-    app_resources: &mut AppResources,
-) {
+pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
 
@@ -193,23 +155,31 @@ pub fn draw(
         return;
     }
 
-    // TODO: make Render methods static
-    let mut renderer = Renderer::new();
-
-    // TODO: how do we know that framebuffer id 0 is ok?
-    let render_target = GlRenderTarget::new(0, width as u16, height as u16, 1.0f32);
+    let framebuffer_id = gl_window.window.get_default_framebuffer_id();
+    gl_window.pos_y += 1.0f32;
+    let pos_y = gl_window.pos_y;
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    gl_window.pos_y += 1.0f32;
-    let pos_y = gl_window.pos_y;
+    /*let mut display_list_builder = DisplayListBuilder1::new();
+    let mut paint = Paint1::new();
+    paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    display_list_builder.draw_line(
+        PixelPoint::new(100.0f32, 100.0f32),
+        PixelPoint::new(300.5f32, 100.5f32),
+        &paint,
+    );
+    let display_list = display_list_builder.build().unwrap();*/
 
     let clipping_rect = PixelRect::new(
         PixelPoint::new(0.0f32, 0.0f32),
         PixelSize::new(width as f32, height as f32),
     );
 
-    let primitives = vec![
+    let display_list = vec![
+        Primitive::Clear {
+            color: [1.0f32, 0.66f32, 0.33f32, 1.0f32],
+        },
         Primitive::Rectangle {
             color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
             rect: PixelRect::new(
@@ -224,7 +194,7 @@ pub fn draw(
             end_point: PixelPoint::new(300.5f32, 100.5f32),
         },
         Primitive::Image {
-            resource_key: app_resources.image2_resource_id,
+            texture: resources.image2.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(100.0f32, 150.0f32),
                 PixelSize::new(200.0f32, 200.0f32),
@@ -251,7 +221,7 @@ pub fn draw(
                 PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
             ],
             brush: Brush::ImagePattern {
-                resource_key: app_resources.image2_resource_id,
+                texture: resources.image2.clone(),
                 transform: PixelTransform::identity()
                     .pre_translate(Vector2D::new(100.0f32, 350.0f32))
                     .pre_rotate(Angle::radians(pos_y / 100.0f32)),
@@ -259,7 +229,7 @@ pub fn draw(
             },
         },
         Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(0.0f32, 0.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
@@ -273,7 +243,7 @@ pub fn draw(
             end_point: PixelPoint::new(4.0f32, 4.0f32),
         },
         Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
@@ -287,7 +257,7 @@ pub fn draw(
             end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
         },
         Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
@@ -301,7 +271,7 @@ pub fn draw(
             end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
         },
         Primitive::Image {
-            resource_key: app_resources.image1_resource_id,
+            texture: resources.image1.clone(),
             rect: PixelRect::new(
                 PixelPoint::new(0.0f32, height as f32 - 4.0f32),
                 PixelSize::new(4.0f32, 4.0f32),
@@ -315,7 +285,8 @@ pub fn draw(
             end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
         },
         Primitive::Text {
-            resource_key: "F1".to_string(),
+            fonts: fonts.clone(),
+            family_name: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
             clipping_rect,
@@ -324,7 +295,8 @@ pub fn draw(
                 .to_string(),
         },
         Primitive::Text {
-            resource_key: "F1".to_string(),
+            fonts: fonts.clone(),
+            family_name: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
             clipping_rect,
@@ -333,7 +305,8 @@ pub fn draw(
                 .to_string(),
         },
         Primitive::Text {
-            resource_key: "F1".to_string(),
+            fonts: fonts.clone(),
+            family_name: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
             clipping_rect,
@@ -342,7 +315,8 @@ pub fn draw(
                 .to_string(),
         },
         Primitive::Text {
-            resource_key: "F1".to_string(),
+            fonts: fonts.clone(),
+            family_name: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
             clipping_rect,
@@ -351,7 +325,8 @@ pub fn draw(
                 .to_string(),
         },
         Primitive::Text {
-            resource_key: "F1".to_string(),
+            fonts: fonts.clone(),
+            family_name: "F1".to_string(),
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
             clipping_rect,
@@ -431,7 +406,8 @@ pub fn draw(
                     ),
                 },
                 Primitive::Text {
-                    resource_key: "F1".to_string(),
+                    fonts: fonts.clone(),
+                    family_name: "F1".to_string(),
                     color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                     position: PixelPoint::new(207.0f32, 232.0f32),
                     clipping_rect,
@@ -442,30 +418,19 @@ pub fn draw(
         },
     ];
 
-    // doesn't work on wayland?
-    /*unsafe {
-        gl::BeginQuery(gl::TIME_ELAPSED, gl_window.time_query);
-    }*/
+    //drawing_surface.draw(&drawing_list);
+    //drawing_context.set_render_target(&render_target);
 
-    device
-        .begin(gl_window.gl_context_data.as_ref().unwrap())
-        .unwrap();
+    if let Some(ref mut drawing_context) = gl_window.gl_context {
+        let drawing_surface = drawing_context.wrap_framebuffer(
+            framebuffer_id,
+            width as u16,
+            height as u16,
+            drawing_api::ColorFormat::RGBA,
+        );
 
-    device.clear(
-        //window_target.get_render_target(),
-        &render_target,
-        &[0.5f32, 0.4f32, 0.3f32, 1.0f32],
-    );
-    renderer
-        .draw(
-            device,
-            //window_target.get_render_target(),
-            &render_target,
-            &primitives,
-            &mut app_resources.resources,
-            false,
-        )
-        .unwrap();
+        drawing_context.draw(&drawing_surface, &display_list);
+    }
 
     // end
     let cpu_time = cpu_time.elapsed();

@@ -4,7 +4,9 @@ use drawing_api::{
 use euclid::Vector2D;
 use gl::types::*;
 use std::{
+    cell::RefCell,
     ffi::c_void,
+    rc::Rc,
     sync::{Arc, Mutex},
 };
 
@@ -13,7 +15,6 @@ use crate::{
         clipping::Scissor,
         device::{convert_color, ColoredVertex, Device, Paint, TexturedVertex},
         renderer::Renderer,
-        resources::Resources,
         texture_font::TextureFont,
     },
     pipelines::{
@@ -704,8 +705,9 @@ impl Device for GlContext {
 }
 
 impl Context for GlContext {
-    type DisplayList = Vec<Primitive<Self::Texture>>;
+    type DisplayList = Vec<Primitive<Self::Texture, Self::Fonts>>;
     type DisplayListBuilder = crate::DisplayListBuilder;
+    type Fonts = crate::Fonts<Self>;
     type Paint = crate::generic::device::Paint<Self::Texture>;
     type Surface = GlSurface;
     type Texture = GlTexture;
@@ -734,8 +736,7 @@ impl Context for GlContext {
         display_list: &Self::DisplayList,
     ) -> Result<(), &'static str> {
         let mut renderer = Renderer::new();
-        let mut resources = Resources::<GlContext, TextureFont<GlContext>>::new();
-        renderer.draw(self, surface, display_list, &mut resources, true);
+        renderer.draw(self, surface, display_list, true);
         Ok(())
     }
 }

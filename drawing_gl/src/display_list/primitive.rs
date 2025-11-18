@@ -3,7 +3,7 @@ use drawing_api::{PixelPoint, PixelRect, PixelThickness, PixelTransform};
 use crate::generic::device::Color;
 
 #[derive(Debug)]
-pub enum Primitive<Texture: drawing_api::Texture> {
+pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
     Clear {
         color: Color,
     },
@@ -27,7 +27,8 @@ pub enum Primitive<Texture: drawing_api::Texture> {
     },
 
     Text {
-        resource_key: String,
+        fonts: Fonts,
+        family_name: String,
         size: PixelThickness,
         color: Color,
         position: PixelPoint,
@@ -55,22 +56,22 @@ pub enum Primitive<Texture: drawing_api::Texture> {
 
     ClipRect {
         rect: PixelRect,
-        primitives: Vec<Primitive<Texture>>,
+        primitives: Vec<Primitive<Texture, Fonts>>,
     },
 
     ClipPath {
         path: Vec<PathElement>,
-        primitives: Vec<Primitive<Texture>>,
+        primitives: Vec<Primitive<Texture, Fonts>>,
     },
 
     Transform {
         transform: PixelTransform,
-        primitives: Vec<Primitive<Texture>>,
+        primitives: Vec<Primitive<Texture, Fonts>>,
     },
 
     Composite {
         color: Color,
-        primitives: Vec<Primitive<Texture>>,
+        primitives: Vec<Primitive<Texture, Fonts>>,
     },
 }
 

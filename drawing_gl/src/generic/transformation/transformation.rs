@@ -22,7 +22,7 @@ impl<T: Texture> Transformation<T> for PixelRect {
     }
 }
 
-impl<T: Texture> Transformation<T> for Vec<Primitive<T>> {
+impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
     fn translate(&mut self, offset: PixelPoint) {
         for primitive in self.iter_mut() {
             match primitive {
