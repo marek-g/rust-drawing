@@ -16,10 +16,11 @@ use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
 type DrawingContext = drawing_gl::GlContext;
-type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
-type Paint1 = drawing_gl::Paint;
-type Texture1 = drawing_gl::GlTexture;
-type Fonts1 = drawing_gl::Fonts<drawing_gl::GlContext>;
+
+type DisplayListBuilder1 = <DrawingContext as Context>::DisplayListBuilder;
+type Paint1 = <DrawingContext as Context>::Paint;
+type Texture1 = <DrawingContext as Context>::Texture;
+type Fonts1 = <DrawingContext as Context>::Fonts;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -161,7 +162,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    /*let mut display_list_builder = DisplayListBuilder1::new();
+    let mut display_list_builder = DisplayListBuilder1::new();
     let mut paint = Paint1::new();
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     display_list_builder.draw_line(
@@ -169,9 +170,9 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         PixelPoint::new(300.5f32, 100.5f32),
         &paint,
     );
-    let display_list = display_list_builder.build().unwrap();*/
+    let display_list = display_list_builder.build().unwrap();
 
-    let clipping_rect = PixelRect::new(
+    /*let clipping_rect = PixelRect::new(
         PixelPoint::new(0.0f32, 0.0f32),
         PixelSize::new(width as f32, height as f32),
     );
@@ -416,7 +417,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
                 },
             ],
         },
-    ];
+    ];*/
 
     //drawing_surface.draw(&drawing_list);
     //drawing_context.set_render_target(&render_target);

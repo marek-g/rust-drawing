@@ -699,7 +699,7 @@ impl Context for GlContext {
     type DisplayList = Vec<Primitive<Self::Texture, Self::Fonts>>;
     type DisplayListBuilder = crate::DisplayListBuilder;
     type Fonts = crate::Fonts<Self>;
-    type Paint = crate::generic::device::Paint<Self::Texture>;
+    type Paint = crate::Paint;
     type Surface = GlSurface;
     type Texture = GlTexture;
 
