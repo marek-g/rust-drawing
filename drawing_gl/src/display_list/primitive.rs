@@ -1,4 +1,4 @@
-use drawing_api::{PixelPoint, PixelRect, PixelThickness, PixelTransform};
+use drawing_api::{PixelLength, PixelPoint, PixelRect, PixelTransform};
 
 use crate::generic::device::Color;
 
@@ -10,7 +10,7 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
 
     Line {
         color: Color,
-        thickness: PixelThickness,
+        thickness: PixelLength,
         start_point: PixelPoint,
         end_point: PixelPoint,
     },
@@ -29,7 +29,7 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
     Text {
         fonts: Fonts,
         family_name: String,
-        size: PixelThickness,
+        size: PixelLength,
         color: Color,
         position: PixelPoint,
         clipping_rect: PixelRect,
@@ -38,13 +38,13 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
 
     Stroke {
         path: Vec<PathElement>,
-        thickness: PixelThickness,
+        thickness: PixelLength,
         brush: Brush<Texture>,
     },
 
     StrokeStyled {
         path: Vec<PathElement>,
-        thickness: PixelThickness,
+        thickness: PixelLength,
         brush: Brush<Texture>,
         style: StrokeStyle,
     },

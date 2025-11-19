@@ -366,7 +366,7 @@ impl Device for GlContextData {
         &mut self,
         target: &Self::RenderTarget,
         color: &crate::generic::device::Color,
-        thickness: drawing_api::DeviceThickness,
+        thickness: drawing_api::DeviceLength,
         start_point: drawing_api::Point,
         end_point: drawing_api::Point,
         transform: drawing_api::UnknownToDeviceTransform,

@@ -9,8 +9,8 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, PixelPoint, PixelRect,
-    PixelSize, PixelThickness, PixelTransform, Point, Surface,
+    Color, ColorFormat, Context, DipLength, DipPoint, DisplayListBuilder, Fonts, Paint,
+    PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -169,11 +169,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     display_list_builder.draw_paint(&paint);
 
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
-    display_list_builder.draw_line(
-        PixelPoint::new(100.0f32, 100.0f32),
-        PixelPoint::new(300.5f32, 100.5f32),
-        &paint,
-    );
+    display_list_builder.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
 
     let display_list = display_list_builder.build().unwrap();
 

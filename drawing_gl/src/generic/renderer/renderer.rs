@@ -72,7 +72,7 @@ impl Renderer {
                     device.line(
                         render_target,
                         color,
-                        DeviceThickness::new(thickness),
+                        DeviceLength::new(thickness),
                         start_point.to_untyped(),
                         end_point.to_untyped(),
                         unknown_to_device_transform,
@@ -275,7 +275,7 @@ impl Renderer {
 
     fn get_stroke_path(
         path: &[PathElement],
-        stroke_width: PixelThickness,
+        stroke_width: PixelLength,
         stroke_style: &StrokeStyle,
         aspect_ratio: f32,
         antialiasing: bool,

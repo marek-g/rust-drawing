@@ -258,7 +258,7 @@ pub fn ellipse_path<P: Into<PixelPoint>>(
 ///
 /// * `rect` - marks the boundaries
 /// * `thickness` - thickness of the outline, the outline grows inside the rect
-pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelThickness>>(
+pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelLength>>(
     rect: R,
     thickness: T,
 ) -> Vec<PathElement> {
@@ -274,7 +274,7 @@ pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelThickness>>(
     ))
 }
 
-pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelThickness>>(
+pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelLength>>(
     rect: R,
     thickness: T,
     radius: f32,
@@ -294,7 +294,7 @@ pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelThickness>>(
     )
 }
 
-pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelThickness>>(
+pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelLength>>(
     rect: R,
     thickness: T,
     radius: f32,
@@ -323,7 +323,7 @@ pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelThickness>>
 /// * `start` - starting point (left top pixel coordinates)
 /// * `length` - length of the line in pixels
 /// * `thickness` - thickness of the line, the outline grows to the bottom
-pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
+pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelLength>>(
     start: P,
     length: T,
     thickness: T,
@@ -348,7 +348,7 @@ pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
 /// * `start` - starting point (left top pixel coordinates)
 /// * `length` - length of the line in pixels
 /// * `thickness` - thickness of the line, the outline grows to the right
-pub fn pixel_vertical_line_path<P: Into<PixelPoint>, T: Into<PixelThickness>>(
+pub fn pixel_vertical_line_path<P: Into<PixelPoint>, T: Into<PixelLength>>(
     start: P,
     length: T,
     thickness: T,

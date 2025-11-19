@@ -10,7 +10,7 @@ use crate::PathElement;
 use core::option::Option;
 use drawing_api::ColorFormat;
 use drawing_api::Texture;
-use drawing_api::{DeviceThickness, PixelRect, Point, Rect, UnknownToDeviceTransform};
+use drawing_api::{DeviceLength, PixelRect, Point, Rect, UnknownToDeviceTransform};
 
 use super::Color;
 
@@ -63,7 +63,7 @@ pub trait Device {
         &mut self,
         target: &Self::RenderTarget,
         color: &Color,
-        thickness: DeviceThickness,
+        thickness: DeviceLength,
         start_point: Point,
         end_point: Point,
         transform: UnknownToDeviceTransform,
