@@ -13,7 +13,7 @@ edition = "2024"
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
 drawing_gl = { path = "../drawing_gl", version = "0.6.0-pre" }
-windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.14.0" }
+windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.14.1" }
 gl = "0.14"
 euclid = "0.22"
 rust-embed = "8.4"
