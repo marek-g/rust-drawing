@@ -164,12 +164,17 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let mut display_list_builder = DisplayListBuilder1::new();
     let mut paint = Paint1::new();
+
+    paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
+    display_list_builder.draw_paint(&paint);
+
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     display_list_builder.draw_line(
         PixelPoint::new(100.0f32, 100.0f32),
         PixelPoint::new(300.5f32, 100.5f32),
         &paint,
     );
+
     let display_list = display_list_builder.build().unwrap();
 
     /*let clipping_rect = PixelRect::new(

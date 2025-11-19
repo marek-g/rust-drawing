@@ -20,6 +20,12 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
 
+    fn draw_paint(&mut self, paint: &Self::Paint) {
+        // TODO: handle other cases
+        self.display_list
+            .push(Primitive::Clear { color: paint.color });
+    }
+
     fn draw_line(&mut self, from: PixelPoint, to: PixelPoint, paint: &Self::Paint) {
         self.display_list.push(Primitive::Line {
             color: paint.color,
