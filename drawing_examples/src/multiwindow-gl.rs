@@ -9,8 +9,8 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, PixelPoint, PixelRect,
-    PixelSize, PixelThickness, PixelTransform, Point, Surface,
+    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, PixelLength, PixelPoint,
+    PixelRect, PixelSize, PixelTransform, Point, Surface,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -208,7 +208,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(100.0f32, 100.0f32),
             end_point: PixelPoint::new(300.5f32, 100.5f32),
         },
@@ -222,13 +222,13 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(100.0f32, 350.0f32),
             end_point: PixelPoint::new(300.0f32, 150.0f32),
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(100.0f32, 150.0f32),
             end_point: PixelPoint::new(300.0f32, 350.0f32),
         },
@@ -257,7 +257,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(0.0f32, 0.0f32),
             end_point: PixelPoint::new(4.0f32, 4.0f32),
         },
@@ -271,7 +271,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(width as f32, 0.0f32),
             end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
         },
@@ -285,7 +285,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(width as f32, height as f32),
             end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
         },
@@ -299,7 +299,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         },
         Primitive::Line {
             color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             start_point: PixelPoint::new(0.0f32, height as f32),
             end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
         },
@@ -309,7 +309,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
             clipping_rect,
-            size: PixelThickness::new(10.0f32),
+            size: PixelLength::new(10.0f32),
             text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
@@ -319,7 +319,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
             clipping_rect,
-            size: PixelThickness::new(12.0f32),
+            size: PixelLength::new(12.0f32),
             text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
@@ -329,7 +329,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
             clipping_rect,
-            size: PixelThickness::new(14.0f32),
+            size: PixelLength::new(14.0f32),
             text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk\nABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
@@ -339,7 +339,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
             clipping_rect,
-            size: PixelThickness::new(16.0f32),
+            size: PixelLength::new(16.0f32),
             text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
@@ -349,7 +349,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
             color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
             position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
             clipping_rect,
-            size: PixelThickness::new(18.0f32),
+            size: PixelLength::new(18.0f32),
             text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
                 .to_string(),
         },
@@ -404,7 +404,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
                 ),
                 PathElement::ClosePath,
             ],
-            thickness: PixelThickness::new(1.0f32),
+            thickness: PixelLength::new(1.0f32),
             //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
             brush: Brush::LinearGradient {
                 start_point: PixelPoint::new(200.0f32, 450.0f32),
@@ -430,7 +430,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
                     color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
                     position: PixelPoint::new(207.0f32, 232.0f32),
                     clipping_rect,
-                    size: PixelThickness::new(22.0f32),
+                    size: PixelLength::new(22.0f32),
                     text: "Render target test".to_string(),
                 },
             ],
