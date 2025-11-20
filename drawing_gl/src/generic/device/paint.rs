@@ -163,7 +163,7 @@ impl<Texture1: drawing_api::Texture> Paint<Texture1> {
     }
 }
 
-impl drawing_api::Paint for Paint<GlTexture> {
+/*impl drawing_api::Paint for Paint<GlTexture> {
     fn set_color(&mut self, color: drawing_api::Color) {
         self.xform = PixelTransform::identity();
         self.extent = [0.0, 0.0];
@@ -174,3 +174,4 @@ impl drawing_api::Paint for Paint<GlTexture> {
         self.image = None;
     }
 }
+*/
