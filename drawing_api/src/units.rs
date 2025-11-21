@@ -38,3 +38,5 @@ pub type DipTransform = euclid::Transform2D<f32, DipUnit, DipUnit>;
 pub type DipToPixelTransform = euclid::Transform2D<f32, DipUnit, PixelUnit>;
 pub type DipToDeviceTransform = euclid::Transform2D<f32, DipUnit, DeviceUnit>;
 pub type PixelToDeviceTransform = euclid::Transform2D<f32, PixelUnit, DeviceUnit>;
+
+pub type Matrix = euclid::Transform3D<f32, euclid::UnknownUnit, euclid::UnknownUnit>;

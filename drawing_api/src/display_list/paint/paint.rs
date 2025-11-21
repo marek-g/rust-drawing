@@ -1,8 +1,12 @@
 use crate::Color;
 
-use super::{draw_style, BlendMode, DrawStyle, StrokeCap, StrokeJoin};
+use super::{
+    BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
+};
 
 pub trait Paint {
+    type Texture: crate::Texture;
+
     /// Sets the paint color for stroking or filling.
     fn set_color(&mut self, color: Color);
 
@@ -23,7 +27,7 @@ pub trait Paint {
 
     /// Sets the miter limit of the strokes rendered using this paint.
     fn set_stroke_miter(&mut self, miter: f32);
-    /*
+
     /// Sets the color filter of the paint.
     fn set_color_filter(&mut self, color_filter: &ColorFilter);
 
@@ -31,8 +35,8 @@ pub trait Paint {
     fn set_image_filter(&mut self, image_filter: &ImageFilter);
 
     /// Sets the color source of the paint.
-    fn set_color_source(&mut self, color_source: &ColorSource);
+    fn set_color_source(&mut self, color_source: &ColorSource<Self::Texture>);
 
-    /// Set the mask filter of a paint.
-    fn set_mask_filter(&mut self, mask_filter: &MaskFilter);*/
+    // Set the mask filter of a paint.
+    fn set_mask_filter(&mut self, mask_filter: &MaskFilter);
 }

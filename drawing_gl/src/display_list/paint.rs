@@ -1,4 +1,7 @@
-use crate::generic::device::{convert_color, Color};
+use crate::{
+    generic::device::{convert_color, Color},
+    GlTexture,
+};
 use drawing_api::{BlendMode, DrawStyle, StrokeCap, StrokeJoin};
 
 pub struct Paint {
@@ -26,6 +29,8 @@ impl Paint {
 }
 
 impl drawing_api::Paint for Paint {
+    type Texture = GlTexture;
+
     fn set_color(&mut self, color: drawing_api::Color) {
         self.color = convert_color(&color);
     }
@@ -52,5 +57,21 @@ impl drawing_api::Paint for Paint {
 
     fn set_stroke_miter(&mut self, miter: f32) {
         self.stroke_miter = miter;
+    }
+
+    fn set_color_filter(&mut self, color_filter: &drawing_api::ColorFilter) {
+        todo!()
+    }
+
+    fn set_image_filter(&mut self, image_filter: &drawing_api::ImageFilter) {
+        todo!()
+    }
+
+    fn set_color_source(&mut self, color_source: &drawing_api::ColorSource<Self::Texture>) {
+        todo!()
+    }
+
+    fn set_mask_filter(&mut self, mask_filter: &drawing_api::MaskFilter) {
+        todo!()
     }
 }
