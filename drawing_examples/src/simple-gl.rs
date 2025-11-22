@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use drawing_gl::{Brush, PathElement, Primitive, Solidity};
-use euclid::{Angle, Vector2D};
+use euclid::{rect, Angle, Vector2D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::error::Error;
@@ -9,8 +9,8 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DipLength, DipPoint, DisplayListBuilder, Fonts, Paint,
-    PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface,
+    Color, ColorFormat, Context, DipLength, DipPoint, DipRect, DisplayListBuilder, Fonts, Paint,
+    PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface, TextureSampling,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -168,8 +168,19 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
     display_list_builder.draw_paint(&paint);
 
+    paint.set_color(Color::rgb(1.0f32, 0.0f32, 0.0f32));
+    display_list_builder.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
+
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     display_list_builder.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
+
+    display_list_builder.draw_texture_rect(
+        &resources.image2,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
+        TextureSampling::Linear,
+        None,
+    );
 
     let display_list = display_list_builder.build().unwrap();
 

@@ -1,4 +1,7 @@
-use drawing_api::{DipPoint, PixelLength, PixelPoint};
+use drawing_api::{
+    DeviceRect, DipPoint, DipRect, PixelLength, PixelPoint, PixelRect, PixelSize, TextureSampling,
+};
+use euclid::rect;
 
 use crate::{GlContextData, GlTexture};
 
@@ -19,6 +22,7 @@ impl DisplayListBuilder {
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
+    type Texture = crate::GlTexture;
 
     fn draw_paint(&mut self, paint: &Self::Paint) {
         // TODO: handle other cases
@@ -40,6 +44,44 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             // TODO: convert
             start_point: PixelPoint::new(from.x, from.y),
             end_point: PixelPoint::new(to.x, to.y),
+        });
+    }
+
+    fn draw_rect(&mut self, rect: impl Into<DipRect>, paint: &Self::Paint) {
+        let rect = rect.into();
+        self.display_list.push(Primitive::Rectangle {
+            color: paint.color,
+            rect: PixelRect::new(
+                PixelPoint::new(rect.origin.x, rect.origin.y),
+                PixelSize::new(rect.size.width, rect.size.height),
+            ),
+        });
+    }
+
+    fn draw_texture_rect(
+        &mut self,
+        texture: &Self::Texture,
+        src_rect: impl Into<DeviceRect>,
+        dst_rect: impl Into<DipRect>,
+        sampling: TextureSampling,
+        paint: Option<&Self::Paint>,
+    ) {
+        let src_rect = src_rect.into();
+        let dst_rect = dst_rect.into();
+        self.display_list.push(Primitive::Image {
+            texture: texture.clone(),
+            rect: rect(
+                dst_rect.origin.x,
+                dst_rect.origin.y,
+                dst_rect.size.width,
+                dst_rect.size.height,
+            ),
+            uv: [
+                src_rect.origin.x,
+                src_rect.origin.y,
+                src_rect.origin.x + src_rect.size.width,
+                src_rect.origin.y + src_rect.size.height,
+            ],
         });
     }
 
