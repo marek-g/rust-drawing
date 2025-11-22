@@ -6,3 +6,6 @@ pub use fonts::*;
 
 mod paint;
 pub use paint::*;
+
+mod path;
+pub use path::*;
