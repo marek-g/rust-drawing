@@ -1,3 +1,4 @@
+#[derive(Copy, Clone)]
 pub enum BlendMode {
     Clear,
     Source,

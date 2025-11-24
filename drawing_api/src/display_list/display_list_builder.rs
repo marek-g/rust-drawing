@@ -5,6 +5,7 @@ use super::TextureSampling;
 pub trait DisplayListBuilder {
     type DisplayList;
     type Paint: crate::Paint;
+    type Paragraph;
     type Path;
     type Texture: crate::Texture;
 
@@ -34,6 +35,9 @@ pub trait DisplayListBuilder {
         sampling: TextureSampling,
         paint: Option<&Self::Paint>,
     );
+
+    /// Draws a paragraph at the specified location.
+    fn draw_paragraph(&mut self, location: impl Into<DipPoint>, paragraph: &Self::Paragraph);
 
     /// Builds display list.
     fn build(self) -> Result<Self::DisplayList, &'static str>;

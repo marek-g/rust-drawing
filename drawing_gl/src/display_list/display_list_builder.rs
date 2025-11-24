@@ -1,6 +1,6 @@
 use drawing_api::{
-    DeviceRect, DipPoint, DipRect, Paint, PixelLength, PixelPoint, PixelRect, PixelSize,
-    PixelTransform, TextureSampling,
+    DeviceRect, DipPoint, DipRect, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform,
+    TextureSampling,
 };
 use euclid::rect;
 
@@ -21,7 +21,7 @@ impl DisplayListBuilder {
 
     fn paint_to_brush(paint: &crate::Paint) -> super::Brush<GlTexture> {
         if let Some(color_source) = &paint.color_source {
-            match (color_source) {
+            match color_source {
                 drawing_api::ColorSource::Image {
                     image,
                     horizontal_tile_mode,
@@ -47,6 +47,7 @@ impl DisplayListBuilder {
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
+    type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Path = Vec<PathElement>;
     type Texture = crate::GlTexture;
 
@@ -116,6 +117,38 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 src_rect.origin.y + src_rect.size.height,
             ],
         });
+    }
+
+    fn draw_paragraph(&mut self, location: impl Into<DipPoint>, paragraph: &Self::Paragraph) {
+        let location = location.into();
+        let location = PixelPoint::new(location.x, location.y);
+        for el in paragraph {
+            match el {
+                Primitive::Text {
+                    fonts,
+                    family_name,
+                    size,
+                    color,
+                    position,
+                    clipping_rect,
+                    text,
+                } => {
+                    let position =
+                        PixelPoint::new(location.x + position.x, location.y + position.y);
+                    self.display_list.push(Primitive::Text {
+                        fonts: fonts.clone(),
+                        family_name: family_name.clone(),
+                        size: size.clone(),
+                        color: color.clone(),
+                        position,
+                        clipping_rect: clipping_rect.clone(),
+                        text: text.clone(),
+                    });
+                }
+
+                _ => (),
+            }
+        }
     }
 
     fn build(self) -> Result<Self::DisplayList, &'static str> {

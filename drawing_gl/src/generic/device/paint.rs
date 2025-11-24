@@ -3,11 +3,9 @@
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
 use crate::Brush;
-use crate::GlTexture;
 use drawing_api::PixelRect;
 use drawing_api::PixelTransform;
 
-use super::convert_color;
 use super::Color;
 
 #[derive(Debug, Copy, Clone)]

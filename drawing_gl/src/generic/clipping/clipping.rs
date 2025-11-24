@@ -100,26 +100,36 @@ impl<T: Texture, F: Fonts> Clipping<T> for Vec<Primitive<T, F>> {
                     clipping_rect: rect,
                     text,
                 } => {
-                    if let Some(clipped) = clip_rect(
-                        rect.origin.x,
-                        rect.origin.y,
-                        rect.size.width,
-                        rect.size.height,
-                        clipping_rect.origin.x,
-                        clipping_rect.origin.y,
-                        clipping_rect.size.width,
-                        clipping_rect.size.height,
-                    ) {
+                    let clipped = if let Some(rect) = rect {
+                        clip_rect(
+                            rect.origin.x,
+                            rect.origin.y,
+                            rect.size.width,
+                            rect.size.height,
+                            clipping_rect.origin.x,
+                            clipping_rect.origin.y,
+                            clipping_rect.size.width,
+                            clipping_rect.size.height,
+                        )
+                    } else {
+                        Some((
+                            clipping_rect.origin.x,
+                            clipping_rect.origin.y,
+                            clipping_rect.size.width,
+                            clipping_rect.size.height,
+                        ))
+                    };
+                    if let Some(clipped) = clipped {
                         res.push(Primitive::Text {
                             fonts: fonts.clone(),
                             family_name,
                             size,
                             color,
                             position,
-                            clipping_rect: PixelRect::new(
+                            clipping_rect: Some(PixelRect::new(
                                 PixelPoint::new(clipped.0, clipped.1),
                                 PixelSize::new(clipped.2, clipped.3),
-                            ),
+                            )),
                             text,
                         });
                     }

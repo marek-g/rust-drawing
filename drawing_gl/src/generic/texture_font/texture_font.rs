@@ -44,7 +44,7 @@ impl<D: Device> Font<D> for TextureFont<D> {
         color: &crate::generic::device::Color,
         text: &str,
         pos: Point,
-        clipping_rect: Rect,
+        clipping_rect: Option<Rect>,
         font_params: FontParams,
         transform: UnknownToDeviceTransform,
     ) -> Result<(), &'static str> {
@@ -52,12 +52,7 @@ impl<D: Device> Font<D> for TextureFont<D> {
         renderer.add(
             text,
             [pos.x as i32, pos.y as i32],
-            [
-                clipping_rect.origin.x,
-                clipping_rect.origin.y,
-                clipping_rect.size.width,
-                clipping_rect.size.height,
-            ],
+            clipping_rect.map(|r| [r.origin.x, r.origin.y, r.size.width, r.size.height]),
             *color,
         );
         renderer.draw_at(device, target, transform)?;

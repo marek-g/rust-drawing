@@ -13,7 +13,7 @@ use crate::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
-    GlSurface, GlTexture, GlTextureData, PathElement, Primitive,
+    GlSurface, GlTexture, GlTextureData,
 };
 
 pub struct GlContextData {
@@ -704,9 +704,9 @@ impl GlContext {
 
 impl Context for GlContext {
     type DisplayListBuilder = crate::DisplayListBuilder;
-    type DisplayList = Vec<Primitive<Self::Texture, Self::Fonts>>;
     type Fonts = crate::Fonts<GlContextData>;
     type Paint = crate::Paint;
+    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
     type Surface = GlSurface;
     type Texture = GlTexture;
@@ -726,7 +726,7 @@ impl Context for GlContext {
     fn draw(
         &self,
         surface: &Self::Surface,
-        display_list: &Self::DisplayList,
+        display_list: &<Self::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
     ) -> Result<(), &'static str> {
         let mut renderer = Renderer::new();
         let mut device = self.data.borrow_mut();

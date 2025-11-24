@@ -40,7 +40,7 @@ pub trait Font<D: Device> {
         color: &crate::generic::device::Color,
         text: &str,
         pos: Point,
-        clipping_rect: Rect,
+        clipping_rect: Option<Rect>,
         font_params: FontParams,
         transform: UnknownToDeviceTransform,
     ) -> Result<(), &'static str>;

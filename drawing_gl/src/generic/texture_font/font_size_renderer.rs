@@ -62,7 +62,13 @@ impl<D: Device> FontSizeRenderer<D> {
 
     /// Add some text to the current draw scene relative to the top left corner
     /// of the screen using pixel coordinates.
-    pub fn add(&mut self, text: &str, pos: [i32; 2], clipping_rect: [f32; 4], color: [f32; 4]) {
+    pub fn add(
+        &mut self,
+        text: &str,
+        pos: [i32; 2],
+        clipping_rect: Option<[f32; 4]>,
+        color: [f32; 4],
+    ) {
         // `Result` is used here as an `Either` analogue.
         let (mut x, mut y) = (pos[0] as f32, pos[1] as f32);
         let line_height = self.bitmap_font.get_font_height() as f32;
@@ -86,29 +92,46 @@ impl<D: Device> FontSizeRenderer<D> {
                 let y_offset = y + ch_info.y_offset as f32;
                 let tex = ch_info.tex;
 
-                if let Some(clipped) = clip_image(
-                    x_offset,
-                    y_offset,
-                    ch_info.width as f32,
-                    ch_info.height as f32,
-                    clipping_rect[0],
-                    clipping_rect[1],
-                    clipping_rect[2],
-                    clipping_rect[3],
-                    &[
-                        tex[0],
-                        tex[1],
-                        tex[0] + ch_info.tex_width,
-                        tex[1] + ch_info.tex_height,
-                    ],
-                ) {
+                if let Some(clipping_rect) = clipping_rect {
+                    if let Some(clipped) = clip_image(
+                        x_offset,
+                        y_offset,
+                        ch_info.width as f32,
+                        ch_info.height as f32,
+                        clipping_rect[0],
+                        clipping_rect[1],
+                        clipping_rect[2],
+                        clipping_rect[3],
+                        &[
+                            tex[0],
+                            tex[1],
+                            tex[0] + ch_info.tex_width,
+                            tex[1] + ch_info.tex_height,
+                        ],
+                    ) {
+                        Self::add_image(
+                            &mut self.vertex_data,
+                            clipped.0,
+                            clipped.1,
+                            clipped.2,
+                            clipped.3,
+                            clipped.4,
+                            color,
+                        );
+                    }
+                } else {
                     Self::add_image(
                         &mut self.vertex_data,
-                        clipped.0,
-                        clipped.1,
-                        clipped.2,
-                        clipped.3,
-                        clipped.4,
+                        x_offset,
+                        y_offset,
+                        ch_info.width as f32,
+                        ch_info.height as f32,
+                        [
+                            tex[0],
+                            tex[1],
+                            tex[0] + ch_info.tex_width,
+                            tex[1] + ch_info.tex_height,
+                        ],
                         color,
                     );
                 }

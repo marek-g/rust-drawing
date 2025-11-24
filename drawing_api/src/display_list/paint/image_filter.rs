@@ -2,6 +2,7 @@ use crate::Matrix;
 
 use super::{TextureSampling, TileMode};
 
+#[derive(Clone)]
 pub enum ImageFilter {
     Blur {
         x_sigma: f32,

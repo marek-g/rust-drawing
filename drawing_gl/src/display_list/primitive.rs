@@ -32,7 +32,7 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
         size: PixelLength,
         color: Color,
         position: PixelPoint,
-        clipping_rect: PixelRect,
+        clipping_rect: Option<PixelRect>,
         text: String,
     },
 

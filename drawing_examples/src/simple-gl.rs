@@ -10,8 +10,8 @@ use std::rc::Rc;
 
 use drawing_api::{
     Color, ColorFormat, Context, DipLength, DipPoint, DipRect, DisplayListBuilder, Fonts, Paint,
-    PathBuilder, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface,
-    TextureSampling,
+    ParagraphBuilder, PathBuilder, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform,
+    Point, Surface, TextureSampling,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -19,6 +19,7 @@ use windowing_qt::{Application, ApplicationOptions};
 type DrawingContext = drawing_gl::GlContext;
 
 type DisplayListBuilder1 = <DrawingContext as Context>::DisplayListBuilder;
+type ParagraphBuilder1 = <DrawingContext as Context>::ParagraphBuilder;
 type PathBuilder1 = <DrawingContext as Context>::PathBuilder;
 type Paint1 = <DrawingContext as Context>::Paint;
 type Texture1 = <DrawingContext as Context>::Texture;
@@ -164,19 +165,19 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    let mut display_list_builder = DisplayListBuilder1::new();
+    let mut dlb = DisplayListBuilder1::new();
     let mut paint = Paint1::new();
 
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
-    display_list_builder.draw_paint(&paint);
+    dlb.draw_paint(&paint);
 
     paint.set_color(Color::rgb(1.0f32, 0.0f32, 0.0f32));
-    display_list_builder.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
+    dlb.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
 
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
-    display_list_builder.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
+    dlb.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
 
-    display_list_builder.draw_texture_rect(
+    dlb.draw_texture_rect(
         &resources.image2,
         rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
@@ -185,14 +186,14 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     );
 
     paint.set_color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
-    display_list_builder.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
-    display_list_builder.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
+    dlb.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
+    dlb.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
 
-    let mut path_builder = PathBuilder1::new();
-    path_builder.move_to((100.0f32, 350.0f32));
-    path_builder.line_to((300.0f32, 350.0f32));
-    path_builder.line_to((300.0f32, 550.0f32));
-    path_builder.line_to((100.0f32, 550.0f32));
+    let mut pb = PathBuilder1::new();
+    pb.move_to((100.0f32, 350.0f32));
+    pb.line_to((300.0f32, 350.0f32));
+    pb.line_to((300.0f32, 550.0f32));
+    pb.line_to((100.0f32, 550.0f32));
     paint.set_color_source(Some(drawing_api::ColorSource::Image {
         image: resources.image2.clone(),
         horizontal_tile_mode: drawing_api::TileMode::Repeat,
@@ -204,31 +205,31 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
                 .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
         ),
     }));
-    display_list_builder.draw_path(&path_builder.build().unwrap(), &paint);
+    dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    display_list_builder.draw_texture_rect(
+    dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         TextureSampling::Linear,
         None,
     );
-    display_list_builder.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
+    dlb.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
 
-    display_list_builder.draw_texture_rect(
+    dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
         TextureSampling::Linear,
         None,
     );
-    display_list_builder.draw_line(
+    dlb.draw_line(
         (width as f32 - 4.0f32, 4.0f32),
         (width as f32, 0.0f32),
         &paint,
     );
 
-    display_list_builder.draw_texture_rect(
+    dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(
@@ -240,26 +241,31 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         TextureSampling::Linear,
         None,
     );
-    display_list_builder.draw_line(
+    dlb.draw_line(
         (width as f32, height as f32),
         (width as f32 - 4.0f32, height as f32 - 4.0f32),
         &paint,
     );
 
-    display_list_builder.draw_texture_rect(
+    dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
         TextureSampling::Linear,
         None,
     );
-    display_list_builder.draw_line(
+    dlb.draw_line(
         (0.0f32, height as f32),
         (4.0f32, height as f32 - 4.0f32),
         &paint,
     );
 
-    let display_list = display_list_builder.build().unwrap();
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    pb.add_text("Hello World!");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((0.0f32, 0.0f32), &paragraph);
+
+    let display_list = dlb.build().unwrap();
 
     /*let clipping_rect = PixelRect::new(
         PixelPoint::new(0.0f32, 0.0f32),

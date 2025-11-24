@@ -114,7 +114,7 @@ impl Renderer {
                             color,
                             text,
                             position.to_untyped(),
-                            clipping_rect.to_untyped(),
+                            clipping_rect.map(|r| r.to_untyped()),
                             FontParams {
                                 size: size.get() as u8,
                             },

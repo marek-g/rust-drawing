@@ -57,10 +57,11 @@ impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
                     <Point2D<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
                         position, offset,
                     );
-                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
-                        clipping_rect,
-                        offset,
-                    );
+                    clipping_rect.as_mut().map(|r| {
+                        <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                            r, offset,
+                        )
+                    });
                 }
 
                 Primitive::Stroke { path, .. } => {

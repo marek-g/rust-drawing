@@ -4,6 +4,7 @@ use crate::{
 };
 use drawing_api::{BlendMode, DrawStyle, StrokeCap, StrokeJoin};
 
+#[derive(Clone)]
 pub struct Paint {
     pub(crate) color: Color,
     pub(crate) blend_mode: BlendMode,
