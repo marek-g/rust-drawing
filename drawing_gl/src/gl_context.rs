@@ -13,7 +13,7 @@ use crate::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
-    GlSurface, GlTexture, GlTextureData, Primitive,
+    GlSurface, GlTexture, GlTextureData, PathElement, Primitive,
 };
 
 pub struct GlContextData {
@@ -707,6 +707,7 @@ impl Context for GlContext {
     type DisplayList = Vec<Primitive<Self::Texture, Self::Fonts>>;
     type Fonts = crate::Fonts<GlContextData>;
     type Paint = crate::Paint;
+    type PathBuilder = crate::PathBuilder;
     type Surface = GlSurface;
     type Texture = GlTexture;
 

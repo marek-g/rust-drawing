@@ -8,6 +8,7 @@ pub trait Context: Clone {
     type DisplayList;
     type Fonts;
     type Paint;
+    type PathBuilder;
     type Surface;
     type Texture;
 

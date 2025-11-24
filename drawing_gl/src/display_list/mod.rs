@@ -7,5 +7,8 @@ pub use fonts::*;
 mod paint;
 pub use paint::*;
 
+mod path_builder;
+pub use path_builder::*;
+
 mod primitive;
 pub use primitive::*;

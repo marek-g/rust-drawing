@@ -12,6 +12,10 @@ pub struct Paint {
     pub(crate) stroke_join: StrokeJoin,
     pub(crate) stroke_width: f32,
     pub(crate) stroke_miter: f32,
+    pub(crate) color_filter: Option<drawing_api::ColorFilter>,
+    pub(crate) image_filter: Option<drawing_api::ImageFilter>,
+    pub(crate) color_source: Option<drawing_api::ColorSource<GlTexture>>,
+    pub(crate) mask_filter: Option<drawing_api::MaskFilter>,
 }
 
 impl Paint {
@@ -24,6 +28,10 @@ impl Paint {
             stroke_join: StrokeJoin::Miter,
             stroke_width: 0.0f32, // hairline width
             stroke_miter: 4.0f32,
+            color_filter: None,
+            image_filter: None,
+            color_source: None,
+            mask_filter: None,
         }
     }
 }
@@ -59,19 +67,19 @@ impl drawing_api::Paint for Paint {
         self.stroke_miter = miter;
     }
 
-    fn set_color_filter(&mut self, color_filter: &drawing_api::ColorFilter) {
-        todo!()
+    fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
+        self.color_filter = color_filter;
     }
 
-    fn set_image_filter(&mut self, image_filter: &drawing_api::ImageFilter) {
-        todo!()
+    fn set_image_filter(&mut self, image_filter: Option<drawing_api::ImageFilter>) {
+        self.image_filter = image_filter;
     }
 
-    fn set_color_source(&mut self, color_source: &drawing_api::ColorSource<Self::Texture>) {
-        todo!()
+    fn set_color_source(&mut self, color_source: Option<drawing_api::ColorSource<Self::Texture>>) {
+        self.color_source = color_source;
     }
 
-    fn set_mask_filter(&mut self, mask_filter: &drawing_api::MaskFilter) {
-        todo!()
+    fn set_mask_blur_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
+        self.mask_filter = mask_filter;
     }
 }

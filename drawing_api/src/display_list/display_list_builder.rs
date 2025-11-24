@@ -1,10 +1,11 @@
-use crate::{DeviceRect, DipPoint, DipRect, Rect};
+use crate::{DeviceRect, DipPoint, DipRect};
 
 use super::TextureSampling;
 
 pub trait DisplayListBuilder {
     type DisplayList;
     type Paint: crate::Paint;
+    type Path;
     type Texture: crate::Texture;
 
     /// Fills the current clip with the specified paint.
@@ -21,6 +22,9 @@ pub trait DisplayListBuilder {
     /// Draws a rectangle.
     fn draw_rect(&mut self, rect: impl Into<DipRect>, paint: &Self::Paint);
 
+    /// Draws a path.
+    fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint);
+
     /// Draw a portion of texture at the specified location.
     fn draw_texture_rect(
         &mut self,
@@ -31,5 +35,6 @@ pub trait DisplayListBuilder {
         paint: Option<&Self::Paint>,
     );
 
+    /// Builds display list.
     fn build(self) -> Result<Self::DisplayList, &'static str>;
 }

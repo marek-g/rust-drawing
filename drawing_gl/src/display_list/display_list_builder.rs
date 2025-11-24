@@ -1,11 +1,12 @@
 use drawing_api::{
-    DeviceRect, DipPoint, DipRect, PixelLength, PixelPoint, PixelRect, PixelSize, TextureSampling,
+    DeviceRect, DipPoint, DipRect, Paint, PixelLength, PixelPoint, PixelRect, PixelSize,
+    PixelTransform, TextureSampling,
 };
 use euclid::rect;
 
 use crate::{GlContextData, GlTexture};
 
-use super::Primitive;
+use super::{PathElement, Primitive};
 
 pub struct DisplayListBuilder {
     display_list: Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
@@ -17,11 +18,36 @@ impl DisplayListBuilder {
             display_list: Vec::new(),
         }
     }
+
+    fn paint_to_brush(paint: &crate::Paint) -> super::Brush<GlTexture> {
+        if let Some(color_source) = &paint.color_source {
+            match (color_source) {
+                drawing_api::ColorSource::Image {
+                    image,
+                    horizontal_tile_mode,
+                    vertical_tile_mode,
+                    sampling,
+                    transformation,
+                } => super::Brush::ImagePattern {
+                    texture: image.clone(),
+                    transform: transformation
+                        .map(|t| PixelTransform::from_untyped(&t.to_2d()))
+                        .unwrap_or_else(|| PixelTransform::identity()),
+                    alpha: 1.0f32,
+                },
+
+                _ => super::Brush::Color { color: paint.color },
+            }
+        } else {
+            super::Brush::Color { color: paint.color }
+        }
+    }
 }
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
+    type Path = Vec<PathElement>;
     type Texture = crate::GlTexture;
 
     fn draw_paint(&mut self, paint: &Self::Paint) {
@@ -55,6 +81,13 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 PixelPoint::new(rect.origin.x, rect.origin.y),
                 PixelSize::new(rect.size.width, rect.size.height),
             ),
+        });
+    }
+
+    fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint) {
+        self.display_list.push(Primitive::Fill {
+            path: path.to_vec(),
+            brush: DisplayListBuilder::paint_to_brush(paint),
         });
     }
 

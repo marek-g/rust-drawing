@@ -2,7 +2,7 @@ use drawing_api::{PixelLength, PixelPoint, PixelRect, PixelTransform};
 
 use crate::generic::device::Color;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
     Clear {
         color: Color,
@@ -75,7 +75,7 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
     },
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum PathElement {
     MoveTo(PixelPoint),
 
@@ -88,7 +88,7 @@ pub enum PathElement {
     Solidity(Solidity),
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Brush<Texture: drawing_api::Texture> {
     Color {
         color: Color,

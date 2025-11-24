@@ -16,5 +16,5 @@ mod utils;
 
 pub use display_list::{
     BasicCompositeOperation, BlendFactor, Brush, CompositeOperation, DisplayListBuilder, Fonts,
-    LineCap, LineJoin, Paint, PathElement, Primitive, Solidity,
+    LineCap, LineJoin, Paint, PathBuilder, PathElement, Primitive, Solidity,
 };

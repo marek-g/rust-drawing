@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub struct Color {
     pub red: f32,
     pub green: f32,
@@ -28,6 +29,7 @@ impl Color {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum ColorSpace {
     SRGB,
     ExtendedSRGB,

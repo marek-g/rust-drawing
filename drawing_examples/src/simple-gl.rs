@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use drawing_gl::{Brush, PathElement, Primitive, Solidity};
-use euclid::{rect, Angle, Vector2D};
+use euclid::{default::Transform3D, rect, Angle, Vector2D, Vector3D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::error::Error;
@@ -10,7 +10,8 @@ use std::rc::Rc;
 
 use drawing_api::{
     Color, ColorFormat, Context, DipLength, DipPoint, DipRect, DisplayListBuilder, Fonts, Paint,
-    PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface, TextureSampling,
+    PathBuilder, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform, Point, Surface,
+    TextureSampling,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -18,6 +19,7 @@ use windowing_qt::{Application, ApplicationOptions};
 type DrawingContext = drawing_gl::GlContext;
 
 type DisplayListBuilder1 = <DrawingContext as Context>::DisplayListBuilder;
+type PathBuilder1 = <DrawingContext as Context>::PathBuilder;
 type Paint1 = <DrawingContext as Context>::Paint;
 type Texture1 = <DrawingContext as Context>::Texture;
 type Fonts1 = <DrawingContext as Context>::Fonts;
@@ -182,6 +184,81 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
         None,
     );
 
+    paint.set_color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
+    display_list_builder.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
+    display_list_builder.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
+
+    let mut path_builder = PathBuilder1::new();
+    path_builder.move_to((100.0f32, 350.0f32));
+    path_builder.line_to((300.0f32, 350.0f32));
+    path_builder.line_to((300.0f32, 550.0f32));
+    path_builder.line_to((100.0f32, 550.0f32));
+    paint.set_color_source(Some(drawing_api::ColorSource::Image {
+        image: resources.image2.clone(),
+        horizontal_tile_mode: drawing_api::TileMode::Repeat,
+        vertical_tile_mode: drawing_api::TileMode::Repeat,
+        sampling: TextureSampling::Linear,
+        transformation: Some(
+            Transform3D::identity()
+                .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
+                .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
+        ),
+    }));
+    display_list_builder.draw_path(&path_builder.build().unwrap(), &paint);
+
+    display_list_builder.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    display_list_builder.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
+
+    display_list_builder.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    display_list_builder.draw_line(
+        (width as f32 - 4.0f32, 4.0f32),
+        (width as f32, 0.0f32),
+        &paint,
+    );
+
+    display_list_builder.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(
+            width as f32 - 4.0f32,
+            height as f32 - 4.0f32,
+            4.0f32,
+            4.0f32,
+        ),
+        TextureSampling::Linear,
+        None,
+    );
+    display_list_builder.draw_line(
+        (width as f32, height as f32),
+        (width as f32 - 4.0f32, height as f32 - 4.0f32),
+        &paint,
+    );
+
+    display_list_builder.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    display_list_builder.draw_line(
+        (0.0f32, height as f32),
+        (4.0f32, height as f32 - 4.0f32),
+        &paint,
+    );
+
     let display_list = display_list_builder.build().unwrap();
 
     /*let clipping_rect = PixelRect::new(
@@ -190,113 +267,6 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     );
 
     let display_list = vec![
-        Primitive::Clear {
-            color: [1.0f32, 0.66f32, 0.33f32, 1.0f32],
-        },
-        Primitive::Rectangle {
-            color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
-            rect: PixelRect::new(
-                PixelPoint::new(100.5f32, 101.5f32),
-                PixelSize::new(200.0f32, 50.0f32),
-            ),
-        },
-        Primitive::Line {
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 100.0f32),
-            end_point: PixelPoint::new(300.5f32, 100.5f32),
-        },
-        Primitive::Image {
-            texture: resources.image2.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(100.0f32, 150.0f32),
-                PixelSize::new(200.0f32, 200.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 350.0f32),
-            end_point: PixelPoint::new(300.0f32, 150.0f32),
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 150.0f32),
-            end_point: PixelPoint::new(300.0f32, 350.0f32),
-        },
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
-                PathElement::LineTo(PixelPoint::new(300.0f32, 350.0f32)),
-                PathElement::LineTo(PixelPoint::new(300.0f32, 550.0f32)),
-                PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
-            ],
-            brush: Brush::ImagePattern {
-                texture: resources.image2.clone(),
-                transform: PixelTransform::identity()
-                    .pre_translate(Vector2D::new(100.0f32, 350.0f32))
-                    .pre_rotate(Angle::radians(pos_y / 100.0f32)),
-                alpha: 1.0f32,
-            },
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(0.0f32, 0.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(0.0f32, 0.0f32),
-            end_point: PixelPoint::new(4.0f32, 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(width as f32, 0.0f32),
-            end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(width as f32, height as f32),
-            end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(0.0f32, height as f32 - 4.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelThickness::new(1.0f32),
-            start_point: PixelPoint::new(0.0f32, height as f32),
-            end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
-        },
         Primitive::Text {
             fonts: fonts.clone(),
             family_name: "F1".to_string(),

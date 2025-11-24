@@ -2,23 +2,24 @@ use crate::{Matrix, Point, Texture};
 
 use super::{Color, TextureSampling, TileMode};
 
-pub enum ColorSource<'a, T: Texture> {
+#[derive(Debug, Clone)]
+pub enum ColorSource<T: Texture> {
     LinearGradient {
         start: Point,
         end: Point,
-        colors: &'a [Color],
-        stops: &'a [f32],
+        colors: Vec<Color>,
+        stops: Vec<f32>,
         tile_mode: TileMode,
-        transformation: Option<&'a Matrix>,
+        transformation: Option<Matrix>,
     },
 
     RadialGradient {
         center: Point,
         radius: f32,
-        colors: &'a [Color],
-        stops: &'a [f32],
+        colors: Vec<Color>,
+        stops: Vec<f32>,
         tile_mode: TileMode,
-        transformation: Option<&'a Matrix>,
+        transformation: Option<Matrix>,
     },
 
     ConicalGradient {
@@ -26,20 +27,20 @@ pub enum ColorSource<'a, T: Texture> {
         start_radius: f32,
         end_center: Point,
         end_radius: f32,
-        colors: &'a [Color],
-        stops: &'a [f32],
+        colors: Vec<Color>,
+        stops: Vec<f32>,
         tile_mode: TileMode,
-        transformation: Option<&'a Matrix>,
+        transformation: Option<Matrix>,
     },
 
     SweepGradient {
         center: Point,
         start: Point,
         end: Point,
-        colors: &'a [Color],
-        stops: &'a [f32],
+        colors: Vec<Color>,
+        stops: Vec<f32>,
         tile_mode: TileMode,
-        transformation: Option<&'a Matrix>,
+        transformation: Option<Matrix>,
     },
 
     Image {
@@ -47,6 +48,6 @@ pub enum ColorSource<'a, T: Texture> {
         horizontal_tile_mode: TileMode,
         vertical_tile_mode: TileMode,
         sampling: TextureSampling,
-        transformation: Option<&'a Matrix>,
+        transformation: Option<Matrix>,
     },
 }

@@ -29,14 +29,14 @@ pub trait Paint {
     fn set_stroke_miter(&mut self, miter: f32);
 
     /// Sets the color filter of the paint.
-    fn set_color_filter(&mut self, color_filter: &ColorFilter);
+    fn set_color_filter(&mut self, color_filter: Option<ColorFilter>);
 
     /// Sets the image filter of a paint.
-    fn set_image_filter(&mut self, image_filter: &ImageFilter);
+    fn set_image_filter(&mut self, image_filter: Option<ImageFilter>);
 
     /// Sets the color source of the paint.
-    fn set_color_source(&mut self, color_source: &ColorSource<Self::Texture>);
+    fn set_color_source(&mut self, color_source: Option<ColorSource<Self::Texture>>);
 
     // Set the mask filter of a paint.
-    fn set_mask_filter(&mut self, mask_filter: &MaskFilter);
+    fn set_mask_blur_filter(&mut self, mask_filter: Option<MaskFilter>);
 }
