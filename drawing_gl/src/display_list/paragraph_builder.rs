@@ -53,6 +53,6 @@ impl drawing_api::ParagraphBuilder<GlTexture, crate::display_list::Paint> for Pa
     }
 
     fn build(self) -> Result<Self::Paragraph, &'static str> {
-        todo!()
+        Ok(self.paragraph)
     }
 }

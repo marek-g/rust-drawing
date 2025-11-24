@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::generic::{
@@ -18,6 +19,14 @@ impl<D: Device> Clone for Fonts<D> {
         Self {
             data: self.data.clone(),
         }
+    }
+}
+
+impl<D: Device> Debug for Fonts<D> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Fonts")
+            .field("data", &self.data.borrow().fonts.keys())
+            .finish()
     }
 }
 

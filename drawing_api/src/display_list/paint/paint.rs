@@ -4,7 +4,7 @@ use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
 };
 
-pub trait Paint {
+pub trait Paint: Default {
     type Texture: crate::Texture;
 
     /// Sets the paint color for stroking or filling.

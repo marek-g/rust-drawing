@@ -1,6 +1,5 @@
 #![windows_subsystem = "windows"]
 
-use drawing_gl::{Brush, PathElement, Primitive, Solidity};
 use euclid::{default::Transform3D, rect, Angle, Vector2D, Vector3D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
@@ -9,9 +8,8 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DipLength, DipPoint, DipRect, DisplayListBuilder, Fonts, Paint,
-    ParagraphBuilder, PathBuilder, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform,
-    Point, Surface, TextureSampling,
+    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
+    ParagraphStyle, PathBuilder, TextureSampling,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
@@ -166,7 +164,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     let cpu_time = cpu_time::ProcessTime::now();
 
     let mut dlb = DisplayListBuilder1::new();
-    let mut paint = Paint1::new();
+    let mut paint = Paint1::default();
 
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
     dlb.draw_paint(&paint);
@@ -261,9 +259,44 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     );
 
     let mut pb = ParagraphBuilder1::new(&fonts);
-    pb.add_text("Hello World!");
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = Paint1::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
+    paragraph_style.size = 10.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((0.0f32, 0.0f32), &paragraph);
+    dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 12.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 14.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 16.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 18.0f32;
+    pb.push_style(paragraph_style);
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
 
     let display_list = dlb.build().unwrap();
 
@@ -273,56 +306,6 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     );
 
     let display_list = vec![
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
-            clipping_rect,
-            size: PixelThickness::new(10.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
-            clipping_rect,
-            size: PixelThickness::new(12.0f32),
-            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
-            clipping_rect,
-            size: PixelThickness::new(14.0f32),
-            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk\nABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
-            clipping_rect,
-            size: PixelThickness::new(16.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
-            clipping_rect,
-            size: PixelThickness::new(18.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
         Primitive::Fill {
             path: vec![
                 PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),

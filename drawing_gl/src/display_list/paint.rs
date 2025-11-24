@@ -19,8 +19,8 @@ pub struct Paint {
     pub(crate) mask_filter: Option<drawing_api::MaskFilter>,
 }
 
-impl Paint {
-    pub fn new() -> Self {
+impl Default for Paint {
+    fn default() -> Self {
         Self {
             color: [0.0f32, 0.0f32, 0.0f32, 1.0f32],
             blend_mode: BlendMode::SourceOver,
