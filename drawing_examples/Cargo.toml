@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
 readme = "README.md"
 edition = "2024"
+default-run = "simple-gl"
 
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }

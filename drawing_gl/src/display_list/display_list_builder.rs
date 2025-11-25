@@ -1,10 +1,10 @@
 use drawing_api::{
-    DeviceRect, DipPoint, DipRect, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform,
-    TextureSampling,
+    DeviceRect, DipPoint, DipRect, FillType, PixelLength, PixelPoint, PixelRect, PixelSize,
+    PixelTransform, TextureSampling,
 };
 use euclid::rect;
 
-use crate::{GlContextData, GlTexture};
+use crate::{generic::device::convert_color, GlContextData, GlTexture};
 
 use super::{PathElement, Primitive};
 
@@ -22,6 +22,20 @@ impl DisplayListBuilder {
     fn paint_to_brush(paint: &crate::Paint) -> super::Brush<GlTexture> {
         if let Some(color_source) = &paint.color_source {
             match color_source {
+                drawing_api::ColorSource::LinearGradient {
+                    start,
+                    end,
+                    colors,
+                    stops,
+                    tile_mode,
+                    transformation,
+                } => super::Brush::LinearGradient {
+                    start_point: PixelPoint::new(start.x, start.y),
+                    end_point: PixelPoint::new(end.x, end.y),
+                    inner_color: convert_color(&colors[0]),
+                    outer_color: convert_color(&colors[1]),
+                },
+
                 drawing_api::ColorSource::Image {
                     image,
                     horizontal_tile_mode,
@@ -48,7 +62,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
     type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
-    type Path = Vec<PathElement>;
+    type Path = (Vec<PathElement>, FillType);
     type Texture = crate::GlTexture;
 
     fn draw_paint(&mut self, paint: &Self::Paint) {
@@ -86,10 +100,28 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     }
 
     fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint) {
-        self.display_list.push(Primitive::Fill {
-            path: path.to_vec(),
-            brush: DisplayListBuilder::paint_to_brush(paint),
-        });
+        match paint.draw_style {
+            drawing_api::DrawStyle::Fill => self.display_list.push(Primitive::Fill {
+                path: path.0.to_vec(),
+                brush: DisplayListBuilder::paint_to_brush(paint),
+            }),
+            drawing_api::DrawStyle::Stroke => self.display_list.push(Primitive::Stroke {
+                path: path.0.to_vec(),
+                thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
+                brush: DisplayListBuilder::paint_to_brush(paint),
+            }),
+            drawing_api::DrawStyle::StrokeAndFill => {
+                self.display_list.push(Primitive::Fill {
+                    path: path.0.to_vec(),
+                    brush: DisplayListBuilder::paint_to_brush(paint),
+                });
+                self.display_list.push(Primitive::Stroke {
+                    path: path.0.to_vec(),
+                    thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
+                    brush: DisplayListBuilder::paint_to_brush(paint),
+                })
+            }
+        }
     }
 
     fn draw_texture_rect(

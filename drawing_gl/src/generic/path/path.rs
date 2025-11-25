@@ -165,7 +165,7 @@ impl FlattenedPath {
                 // Enforce winding.
                 if path.count > 2 {
                     let area = poly_area(std::slice::from_raw_parts(pts, path.count));
-                    match path.solidity {
+                    /*match path.solidity {
                         Solidity::Solid => {
                             if area < 0.0 {
                                 poly_reverse(std::slice::from_raw_parts_mut(pts, path.count));
@@ -176,7 +176,7 @@ impl FlattenedPath {
                                 poly_reverse(std::slice::from_raw_parts_mut(pts, path.count));
                             }
                         }
-                    }
+                    }*/
                 }
 
                 for _ in 0..path.count {

@@ -1,7 +1,12 @@
 use crate::{DipPoint, DipRect};
 
+use super::FillType;
+
 pub trait PathBuilder {
     type Path;
+
+    /// Sets the fill type.
+    fn set_fill_type(&mut self, fill_type: FillType);
 
     /// Move the cursor to the specified location.
     fn move_to(&mut self, location: impl Into<DipPoint>);

@@ -1,19 +1,27 @@
-use drawing_api::PixelPoint;
+use drawing_api::{FillType, PixelPoint};
 
 use super::PathElement;
 
 pub struct PathBuilder {
     path: Vec<PathElement>,
+    fill_type: FillType,
 }
 
 impl PathBuilder {
     pub fn new() -> Self {
-        Self { path: Vec::new() }
+        Self {
+            path: Vec::new(),
+            fill_type: FillType::NonZero,
+        }
     }
 }
 
 impl drawing_api::PathBuilder for PathBuilder {
-    type Path = Vec<PathElement>;
+    type Path = (Vec<PathElement>, FillType);
+
+    fn set_fill_type(&mut self, fill_type: FillType) {
+        self.fill_type = fill_type;
+    }
 
     fn move_to(&mut self, location: impl Into<drawing_api::DipPoint>) {
         let location = location.into();
@@ -48,6 +56,6 @@ impl drawing_api::PathBuilder for PathBuilder {
     }
 
     fn build(self) -> Result<Self::Path, &'static str> {
-        Ok(self.path)
+        Ok((self.path, self.fill_type))
     }
 }

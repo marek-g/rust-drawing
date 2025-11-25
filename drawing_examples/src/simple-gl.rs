@@ -1,6 +1,6 @@
 #![windows_subsystem = "windows"]
 
-use euclid::{default::Transform3D, rect, Angle, Vector2D, Vector3D};
+use euclid::{default::Transform3D, rect, Angle, Vector3D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::error::Error;
@@ -298,6 +298,73 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
 
+    let mut pb = PathBuilder1::new();
+    pb.move_to((100.0f32, 350.0f32));
+    pb.bezier_curve_to(
+        (120.0f32, 50.0f32),
+        (180.0f32, 50.0f32),
+        (300.0f32, 150.0f32),
+    );
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (100.0f32, 150.0f32).into(),
+        end: (350.0f32, 350.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((500.0f32, 350.0f32));
+    pb.bezier_curve_to(
+        (520.0f32, 50.0f32),
+        (580.0f32, 50.0f32),
+        (700.0f32, 150.0f32),
+    );
+    pb.close();
+    pb.move_to((450.0f32, 100.0f32));
+    pb.line_to((650.0f32, 200.0f32));
+    pb.line_to((750.0f32, 150.0f32));
+    pb.close();
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (500.0f32, 150.0f32).into(),
+        end: (750.0f32, 350.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((300.0f32, 550.0f32));
+    pb.bezier_curve_to(
+        (320.0f32, 250.0f32),
+        (380.0f32, 250.0f32),
+        (500.0f32, 350.0f32),
+    );
+    pb.close();
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (200.0f32, 450.0f32).into(),
+        end: (450.0f32, 650.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    paint.set_draw_style(drawing_api::DrawStyle::Stroke);
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
     let display_list = dlb.build().unwrap();
 
     /*let clipping_rect = PixelRect::new(
@@ -306,66 +373,6 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     );
 
     let display_list = vec![
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(120.0f32, 50.0f32),
-                    PixelPoint::new(180.0f32, 50.0f32),
-                    PixelPoint::new(300.0f32, 150.0f32),
-                ),
-            ],
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(100.0f32, 150.0f32),
-                end_point: PixelPoint::new(350.0f32, 350.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(500.0f32, 350.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(520.0f32, 50.0f32),
-                    PixelPoint::new(580.0f32, 50.0f32),
-                    PixelPoint::new(700.0f32, 150.0f32),
-                ),
-                PathElement::ClosePath,
-                PathElement::MoveTo(PixelPoint::new(550.0f32, 250.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(580.0f32, 150.0f32),
-                    PixelPoint::new(620.0f32, 150.0f32),
-                    PixelPoint::new(650.0f32, 180.0f32),
-                ),
-                PathElement::ClosePath,
-                PathElement::Solidity(Solidity::Hole),
-            ],
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(500.0f32, 150.0f32),
-                end_point: PixelPoint::new(750.0f32, 350.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
-        Primitive::Stroke {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(300.0f32, 550.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(320.0f32, 250.0f32),
-                    PixelPoint::new(380.0f32, 250.0f32),
-                    PixelPoint::new(500.0f32, 350.0f32),
-                ),
-                PathElement::ClosePath,
-            ],
-            thickness: PixelThickness::new(1.0f32),
-            //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(200.0f32, 450.0f32),
-                end_point: PixelPoint::new(450.0f32, 650.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
         // render target test
         Primitive::Composite {
             color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
