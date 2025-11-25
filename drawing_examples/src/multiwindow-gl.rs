@@ -1,7 +1,6 @@
 #![windows_subsystem = "windows"]
 
-use drawing_gl::{Brush, PathElement, Primitive, Solidity};
-use euclid::{Angle, Vector2D};
+use euclid::{rect, Angle, Transform3D, Vector3D};
 use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::error::Error;
@@ -9,17 +8,20 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, PixelLength, PixelPoint,
-    PixelRect, PixelSize, PixelTransform, Point, Surface,
+    Color, ColorFormat, Context, DipRect, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
+    ParagraphStyle, PathBuilder, TextureSampling,
 };
 use gl::types::*;
 use windowing_qt::{Application, ApplicationOptions};
 
 type DrawingContext = drawing_gl::GlContext;
-type DisplayListBuilder1 = drawing_gl::DisplayListBuilder;
-type Paint1 = drawing_gl::Paint;
-type Texture1 = drawing_gl::GlTexture;
-type Fonts1 = drawing_gl::Fonts<drawing_gl::GlContextData>;
+
+type DisplayListBuilder1 = <DrawingContext as Context>::DisplayListBuilder;
+type ParagraphBuilder1 = <DrawingContext as Context>::ParagraphBuilder;
+type PathBuilder1 = <DrawingContext as Context>::PathBuilder;
+type Paint1 = <DrawingContext as Context>::Paint;
+type Texture1 = <DrawingContext as Context>::Texture;
+type Fonts1 = <DrawingContext as Context>::Fonts;
 
 #[derive(RustEmbed)]
 #[folder = "assets/"]
@@ -180,265 +182,225 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    /*let mut display_list_builder = DisplayListBuilder1::new();
-    let mut paint = Paint1::new();
+    let mut dlb = DisplayListBuilder1::new();
+    let mut paint = Paint1::default();
+
+    paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
+    dlb.draw_paint(&paint);
+
+    paint.set_color(Color::rgb(1.0f32, 0.0f32, 0.0f32));
+    dlb.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
+
     paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
-    display_list_builder.draw_line(
-        PixelPoint::new(100.0f32, 100.0f32),
-        PixelPoint::new(300.5f32, 100.5f32),
+    dlb.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
+
+    dlb.draw_texture_rect(
+        &resources.image2,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+
+    paint.set_color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
+    dlb.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
+    dlb.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((100.0f32, 350.0f32));
+    pb.line_to((300.0f32, 350.0f32));
+    pb.line_to((300.0f32, 550.0f32));
+    pb.line_to((100.0f32, 550.0f32));
+    paint.set_color_source(Some(drawing_api::ColorSource::Image {
+        image: resources.image2.clone(),
+        horizontal_tile_mode: drawing_api::TileMode::Repeat,
+        vertical_tile_mode: drawing_api::TileMode::Repeat,
+        sampling: TextureSampling::Linear,
+        transformation: Some(
+            Transform3D::identity()
+                .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
+                .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
+        ),
+    }));
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    dlb.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    dlb.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
+
+    dlb.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    dlb.draw_line(
+        (width as f32 - 4.0f32, 4.0f32),
+        (width as f32, 0.0f32),
         &paint,
     );
-    let display_list = display_list_builder.build().unwrap();*/
 
-    let clipping_rect = PixelRect::new(
-        PixelPoint::new(0.0f32, 0.0f32),
-        PixelSize::new(width as f32, height as f32),
+    dlb.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(
+            width as f32 - 4.0f32,
+            height as f32 - 4.0f32,
+            4.0f32,
+            4.0f32,
+        ),
+        TextureSampling::Linear,
+        None,
+    );
+    dlb.draw_line(
+        (width as f32, height as f32),
+        (width as f32 - 4.0f32, height as f32 - 4.0f32),
+        &paint,
     );
 
-    let display_list = vec![
-        Primitive::Clear {
-            color: [1.0f32, 0.66f32, 0.33f32, 1.0f32],
-        },
-        Primitive::Rectangle {
-            color: [1.0f32, 0.0f32, 0.0f32, 1.0f32],
-            rect: PixelRect::new(
-                PixelPoint::new(100.5f32, 101.5f32),
-                PixelSize::new(200.0f32, 50.0f32),
-            ),
-        },
-        Primitive::Line {
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 100.0f32),
-            end_point: PixelPoint::new(300.5f32, 100.5f32),
-        },
-        Primitive::Image {
-            texture: resources.image2.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(100.0f32, 150.0f32),
-                PixelSize::new(200.0f32, 200.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 350.0f32),
-            end_point: PixelPoint::new(300.0f32, 150.0f32),
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(100.0f32, 150.0f32),
-            end_point: PixelPoint::new(300.0f32, 350.0f32),
-        },
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
-                PathElement::LineTo(PixelPoint::new(300.0f32, 350.0f32)),
-                PathElement::LineTo(PixelPoint::new(300.0f32, 550.0f32)),
-                PathElement::LineTo(PixelPoint::new(100.0f32, 550.0f32)),
-            ],
-            brush: Brush::ImagePattern {
-                texture: resources.image2.clone(),
-                transform: PixelTransform::identity()
-                    .pre_translate(Vector2D::new(100.0f32, 350.0f32))
-                    .pre_rotate(Angle::radians(pos_y / 100.0f32)),
-                alpha: 1.0f32,
-            },
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(0.0f32, 0.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(0.0f32, 0.0f32),
-            end_point: PixelPoint::new(4.0f32, 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(width as f32 - 4.0f32, 0.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(width as f32, 0.0f32),
-            end_point: PixelPoint::new(width as f32 - 4.0f32, 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(width as f32, height as f32),
-            end_point: PixelPoint::new(width as f32 - 4.0f32, height as f32 - 4.0f32),
-        },
-        Primitive::Image {
-            texture: resources.image1.clone(),
-            rect: PixelRect::new(
-                PixelPoint::new(0.0f32, height as f32 - 4.0f32),
-                PixelSize::new(4.0f32, 4.0f32),
-            ),
-            uv: [0.0f32, 0.0f32, 1.0f32, 1.0f32],
-        },
-        Primitive::Line {
-            color: [0.0f32, 1.0f32, 0.0f32, 1.0f32],
-            thickness: PixelLength::new(1.0f32),
-            start_point: PixelPoint::new(0.0f32, height as f32),
-            end_point: PixelPoint::new(4.0f32, height as f32 - 4.0f32),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 + pos_y, 200.0f32),
-            clipping_rect,
-            size: PixelLength::new(10.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32, 220.0f32 - pos_y),
-            clipping_rect,
-            size: PixelLength::new(12.0f32),
-            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32),
-            clipping_rect,
-            size: PixelLength::new(14.0f32),
-            text: "Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk\nABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 - pos_y, 260.0f32),
-            clipping_rect,
-            size: PixelLength::new(16.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Text {
-            fonts: fonts.clone(),
-            family_name: "F1".to_string(),
-            color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-            position: PixelPoint::new(350.0f32 + pos_y, 280.0f32 + pos_y),
-            clipping_rect,
-            size: PixelLength::new(18.0f32),
-            text: "Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz"
-                .to_string(),
-        },
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(100.0f32, 350.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(120.0f32, 50.0f32),
-                    PixelPoint::new(180.0f32, 50.0f32),
-                    PixelPoint::new(300.0f32, 150.0f32),
-                ),
-            ],
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(100.0f32, 150.0f32),
-                end_point: PixelPoint::new(350.0f32, 350.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
-        Primitive::Fill {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(500.0f32, 350.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(520.0f32, 50.0f32),
-                    PixelPoint::new(580.0f32, 50.0f32),
-                    PixelPoint::new(700.0f32, 150.0f32),
-                ),
-                PathElement::ClosePath,
-                PathElement::MoveTo(PixelPoint::new(550.0f32, 250.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(580.0f32, 150.0f32),
-                    PixelPoint::new(620.0f32, 150.0f32),
-                    PixelPoint::new(650.0f32, 180.0f32),
-                ),
-                PathElement::ClosePath,
-                PathElement::Solidity(Solidity::Hole),
-            ],
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(500.0f32, 150.0f32),
-                end_point: PixelPoint::new(750.0f32, 350.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
-        Primitive::Stroke {
-            path: vec![
-                PathElement::MoveTo(PixelPoint::new(300.0f32, 550.0f32)),
-                PathElement::BezierTo(
-                    PixelPoint::new(320.0f32, 250.0f32),
-                    PixelPoint::new(380.0f32, 250.0f32),
-                    PixelPoint::new(500.0f32, 350.0f32),
-                ),
-                PathElement::ClosePath,
-            ],
-            thickness: PixelLength::new(1.0f32),
-            //brush: Brush::Color { color: [1.0f32, 1.0f32, 0.0f32, 0.75f32] },
-            brush: Brush::LinearGradient {
-                start_point: PixelPoint::new(200.0f32, 450.0f32),
-                end_point: PixelPoint::new(450.0f32, 650.0f32),
-                inner_color: [1.0f32, 0.0f32, 0.0f32, 0.75f32],
-                outer_color: [1.0f32, 1.0f32, 0.0f32, 0.75f32],
-            },
-        },
-        // render target test
-        Primitive::Composite {
-            color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
-            primitives: vec![
-                Primitive::Rectangle {
-                    color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
-                    rect: PixelRect::new(
-                        PixelPoint::new(200.5f32, 220.5f32),
-                        PixelSize::new(200.0f32, 50.0f32),
-                    ),
-                },
-                Primitive::Text {
-                    fonts: fonts.clone(),
-                    family_name: "F1".to_string(),
-                    color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                    position: PixelPoint::new(207.0f32, 232.0f32),
-                    clipping_rect,
-                    size: PixelLength::new(22.0f32),
-                    text: "Render target test".to_string(),
-                },
-            ],
-        },
-    ];
+    dlb.draw_texture_rect(
+        &resources.image1,
+        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
+        TextureSampling::Linear,
+        None,
+    );
+    dlb.draw_line(
+        (0.0f32, height as f32),
+        (4.0f32, height as f32 - 4.0f32),
+        &paint,
+    );
 
-    //drawing_surface.draw(&drawing_list);
-    //drawing_context.set_render_target(&render_target);
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = Paint1::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
+    paragraph_style.size = 10.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 12.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 14.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 16.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 18.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((100.0f32, 350.0f32));
+    pb.bezier_curve_to(
+        (120.0f32, 50.0f32),
+        (180.0f32, 50.0f32),
+        (300.0f32, 150.0f32),
+    );
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (100.0f32, 150.0f32).into(),
+        end: (350.0f32, 350.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((500.0f32, 350.0f32));
+    pb.bezier_curve_to(
+        (520.0f32, 50.0f32),
+        (580.0f32, 50.0f32),
+        (700.0f32, 150.0f32),
+    );
+    pb.close();
+    pb.move_to((450.0f32, 100.0f32));
+    pb.line_to((650.0f32, 200.0f32));
+    pb.line_to((750.0f32, 150.0f32));
+    pb.close();
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (500.0f32, 150.0f32).into(),
+        end: (750.0f32, 350.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    let mut pb = PathBuilder1::new();
+    pb.move_to((300.0f32, 550.0f32));
+    pb.bezier_curve_to(
+        (320.0f32, 250.0f32),
+        (380.0f32, 250.0f32),
+        (500.0f32, 350.0f32),
+    );
+    pb.close();
+    paint.set_color_source(Some(drawing_api::ColorSource::LinearGradient {
+        start: (200.0f32, 450.0f32).into(),
+        end: (450.0f32, 650.0f32).into(),
+        colors: vec![
+            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+        ],
+        stops: vec![0.0f32, 1.0f32],
+        tile_mode: drawing_api::TileMode::Mirror,
+        transformation: None,
+    }));
+    paint.set_draw_style(drawing_api::DrawStyle::Stroke);
+    dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    let mut paint_layer = Paint1::default();
+    paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
+    dlb.save_layer(DipRect::zero(), Some(&paint_layer), None);
+
+    paint.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
+    dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 22.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Render target test");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((207.0f32, 232.0f32), &paragraph);
+
+    dlb.restore();
+
+    let display_list = dlb.build().unwrap();
 
     if let Some(ref drawing_context) = gl_window.gl_context {
         let drawing_surface = drawing_context.wrap_framebuffer(
