@@ -8,7 +8,7 @@ use std::ptr::null;
 use std::rc::Rc;
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
+    Color, ColorFormat, Context, DipRect, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
     ParagraphStyle, PathBuilder, TextureSampling,
 };
 use gl::types::*;
@@ -293,7 +293,7 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let mut pb = ParagraphBuilder1::new(&fonts);
     paragraph_style.size = 18.0f32;
-    pb.push_style(paragraph_style);
+    pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
@@ -365,40 +365,23 @@ pub fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
     paint.set_draw_style(drawing_api::DrawStyle::Stroke);
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
+    let mut paint_layer = Paint1::default();
+    paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
+    dlb.save_layer(DipRect::zero(), Some(&paint_layer), None);
+
+    paint.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
+    dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint);
+
+    let mut pb = ParagraphBuilder1::new(&fonts);
+    paragraph_style.size = 22.0f32;
+    pb.push_style(paragraph_style.clone());
+    pb.add_text("Render target test");
+    let paragraph = pb.build().unwrap();
+    dlb.draw_paragraph((207.0f32, 232.0f32), &paragraph);
+
+    dlb.restore();
+
     let display_list = dlb.build().unwrap();
-
-    /*let clipping_rect = PixelRect::new(
-        PixelPoint::new(0.0f32, 0.0f32),
-        PixelSize::new(width as f32, height as f32),
-    );
-
-    let display_list = vec![
-        // render target test
-        Primitive::Composite {
-            color: [1.0f32, 1.0f32, 1.0f32, 0.5f32],
-            primitives: vec![
-                Primitive::Rectangle {
-                    color: [0.0f32, 0.5f32, 0.3f32, 1.0f32],
-                    rect: PixelRect::new(
-                        PixelPoint::new(200.5f32, 220.5f32),
-                        PixelSize::new(200.0f32, 50.0f32),
-                    ),
-                },
-                Primitive::Text {
-                    fonts: fonts.clone(),
-                    family_name: "F1".to_string(),
-                    color: [1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                    position: PixelPoint::new(207.0f32, 232.0f32),
-                    clipping_rect,
-                    size: PixelThickness::new(22.0f32),
-                    text: "Render target test".to_string(),
-                },
-            ],
-        },
-    ];*/
-
-    //drawing_surface.draw(&drawing_list);
-    //drawing_context.set_render_target(&render_target);
 
     if let Some(ref drawing_context) = gl_window.gl_context {
         let drawing_surface = drawing_context.wrap_framebuffer(
