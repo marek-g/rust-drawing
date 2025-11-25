@@ -1,6 +1,6 @@
 use crate::{DeviceRect, DipPoint, DipRect};
 
-use super::TextureSampling;
+use super::{ImageFilter, TextureSampling};
 
 pub trait DisplayListBuilder {
     type DisplayList;
@@ -8,6 +8,19 @@ pub trait DisplayListBuilder {
     type Paragraph;
     type Path;
     type Texture: crate::Texture;
+
+    /// Stashes the current transformation and clip state onto a save stack
+    /// and creates and creates an offscreen layer
+    /// onto which subsequent rendering intent will be directed to.
+    fn save_layer(
+        &mut self,
+        bounds: impl Into<DipRect>,
+        paint: Option<&Self::Paint>,
+        filter: Option<ImageFilter>,
+    );
+
+    /// Pops the last entry pushed onto the save stack.
+    fn restore(&mut self);
 
     /// Fills the current clip with the specified paint.
     fn draw_paint(&mut self, paint: &Self::Paint);

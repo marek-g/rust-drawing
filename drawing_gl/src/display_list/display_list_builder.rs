@@ -65,6 +65,19 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type Path = (Vec<PathElement>, FillType);
     type Texture = crate::GlTexture;
 
+    fn save_layer(
+        &mut self,
+        bounds: impl Into<DipRect>,
+        paint: Option<&Self::Paint>,
+        filter: Option<drawing_api::ImageFilter>,
+    ) {
+        todo!()
+    }
+
+    fn restore(&mut self) {
+        todo!()
+    }
+
     fn draw_paint(&mut self, paint: &Self::Paint) {
         // TODO: handle other cases
         self.display_list
