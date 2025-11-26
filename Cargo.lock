@@ -103,6 +103,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytemuck"
+version = "1.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fbdf580320f38b612e485521afda1ee26d10cc9884efaaa750d383e13e3c5f4"
+
+[[package]]
 name = "cbindgen"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -258,8 +264,10 @@ dependencies = [
  "cpu-time",
  "drawing_api",
  "drawing_gl",
+ "drawing_impeller",
  "euclid",
  "gl",
+ "impellers",
  "rust-embed",
  "windowing_qt",
 ]
@@ -280,6 +288,9 @@ dependencies = [
 [[package]]
 name = "drawing_impeller"
 version = "0.6.0-pre"
+dependencies = [
+ "impellers",
+]
 
 [[package]]
 name = "either"
@@ -309,6 +320,7 @@ version = "0.22.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad9cdb4b747e485a12abb0e6566612956c7a1bafa3bdb8d682c5b6d403589e48"
 dependencies = [
+ "bytemuck",
  "num-traits",
 ]
 
@@ -405,6 +417,16 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+
+[[package]]
+name = "impellers"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1c27d57c6091b9fb1f3ed953c7ba7bdb56039ee2e01548b422c3c9b440349e1"
+dependencies = [
+ "bytemuck",
+ "euclid",
+]
 
 [[package]]
 name = "indexmap"
