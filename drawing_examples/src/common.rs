@@ -21,21 +21,25 @@ type Paint1 = <DrawingContext as Context>::Paint;
 type Texture1 = <DrawingContext as Context>::Texture;
 type Fonts1 = <DrawingContext as Context>::Fonts;
 
-pub struct GlWindow {
+pub struct GlWindow<C: drawing_api::Context> {
     pub window: windowing_qt::Window,
-    pub gl_context: Option<DrawingContext>,
+    pub gl_context: Option<C>,
 
     pub time_query: GLuint,
     pub pos_y: f32,
 }
 
-pub struct Resources {
-    pub image1: Texture1,
-    pub image2: Texture1,
+pub struct Resources<C: drawing_api::Context> {
+    pub image1: C::Texture,
+    pub image2: C::Texture,
 }
 
-pub fn setup_window(title: &str) -> Rc<RefCell<GlWindow>> {
-    let gl_window_rc = Rc::new(RefCell::new(GlWindow {
+pub fn setup_window<C, F>(title: &str, new_context_func: F) -> Rc<RefCell<GlWindow<C>>>
+where
+    C: drawing_api::Context,
+    F: FnOnce(Rc<RefCell<GlWindow<C>>>) -> C,
+{
+    let gl_window_rc = Rc::new(RefCell::new(GlWindow::<C> {
         window: windowing_qt::Window::new(None).unwrap(),
         gl_context: None,
         time_query: 0,
@@ -56,19 +60,12 @@ pub fn setup_window(title: &str) -> Rc<RefCell<GlWindow>> {
 
         move || {
             if !initialized {
-                let mut gl_window = gl_window_clone.borrow_mut();
-                let drawing_context = DrawingContext::new_gl_context(|symbol| {
-                    gl_window
-                        .window
-                        .get_opengl_proc_address(symbol)
-                        .unwrap_or_else(|_| null())
-                })
-                .unwrap();
+                let drawing_context = new_context_func(gl_window_clone.clone());
 
                 register_fonts(&fonts).unwrap();
                 resources = Some(initialize_resources(&drawing_context));
 
-                gl_window.gl_context = Some(drawing_context);
+                gl_window_clone.borrow_mut().gl_context = Some(drawing_context);
 
                 let mut time_query: GLuint = 0;
                 unsafe {
@@ -76,7 +73,7 @@ pub fn setup_window(title: &str) -> Rc<RefCell<GlWindow>> {
                     gl::BeginQuery(gl::TIME_ELAPSED, time_query);
                     gl::EndQuery(gl::TIME_ELAPSED);
                 }
-                gl_window.time_query = time_query;
+                gl_window_clone.borrow_mut().time_query = time_query;
                 print!("time_query: {}", time_query);
 
                 initialized = true;
@@ -103,14 +100,18 @@ fn register_fonts(fonts: &Fonts1) -> Result<(), &'static str> {
     )
 }
 
-fn initialize_resources(drawing_context: &DrawingContext) -> Resources {
-    Resources {
+fn initialize_resources<C: drawing_api::Context>(drawing_context: &C) -> Resources<C> {
+    Resources::<C> {
         image1: create_chessboard(drawing_context, 4, 4),
         image2: create_chessboard(drawing_context, 200, 200),
     }
 }
 
-pub fn create_chessboard(drawing_context: &DrawingContext, w: usize, h: usize) -> Texture1 {
+pub fn create_chessboard<C: drawing_api::Context>(
+    drawing_context: &C,
+    w: usize,
+    h: usize,
+) -> C::Texture {
     let mut data: Vec<u8> = Vec::with_capacity(w * h * 4);
     for y in 0..h {
         for x in 0..w {
@@ -131,7 +132,11 @@ pub fn create_chessboard(drawing_context: &DrawingContext, w: usize, h: usize) -
         .unwrap()
 }
 
-fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
+fn draw<C: drawing_api::Context>(
+    gl_window: &mut GlWindow<C>,
+    resources: &Resources<C>,
+    fonts: &Fonts1,
+) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
 
@@ -145,7 +150,7 @@ fn draw(gl_window: &mut GlWindow, resources: &Resources, fonts: &Fonts1) {
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    let mut dlb = DisplayListBuilder1::new();
+    let mut dlb = <C as Context>::DisplayListBuilder::default();
     let mut paint = Paint1::default();
 
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
