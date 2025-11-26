@@ -289,6 +289,7 @@ dependencies = [
 name = "drawing_impeller"
 version = "0.6.0-pre"
 dependencies = [
+ "drawing_api",
  "impellers",
 ]
 
