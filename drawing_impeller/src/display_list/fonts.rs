@@ -10,3 +10,9 @@ impl drawing_api::Fonts for Fonts {
         todo!()
     }
 }
+
+impl Default for Fonts {
+    fn default() -> Self {
+        Self {}
+    }
+}

@@ -9,6 +9,10 @@ pub trait DisplayListBuilder {
     type Path;
     type Texture: crate::Texture;
 
+    /// Create a new display list builder.
+    /// An optional cull rectangle may be specified.
+    fn new(bounds: impl Into<Option<DipRect>>) -> Self;
+
     /// Stashes the current transformation and clip state onto a save stack
     /// and creates and creates an offscreen layer
     /// onto which subsequent rendering intent will be directed to.

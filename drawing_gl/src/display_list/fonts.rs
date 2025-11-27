@@ -30,8 +30,8 @@ impl<D: Device> Debug for Fonts<D> {
     }
 }
 
-impl<D: Device> Fonts<D> {
-    pub fn new() -> Self {
+impl<D: Device> Default for Fonts<D> {
+    fn default() -> Self {
         Self {
             data: Rc::new(RefCell::new(FontsData {
                 fonts: HashMap::new(),

@@ -4,10 +4,10 @@ use crate::ColorFormat;
 ///
 /// It is reference counted, single threaded object.
 pub trait Context: Clone {
-    type DisplayListBuilder: crate::DisplayListBuilder;
+    type DisplayListBuilder: crate::DisplayListBuilder<Paint = Self::Paint, Texture = Self::Texture>;
     type Fonts: crate::Fonts;
     type Paint: crate::Paint<Texture = Self::Texture>;
-    type ParagraphBuilder: crate::ParagraphBuilder<Self::Texture, Self::Paint>;
+    type ParagraphBuilder: crate::ParagraphBuilder<Self::Texture, Self::Paint, Self::Fonts>;
     type PathBuilder: crate::PathBuilder;
     type Surface: crate::Surface;
     type Texture: crate::Texture;

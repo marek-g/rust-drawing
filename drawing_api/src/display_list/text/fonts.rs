@@ -1,5 +1,5 @@
 /// Reference counted object.
-pub trait Fonts: Clone {
+pub trait Fonts: Clone + Default {
     fn register_font(
         &self,
         font_data: &[u8],

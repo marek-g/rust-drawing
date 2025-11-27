@@ -35,12 +35,6 @@ pub struct DisplayListBuilder {
 }
 
 impl DisplayListBuilder {
-    pub fn new() -> Self {
-        Self {
-            display_list: vec![DisplayListLayer::new(DipRect::zero(), None, None)],
-        }
-    }
-
     fn paint_to_brush(paint: &crate::Paint) -> super::Brush<GlTexture> {
         if let Some(color_source) = &paint.color_source {
             match color_source {
@@ -80,18 +74,18 @@ impl DisplayListBuilder {
     }
 }
 
-impl Default for DisplayListBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
     type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Path = (Vec<PathElement>, FillType);
     type Texture = crate::GlTexture;
+
+    fn new(bounds: impl Into<Option<DipRect>>) -> Self {
+        Self {
+            display_list: vec![DisplayListLayer::new(DipRect::zero(), None, None)],
+        }
+    }
 
     fn save_layer(
         &mut self,

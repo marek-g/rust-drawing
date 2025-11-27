@@ -1,3 +1,5 @@
+use drawing_api::DipRect;
+
 pub struct DisplayListBuilder;
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
@@ -10,6 +12,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type Path = ();
 
     type Texture = crate::ImpellerTexture;
+
+    fn new(bounds: impl Into<Option<DipRect>>) -> Self {
+        Self {}
+    }
 
     fn save_layer(
         &mut self,

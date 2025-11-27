@@ -2,8 +2,14 @@ use crate::ImpellerTexture;
 
 pub struct ParagraphBuilder;
 
-impl drawing_api::ParagraphBuilder<ImpellerTexture, crate::Paint> for ParagraphBuilder {
+impl drawing_api::ParagraphBuilder<ImpellerTexture, crate::Paint, crate::Fonts>
+    for ParagraphBuilder
+{
     type Paragraph = ();
+
+    fn new(fonts: &crate::Fonts) -> Self {
+        ParagraphBuilder {}
+    }
 
     fn push_style(&mut self, style: drawing_api::ParagraphStyle<ImpellerTexture, crate::Paint>) {
         todo!()

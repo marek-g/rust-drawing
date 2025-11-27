@@ -1,7 +1,9 @@
 use super::ParagraphStyle;
 
-pub trait ParagraphBuilder<T: crate::Texture, P: crate::Paint<Texture = T>> {
+pub trait ParagraphBuilder<T: crate::Texture, P: crate::Paint<Texture = T>, F: crate::Fonts> {
     type Paragraph;
+
+    fn new(fonts: &F) -> Self;
 
     fn push_style(&mut self, style: ParagraphStyle<T, P>);
 

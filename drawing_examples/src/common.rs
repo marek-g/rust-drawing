@@ -8,18 +8,9 @@ use euclid::{rect, Angle, Transform3D, Vector3D};
 use gl::types::GLuint;
 use rust_embed::RustEmbed;
 
-type DrawingContext = drawing_gl::GlContext;
-
 #[derive(RustEmbed)]
 #[folder = "assets/"]
 struct Assets;
-
-type DisplayListBuilder1 = <DrawingContext as Context>::DisplayListBuilder;
-type ParagraphBuilder1 = <DrawingContext as Context>::ParagraphBuilder;
-type PathBuilder1 = <DrawingContext as Context>::PathBuilder;
-type Paint1 = <DrawingContext as Context>::Paint;
-type Texture1 = <DrawingContext as Context>::Texture;
-type Fonts1 = <DrawingContext as Context>::Fonts;
 
 pub struct GlWindow<C: drawing_api::Context> {
     pub window: windowing_qt::Window,
@@ -56,7 +47,7 @@ where
         let gl_window_clone = gl_window_rc.clone();
         let mut initialized = false;
         let mut resources = None;
-        let fonts = Fonts1::new();
+        let fonts = C::Fonts::default();
 
         move || {
             if !initialized {
@@ -93,7 +84,7 @@ where
     gl_window_rc_clone
 }
 
-fn register_fonts(fonts: &Fonts1) -> Result<(), &'static str> {
+fn register_fonts<F: drawing_api::Fonts>(fonts: &F) -> Result<(), &'static str> {
     fonts.register_font(
         &Assets::get("OpenSans-Regular.ttf").unwrap().data,
         Some("F1"),
@@ -135,7 +126,7 @@ pub fn create_chessboard<C: drawing_api::Context>(
 fn draw<C: drawing_api::Context>(
     gl_window: &mut GlWindow<C>,
     resources: &Resources<C>,
-    fonts: &Fonts1,
+    fonts: &C::Fonts,
 ) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
@@ -150,8 +141,8 @@ fn draw<C: drawing_api::Context>(
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    let mut dlb = <C as Context>::DisplayListBuilder::default();
-    let mut paint = Paint1::default();
+    let mut dlb = <C as Context>::DisplayListBuilder::new(None);
+    let mut paint = <C as Context>::Paint::default();
 
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
     dlb.draw_paint(&paint);
@@ -245,7 +236,7 @@ fn draw<C: drawing_api::Context>(
         &paint,
     );
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = Paint1::default();
@@ -257,35 +248,35 @@ fn draw<C: drawing_api::Context>(
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     paragraph_style.size = 12.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     paragraph_style.size = 14.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     paragraph_style.size = 16.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     paragraph_style.size = 18.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
 
-    let mut pb = PathBuilder1::new();
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     pb.move_to((100.0f32, 350.0f32));
     pb.bezier_curve_to(
         (120.0f32, 50.0f32),
@@ -305,7 +296,7 @@ fn draw<C: drawing_api::Context>(
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let mut pb = PathBuilder1::new();
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     pb.move_to((500.0f32, 350.0f32));
     pb.bezier_curve_to(
         (520.0f32, 50.0f32),
@@ -330,7 +321,7 @@ fn draw<C: drawing_api::Context>(
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let mut pb = PathBuilder1::new();
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
     pb.move_to((300.0f32, 550.0f32));
     pb.bezier_curve_to(
         (320.0f32, 250.0f32),
