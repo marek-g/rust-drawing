@@ -27,7 +27,7 @@ pub trait Context: Clone {
         width: u16,
         height: u16,
         color_format: ColorFormat,
-    ) -> Self::Surface;
+    ) -> Result<Self::Surface, &'static str>;
 
     fn create_texture(
         &self,

@@ -13,18 +13,19 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     }
 
     fn push_style(&mut self, style: drawing_api::ParagraphStyle<ImpellerTexture, crate::Paint>) {
-        todo!()
+        //todo!()
     }
 
     fn pop_style(&mut self) {
-        todo!()
+        //todo!()
     }
 
     fn add_text(&mut self, text: &str) {
-        todo!()
+        //todo!()
     }
 
     fn build(self) -> Result<Self::Paragraph, &'static str> {
-        todo!()
+        //todo!()
+        Ok(())
     }
 }

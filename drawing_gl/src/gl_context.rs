@@ -701,14 +701,14 @@ impl Context for GlContext {
         width: u16,
         height: u16,
         color_format: ColorFormat,
-    ) -> GlSurface {
-        GlSurface {
+    ) -> Result<GlSurface, &'static str> {
+        Ok(GlSurface {
             framebuffer_id,
             width,
             height,
             color_format,
             is_owner: false,
-        }
+        })
     }
 
     fn create_texture(

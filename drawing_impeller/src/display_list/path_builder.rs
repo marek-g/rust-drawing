@@ -10,15 +10,15 @@ impl drawing_api::PathBuilder for PathBuilder {
     type Path = ();
 
     fn set_fill_type(&mut self, fill_type: drawing_api::FillType) {
-        todo!()
+        //todo!()
     }
 
     fn move_to(&mut self, location: impl Into<drawing_api::DipPoint>) {
-        todo!()
+        //todo!()
     }
 
     fn line_to(&mut self, location: impl Into<drawing_api::DipPoint>) {
-        todo!()
+        //todo!()
     }
 
     fn bezier_curve_to(
@@ -27,14 +27,15 @@ impl drawing_api::PathBuilder for PathBuilder {
         control_point_2: impl Into<drawing_api::DipPoint>,
         end_point: impl Into<drawing_api::DipPoint>,
     ) {
-        todo!()
+        //todo!()
     }
 
     fn close(&mut self) {
-        todo!()
+        //todo!()
     }
 
     fn build(self) -> Result<Self::Path, &'static str> {
-        todo!()
+        //todo!()
+        Ok(())
     }
 }

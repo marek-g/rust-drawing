@@ -21,6 +21,7 @@ pub struct GlWindow<C: drawing_api::Context> {
 }
 
 pub struct Resources<C: drawing_api::Context> {
+    pub fonts: C::Fonts,
     pub image1: C::Texture,
     pub image2: C::Texture,
 }
@@ -47,23 +48,22 @@ where
         let gl_window_clone = gl_window_rc.clone();
         let mut initialized = false;
         let mut resources = None;
-        let fonts = C::Fonts::default();
 
         move || {
             if !initialized {
                 let drawing_context = new_context_func(gl_window_clone.clone());
-
-                register_fonts(&fonts).unwrap();
                 resources = Some(initialize_resources(&drawing_context));
+
+                register_fonts(&resources.as_ref().unwrap().fonts).unwrap();
 
                 gl_window_clone.borrow_mut().gl_context = Some(drawing_context);
 
                 let mut time_query: GLuint = 0;
-                unsafe {
+                /*unsafe {
                     gl::GenQueries(1, &mut time_query);
                     gl::BeginQuery(gl::TIME_ELAPSED, time_query);
                     gl::EndQuery(gl::TIME_ELAPSED);
-                }
+                }*/
                 gl_window_clone.borrow_mut().time_query = time_query;
                 print!("time_query: {}", time_query);
 
@@ -71,7 +71,7 @@ where
             }
 
             if let Some(resources) = &resources {
-                draw(&mut gl_window_clone.borrow_mut(), &resources, &fonts);
+                draw(&mut gl_window_clone.borrow_mut(), &resources);
             }
 
             // continue animation
@@ -93,6 +93,7 @@ fn register_fonts<F: drawing_api::Fonts>(fonts: &F) -> Result<(), &'static str> 
 
 fn initialize_resources<C: drawing_api::Context>(drawing_context: &C) -> Resources<C> {
     Resources::<C> {
+        fonts: C::Fonts::default(),
         image1: create_chessboard(drawing_context, 4, 4),
         image2: create_chessboard(drawing_context, 200, 200),
     }
@@ -123,11 +124,7 @@ pub fn create_chessboard<C: drawing_api::Context>(
         .unwrap()
 }
 
-fn draw<C: drawing_api::Context>(
-    gl_window: &mut GlWindow<C>,
-    resources: &Resources<C>,
-    fonts: &C::Fonts,
-) {
+fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resources<C>) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
 
@@ -170,7 +167,7 @@ fn draw<C: drawing_api::Context>(
     pb.line_to((300.0f32, 350.0f32));
     pb.line_to((300.0f32, 550.0f32));
     pb.line_to((100.0f32, 550.0f32));
-    paint.set_color_source(Some(drawing_api::ColorSource::Image {
+    /*paint.set_color_source(Some(drawing_api::ColorSource::Image {
         image: resources.image2.clone(),
         horizontal_tile_mode: drawing_api::TileMode::Repeat,
         vertical_tile_mode: drawing_api::TileMode::Repeat,
@@ -180,7 +177,7 @@ fn draw<C: drawing_api::Context>(
                 .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
                 .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
         ),
-    }));
+    }));*/
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
     dlb.draw_texture_rect(
@@ -236,7 +233,7 @@ fn draw<C: drawing_api::Context>(
         &paint,
     );
 
-    let mut pb = C::ParagraphBuilder::new(&fonts);
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts);
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
@@ -248,28 +245,28 @@ fn draw<C: drawing_api::Context>(
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
     paragraph_style.size = 12.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
     paragraph_style.size = 14.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
     paragraph_style.size = 16.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
     paragraph_style.size = 18.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
@@ -350,7 +347,7 @@ fn draw<C: drawing_api::Context>(
     paint.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
     dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint);
 
-    let mut pb = C::ParagraphBuilder::new(&fonts);
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts);
     paragraph_style.size = 22.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Render target test");
@@ -362,12 +359,14 @@ fn draw<C: drawing_api::Context>(
     let display_list = dlb.build().unwrap();
 
     if let Some(ref drawing_context) = gl_window.gl_context {
-        let drawing_surface = drawing_context.wrap_gl_framebuffer(
-            framebuffer_id,
-            width as u16,
-            height as u16,
-            drawing_api::ColorFormat::RGBA,
-        );
+        let drawing_surface = drawing_context
+            .wrap_gl_framebuffer(
+                framebuffer_id,
+                width as u16,
+                height as u16,
+                drawing_api::ColorFormat::RGBA,
+            )
+            .unwrap();
 
         drawing_context
             .draw(&drawing_surface, &display_list)

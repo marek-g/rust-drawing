@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use drawing_examples::{setup_window, GlWindow};
-use drawing_gl::GlContext;
+use drawing_impeller::ImpellerContext;
 use std::{cell::RefCell, error::Error, ptr::null_mut, rc::Rc};
 
 use windowing_qt::{Application, ApplicationOptions};
@@ -14,8 +14,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     )
     .unwrap();
 
-    let new_context_func = |gl_window_rc: Rc<RefCell<GlWindow<GlContext>>>| {
-        GlContext::new_gl_context(|symbol| {
+    let new_context_func = |gl_window_rc: Rc<RefCell<GlWindow<ImpellerContext>>>| {
+        ImpellerContext::new_gl_context(|symbol| {
             gl_window_rc
                 .borrow_mut()
                 .window

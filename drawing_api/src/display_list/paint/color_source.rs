@@ -35,8 +35,8 @@ pub enum ColorSource<T: Texture> {
 
     SweepGradient {
         center: Point,
-        start: Point,
-        end: Point,
+        start: f32,
+        end: f32,
         colors: Vec<Color>,
         stops: Vec<f32>,
         tile_mode: TileMode,
