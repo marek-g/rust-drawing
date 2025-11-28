@@ -77,8 +77,8 @@ impl DisplayListBuilder {
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
     type Paint = crate::Paint;
-    type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
-    type Path = (Vec<PathElement>, FillType);
+    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
+    type PathBuilder = crate::PathBuilder;
     type Texture = crate::GlTexture;
 
     fn new(bounds: impl Into<Option<DipRect>>) -> Self {
@@ -157,7 +157,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
-    fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint) {
+    fn draw_path(&mut self, path: &(Vec<PathElement>, FillType), paint: &Self::Paint) {
         match paint.draw_style {
             drawing_api::DrawStyle::Fill => self
                 .display_list
@@ -231,7 +231,11 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
-    fn draw_paragraph(&mut self, location: impl Into<DipPoint>, paragraph: &Self::Paragraph) {
+    fn draw_paragraph(
+        &mut self,
+        location: impl Into<DipPoint>,
+        paragraph: &<Self::ParagraphBuilder as drawing_api::ParagraphBuilder>::Paragraph,
+    ) {
         let location = location.into();
         let location = PixelPoint::new(location.x, location.y);
         for el in paragraph {

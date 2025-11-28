@@ -10,14 +10,11 @@ pub struct ParagraphBuilder {
     styles: Vec<drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>,
 }
 
-impl
-    drawing_api::ParagraphBuilder<
-        GlTexture,
-        crate::display_list::Paint,
-        crate::Fonts<GlContextData>,
-    > for ParagraphBuilder
-{
+impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
+    type Paint = crate::display_list::Paint;
+    type Fonts = crate::Fonts<GlContextData>;
+    type Texture = GlTexture;
 
     fn new(fonts: &crate::Fonts<GlContextData>) -> Self {
         ParagraphBuilder {

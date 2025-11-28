@@ -7,9 +7,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     type Paint = crate::Paint;
 
-    type Paragraph = ();
+    type ParagraphBuilder = crate::ParagraphBuilder;
 
-    type Path = ();
+    type PathBuilder = crate::PathBuilder;
 
     type Texture = crate::ImpellerTexture;
 
@@ -47,7 +47,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         todo!()
     }
 
-    fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint) {
+    fn draw_path(&mut self, path: &(), paint: &Self::Paint) {
         todo!()
     }
 
@@ -65,7 +65,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_paragraph(
         &mut self,
         location: impl Into<drawing_api::DipPoint>,
-        paragraph: &Self::Paragraph,
+        paragraph: &<Self::ParagraphBuilder as drawing_api::ParagraphBuilder>::Paragraph,
     ) {
         todo!()
     }

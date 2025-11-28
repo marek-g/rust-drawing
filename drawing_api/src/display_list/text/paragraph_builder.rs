@@ -1,11 +1,14 @@
 use super::ParagraphStyle;
 
-pub trait ParagraphBuilder<T: crate::Texture, P: crate::Paint<Texture = T>, F: crate::Fonts> {
+pub trait ParagraphBuilder {
     type Paragraph;
+    type Paint: crate::Paint<Texture = Self::Texture>;
+    type Fonts: crate::Fonts;
+    type Texture: crate::Texture;
 
-    fn new(fonts: &F) -> Self;
+    fn new(fonts: &Self::Fonts) -> Self;
 
-    fn push_style(&mut self, style: ParagraphStyle<T, P>);
+    fn push_style(&mut self, style: ParagraphStyle<Self::Texture, Self::Paint>);
 
     fn pop_style(&mut self);
 

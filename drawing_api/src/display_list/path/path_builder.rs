@@ -2,7 +2,7 @@ use crate::{DipPoint, DipRect};
 
 use super::FillType;
 
-pub trait PathBuilder {
+pub trait PathBuilder: Default {
     type Path;
 
     /// Sets the fill type.

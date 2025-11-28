@@ -4,13 +4,30 @@ use crate::ColorFormat;
 ///
 /// It is reference counted, single threaded object.
 pub trait Context: Clone {
-    type DisplayListBuilder: crate::DisplayListBuilder<Paint = Self::Paint, Texture = Self::Texture>;
+    type DisplayListBuilder: crate::DisplayListBuilder<
+        Paint = Self::Paint,
+        ParagraphBuilder = Self::ParagraphBuilder,
+        PathBuilder = Self::PathBuilder,
+        Texture = Self::Texture,
+    >;
     type Fonts: crate::Fonts;
     type Paint: crate::Paint<Texture = Self::Texture>;
-    type ParagraphBuilder: crate::ParagraphBuilder<Self::Texture, Self::Paint, Self::Fonts>;
+    type ParagraphBuilder: crate::ParagraphBuilder<
+        Texture = Self::Texture,
+        Paint = Self::Paint,
+        Fonts = Self::Fonts,
+    >;
     type PathBuilder: crate::PathBuilder;
     type Surface: crate::Surface;
     type Texture: crate::Texture;
+
+    fn wrap_gl_framebuffer(
+        &self,
+        framebuffer_id: u32,
+        width: u16,
+        height: u16,
+        color_format: ColorFormat,
+    ) -> Self::Surface;
 
     fn create_texture(
         &self,

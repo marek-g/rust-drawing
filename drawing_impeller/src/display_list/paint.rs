@@ -1,5 +1,6 @@
 use crate::ImpellerTexture;
 
+#[derive(Clone)]
 pub struct Paint;
 
 impl Default for Paint {

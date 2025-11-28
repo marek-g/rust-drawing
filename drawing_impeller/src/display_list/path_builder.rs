@@ -1,5 +1,11 @@
 pub struct PathBuilder;
 
+impl Default for PathBuilder {
+    fn default() -> Self {
+        Self {}
+    }
+}
+
 impl drawing_api::PathBuilder for PathBuilder {
     type Path = ();
 

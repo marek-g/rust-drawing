@@ -18,6 +18,16 @@ impl drawing_api::Context for ImpellerContext {
 
     type Texture = ImpellerTexture;
 
+    fn wrap_gl_framebuffer(
+        &self,
+        framebuffer_id: u32,
+        width: u16,
+        height: u16,
+        color_format: drawing_api::ColorFormat,
+    ) -> Self::Surface {
+        todo!()
+    }
+
     fn create_texture(
         &self,
         contents: &[u8],

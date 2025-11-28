@@ -5,8 +5,8 @@ use super::{ImageFilter, TextureSampling};
 pub trait DisplayListBuilder {
     type DisplayList;
     type Paint: crate::Paint;
-    type Paragraph;
-    type Path;
+    type ParagraphBuilder: crate::ParagraphBuilder;
+    type PathBuilder: crate::PathBuilder;
     type Texture: crate::Texture;
 
     /// Create a new display list builder.
@@ -41,7 +41,11 @@ pub trait DisplayListBuilder {
     fn draw_rect(&mut self, rect: impl Into<DipRect>, paint: &Self::Paint);
 
     /// Draws a path.
-    fn draw_path(&mut self, path: &Self::Path, paint: &Self::Paint);
+    fn draw_path(
+        &mut self,
+        path: &<Self::PathBuilder as crate::PathBuilder>::Path,
+        paint: &Self::Paint,
+    );
 
     /// Draw a portion of texture at the specified location.
     fn draw_texture_rect(
@@ -54,7 +58,11 @@ pub trait DisplayListBuilder {
     );
 
     /// Draws a paragraph at the specified location.
-    fn draw_paragraph(&mut self, location: impl Into<DipPoint>, paragraph: &Self::Paragraph);
+    fn draw_paragraph(
+        &mut self,
+        location: impl Into<DipPoint>,
+        paragraph: &<Self::ParagraphBuilder as crate::ParagraphBuilder>::Paragraph,
+    );
 
     /// Builds display list.
     fn build(self) -> Result<Self::DisplayList, &'static str>;

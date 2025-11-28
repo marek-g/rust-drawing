@@ -7,8 +7,8 @@ pub struct PathBuilder {
     fill_type: FillType,
 }
 
-impl PathBuilder {
-    pub fn new() -> Self {
+impl Default for PathBuilder {
+    fn default() -> Self {
         Self {
             path: Vec::new(),
             fill_type: FillType::NonZero,

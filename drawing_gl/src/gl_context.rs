@@ -684,8 +684,18 @@ impl GlContext {
             })),
         })
     }
+}
 
-    pub fn wrap_framebuffer(
+impl Context for GlContext {
+    type DisplayListBuilder = crate::DisplayListBuilder;
+    type Fonts = crate::Fonts<GlContextData>;
+    type Paint = crate::Paint;
+    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
+    type PathBuilder = crate::PathBuilder;
+    type Surface = GlSurface;
+    type Texture = GlTexture;
+
+    fn wrap_gl_framebuffer(
         &self,
         framebuffer_id: u32,
         width: u16,
@@ -700,16 +710,6 @@ impl GlContext {
             is_owner: false,
         }
     }
-}
-
-impl Context for GlContext {
-    type DisplayListBuilder = crate::DisplayListBuilder;
-    type Fonts = crate::Fonts<GlContextData>;
-    type Paint = crate::Paint;
-    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
-    type PathBuilder = crate::PathBuilder;
-    type Surface = GlSurface;
-    type Texture = GlTexture;
 
     fn create_texture(
         &self,

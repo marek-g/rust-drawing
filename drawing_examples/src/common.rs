@@ -1,4 +1,4 @@
-use std::{cell::RefCell, ptr::null, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use drawing_api::{
     Color, ColorFormat, Context, DipRect, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
@@ -27,8 +27,8 @@ pub struct Resources<C: drawing_api::Context> {
 
 pub fn setup_window<C, F>(title: &str, new_context_func: F) -> Rc<RefCell<GlWindow<C>>>
 where
-    C: drawing_api::Context,
-    F: FnOnce(Rc<RefCell<GlWindow<C>>>) -> C,
+    C: drawing_api::Context + 'static,
+    F: Fn(Rc<RefCell<GlWindow<C>>>) -> C + 'static,
 {
     let gl_window_rc = Rc::new(RefCell::new(GlWindow::<C> {
         window: windowing_qt::Window::new(None).unwrap(),
@@ -165,7 +165,7 @@ fn draw<C: drawing_api::Context>(
     dlb.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
     dlb.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
 
-    let mut pb = PathBuilder1::new();
+    let mut pb = C::PathBuilder::default();
     pb.move_to((100.0f32, 350.0f32));
     pb.line_to((300.0f32, 350.0f32));
     pb.line_to((300.0f32, 550.0f32));
@@ -236,10 +236,10 @@ fn draw<C: drawing_api::Context>(
         &paint,
     );
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = C::ParagraphBuilder::new(&fonts);
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let mut font_paint = Paint1::default();
+    let mut font_paint = C::Paint::default();
     font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 10.0f32;
@@ -276,7 +276,7 @@ fn draw<C: drawing_api::Context>(
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((100.0f32, 350.0f32));
     pb.bezier_curve_to(
         (120.0f32, 50.0f32),
@@ -296,7 +296,7 @@ fn draw<C: drawing_api::Context>(
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((500.0f32, 350.0f32));
     pb.bezier_curve_to(
         (520.0f32, 50.0f32),
@@ -321,7 +321,7 @@ fn draw<C: drawing_api::Context>(
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&fonts);
+    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((300.0f32, 550.0f32));
     pb.bezier_curve_to(
         (320.0f32, 250.0f32),
@@ -343,14 +343,14 @@ fn draw<C: drawing_api::Context>(
     paint.set_draw_style(drawing_api::DrawStyle::Stroke);
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let mut paint_layer = Paint1::default();
+    let mut paint_layer = C::Paint::default();
     paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
     dlb.save_layer(DipRect::zero(), Some(&paint_layer), None);
 
     paint.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
     dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint);
 
-    let mut pb = ParagraphBuilder1::new(&fonts);
+    let mut pb = C::ParagraphBuilder::new(&fonts);
     paragraph_style.size = 22.0f32;
     pb.push_style(paragraph_style.clone());
     pb.add_text("Render target test");
@@ -362,7 +362,7 @@ fn draw<C: drawing_api::Context>(
     let display_list = dlb.build().unwrap();
 
     if let Some(ref drawing_context) = gl_window.gl_context {
-        let drawing_surface = drawing_context.wrap_framebuffer(
+        let drawing_surface = drawing_context.wrap_gl_framebuffer(
             framebuffer_id,
             width as u16,
             height as u16,
