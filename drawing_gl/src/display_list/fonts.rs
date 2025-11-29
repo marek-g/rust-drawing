@@ -42,7 +42,7 @@ impl<D: Device> Default for Fonts<D> {
 
 impl<D: Device> drawing_api::Fonts for Fonts<D> {
     fn register_font(
-        &self,
+        &mut self,
         font_data: &[u8],
         family_name_alias: Option<&str>,
     ) -> Result<(), &'static str> {

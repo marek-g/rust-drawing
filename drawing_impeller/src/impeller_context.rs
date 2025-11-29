@@ -37,7 +37,7 @@ impl drawing_api::Context for ImpellerContext {
     type Texture = ImpellerTexture;
 
     fn wrap_gl_framebuffer(
-        &self,
+        &mut self,
         framebuffer_id: u32,
         width: u16,
         height: u16,
@@ -63,9 +63,11 @@ impl drawing_api::Context for ImpellerContext {
         height: u16,
         format: drawing_api::ColorFormat,
     ) -> Result<Self::Texture, &'static str> {
-        let texture =
+        // TODO: ensure texture is destroyed before context
+        let texture = unsafe {
             self.context
-                .create_texture_with_rgba8(contents, width as u32, height as u32)?;
+                .create_texture_with_rgba8(contents, width as u32, height as u32)?
+        };
         Ok(ImpellerTexture {
             texture,
             size: (width, height),
@@ -73,8 +75,8 @@ impl drawing_api::Context for ImpellerContext {
     }
 
     fn draw(
-        &self,
-        surface: &Self::Surface,
+        &mut self,
+        surface: &mut Self::Surface,
         display_list: &<Self::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
     ) -> Result<(), &'static str> {
         surface.surface.draw_display_list(display_list)

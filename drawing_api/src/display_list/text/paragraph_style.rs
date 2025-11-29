@@ -1,6 +1,5 @@
 use super::{FontStyle, FontWeight};
 
-#[derive(Clone)]
 pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub foreground: Option<P>,
     pub background: Option<P>,
@@ -20,7 +19,7 @@ impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle
             style: FontStyle::Normal,
             family: "default".to_string(),
             size: 24.0f32,
-            height: Default::default(),
+            height: 24.0f32,
         }
     }
 }

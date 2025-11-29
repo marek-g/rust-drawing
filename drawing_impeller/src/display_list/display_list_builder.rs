@@ -1,5 +1,10 @@
 use drawing_api::DipRect;
 
+use super::{
+    convert_device_rect, convert_image_filter, convert_point, convert_rect,
+    convert_texture_sampling,
+};
+
 pub struct DisplayListBuilder {
     pub(crate) display_list_builder: impellers::DisplayListBuilder,
 }
@@ -16,10 +21,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type Texture = crate::ImpellerTexture;
 
     fn new(bounds: impl Into<Option<DipRect>>) -> Self {
-        // TODO:
-        //let bounds = bounds.into().map(|b| {});
+        let bounds = bounds.into().map(|r| convert_rect(&r));
         Self {
-            display_list_builder: impellers::DisplayListBuilder::new(None),
+            display_list_builder: impellers::DisplayListBuilder::new(bounds.as_ref()),
         }
     }
 
@@ -29,15 +33,20 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: Option<&Self::Paint>,
         filter: Option<drawing_api::ImageFilter>,
     ) {
-        //todo!()
+        let bounds = convert_rect(&bounds.into());
+        self.display_list_builder.save_layer(
+            &bounds,
+            paint.map(|p| &p.paint),
+            filter.map(|f| convert_image_filter(f)).as_ref(),
+        );
     }
 
     fn restore(&mut self) {
-        //todo!()
+        self.display_list_builder.restore();
     }
 
     fn draw_paint(&mut self, paint: &Self::Paint) {
-        //todo!()
+        self.display_list_builder.draw_paint(&paint.paint);
     }
 
     fn draw_line(
@@ -46,23 +55,20 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         to: impl Into<drawing_api::DipPoint>,
         paint: &Self::Paint,
     ) {
-        //todo!()
-    }
-
-    fn draw_rect(&mut self, rect1: impl Into<drawing_api::DipRect>, paint: &Self::Paint) {
-        let rect1 = rect1.into();
-
-        self.display_list_builder.draw_rect(
-            &impellers::Rect::new(
-                impellers::Point::new(rect1.origin.x, rect1.origin.y),
-                impellers::Size::new(rect1.size.width, rect1.size.height),
-            ),
+        self.display_list_builder.draw_line(
+            convert_point(&from.into()),
+            convert_point(&to.into()),
             &paint.paint,
         );
     }
 
-    fn draw_path(&mut self, path: &(), paint: &Self::Paint) {
-        //todo!()
+    fn draw_rect(&mut self, rect: impl Into<drawing_api::DipRect>, paint: &Self::Paint) {
+        self.display_list_builder
+            .draw_rect(&convert_rect(&rect.into()), &paint.paint);
+    }
+
+    fn draw_path(&mut self, path: &impellers::Path, paint: &Self::Paint) {
+        self.display_list_builder.draw_path(path, &paint.paint);
     }
 
     fn draw_texture_rect(
@@ -73,7 +79,22 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         sampling: drawing_api::TextureSampling,
         paint: Option<&Self::Paint>,
     ) {
-        //todo!()
+        self.display_list_builder.draw_texture_rect(
+            &texture.texture,
+            &convert_device_rect(&src_rect.into()),
+            &convert_rect(&dst_rect.into()),
+            convert_texture_sampling(sampling),
+            paint.map(|p| &p.paint),
+        );
+
+        /*let paint = Self::Paint::default();
+
+        self.display_list_builder.draw_texture(
+            &texture.texture,
+            convert_point(&dst_rect.into().origin),
+            convert_texture_sampling(sampling),
+            &paint.paint,
+        );*/
     }
 
     fn draw_paragraph(
@@ -81,10 +102,11 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         location: impl Into<drawing_api::DipPoint>,
         paragraph: &<Self::ParagraphBuilder as drawing_api::ParagraphBuilder>::Paragraph,
     ) {
-        //todo!()
+        self.display_list_builder
+            .draw_paragraph(paragraph, convert_point(&location.into()));
     }
 
-    fn build(self) -> Result<Self::DisplayList, &'static str> {
+    fn build(mut self) -> Result<Self::DisplayList, &'static str> {
         self.display_list_builder
             .build()
             .ok_or("Cannot build impeller display list")

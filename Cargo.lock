@@ -421,9 +421,8 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "impellers"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1c27d57c6091b9fb1f3ed953c7ba7bdb56039ee2e01548b422c3c9b440349e1"
+version = "0.3.0"
+source = "git+https://github.com/coderedart/impellers.git#7294dda1784f7ff90f34ff6a4789864b99015457"
 dependencies = [
  "bytemuck",
  "euclid",

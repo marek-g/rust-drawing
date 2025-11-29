@@ -1,8 +1,10 @@
-use drawing_api::{BlendMode, ColorMatrix, ImageFilter, Matrix, TextureSampling, TileMode};
-
 use crate::ImpellerTexture;
 
-#[derive(Clone)]
+use super::{
+    convert_blend_mode, convert_color, convert_color_matrix, convert_image_filter, convert_matrix,
+    convert_tile_mode,
+};
+
 pub struct Paint {
     pub(crate) paint: impellers::Paint,
 }
@@ -205,98 +207,4 @@ impl drawing_api::Paint for Paint {
             todo!("Clearing mask blur filter is not implemented")
         }
     }
-}
-
-pub fn convert_color(color: &drawing_api::Color) -> impellers::Color {
-    impellers::Color::new_srgba(color.red, color.green, color.blue, color.alpha)
-}
-
-pub fn convert_blend_mode(blend_mode: BlendMode) -> impellers::BlendMode {
-    match blend_mode {
-        drawing_api::BlendMode::Clear => impellers::BlendMode::Clear,
-        drawing_api::BlendMode::Source => impellers::BlendMode::Source,
-        drawing_api::BlendMode::Destination => impellers::BlendMode::Destination,
-        drawing_api::BlendMode::SourceOver => impellers::BlendMode::SourceOver,
-        drawing_api::BlendMode::DestinationOver => impellers::BlendMode::DestinationOver,
-        drawing_api::BlendMode::SourceIn => impellers::BlendMode::SourceIn,
-        drawing_api::BlendMode::DestinationIn => impellers::BlendMode::DestinationIn,
-        drawing_api::BlendMode::SourceOut => impellers::BlendMode::SourceOut,
-        drawing_api::BlendMode::DestinationOut => impellers::BlendMode::DestinationOut,
-        drawing_api::BlendMode::SourceATop => impellers::BlendMode::SourceATop,
-        drawing_api::BlendMode::DestinationATop => impellers::BlendMode::DestinationATop,
-        drawing_api::BlendMode::Xor => impellers::BlendMode::Xor,
-        drawing_api::BlendMode::Plus => impellers::BlendMode::Plus,
-        drawing_api::BlendMode::Modulate => impellers::BlendMode::Modulate,
-        drawing_api::BlendMode::Screen => impellers::BlendMode::Screen,
-        drawing_api::BlendMode::Overlay => impellers::BlendMode::Overlay,
-        drawing_api::BlendMode::Darken => impellers::BlendMode::Darken,
-        drawing_api::BlendMode::Lighten => impellers::BlendMode::Lighten,
-        drawing_api::BlendMode::ColorDodge => impellers::BlendMode::ColorDodge,
-        drawing_api::BlendMode::ColorBurn => impellers::BlendMode::ColorBurn,
-        drawing_api::BlendMode::HardLight => impellers::BlendMode::HardLight,
-        drawing_api::BlendMode::SoftLight => impellers::BlendMode::SoftLight,
-        drawing_api::BlendMode::Difference => impellers::BlendMode::Difference,
-        drawing_api::BlendMode::Exclusion => impellers::BlendMode::Exclusion,
-        drawing_api::BlendMode::Multiply => impellers::BlendMode::Multiply,
-        drawing_api::BlendMode::Hue => impellers::BlendMode::Hue,
-        drawing_api::BlendMode::Saturation => impellers::BlendMode::Saturation,
-        drawing_api::BlendMode::Color => impellers::BlendMode::Color,
-        drawing_api::BlendMode::Luminosity => impellers::BlendMode::Luminosity,
-    }
-}
-
-pub fn convert_tile_mode(tile_mode: TileMode) -> impellers::TileMode {
-    match tile_mode {
-        drawing_api::TileMode::Clamp => impellers::TileMode::Clamp,
-        drawing_api::TileMode::Repeat => impellers::TileMode::Repeat,
-        drawing_api::TileMode::Mirror => impellers::TileMode::Mirror,
-        drawing_api::TileMode::Decal => impellers::TileMode::Decal,
-    }
-}
-
-pub fn convert_texture_sampling(texture_sampling: TextureSampling) -> impellers::TextureSampling {
-    match texture_sampling {
-        TextureSampling::NearestNeighbor => impellers::TextureSampling::NearestNeighbor,
-        TextureSampling::Linear => impellers::TextureSampling::Linear,
-    }
-}
-
-pub fn convert_image_filter(image_filter: ImageFilter) -> impellers::ImageFilter {
-    match image_filter {
-        drawing_api::ImageFilter::Blur {
-            x_sigma,
-            y_sigma,
-            tile_mode,
-        } => impellers::ImageFilter::new_blur(x_sigma, y_sigma, convert_tile_mode(tile_mode)),
-        drawing_api::ImageFilter::Dilate { x_radius, y_radius } => {
-            impellers::ImageFilter::new_dilate(x_radius, y_radius)
-        }
-        drawing_api::ImageFilter::Erode { x_radius, y_radius } => {
-            impellers::ImageFilter::new_erode(x_radius, y_radius)
-        }
-        drawing_api::ImageFilter::Matrix { matrix, sampling } => {
-            impellers::ImageFilter::new_matrix(
-                &convert_matrix(matrix),
-                match sampling {
-                    drawing_api::TextureSampling::NearestNeighbor => {
-                        impellers::TextureSampling::NearestNeighbor
-                    }
-                    drawing_api::TextureSampling::Linear => impellers::TextureSampling::Linear,
-                },
-            )
-        }
-        drawing_api::ImageFilter::Compose { outer, inner } => {
-            let outer = convert_image_filter(*outer);
-            let inner = convert_image_filter(*inner);
-            impellers::ImageFilter::new_compose(&outer, &inner)
-        }
-    }
-}
-
-pub fn convert_color_matrix(color_matrix: ColorMatrix) -> impellers::ColorMatrix {
-    impellers::ColorMatrix { m: color_matrix.m }
-}
-
-pub fn convert_matrix(matrix: Matrix) -> impellers::Matrix {
-    impellers::Matrix::from_array(matrix.to_array())
 }

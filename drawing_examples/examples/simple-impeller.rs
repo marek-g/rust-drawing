@@ -9,7 +9,7 @@ use windowing_qt::{Application, ApplicationOptions};
 fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
-            .with_title("Example: simple-gl")
+            .with_title("Example: simple-impeller")
             .with_opengl_stencil_bits(8),
     )
     .unwrap();

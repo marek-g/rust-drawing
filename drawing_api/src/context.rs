@@ -22,7 +22,7 @@ pub trait Context: Clone {
     type Texture: crate::Texture;
 
     fn wrap_gl_framebuffer(
-        &self,
+        &mut self,
         framebuffer_id: u32,
         width: u16,
         height: u16,
@@ -38,8 +38,8 @@ pub trait Context: Clone {
     ) -> Result<Self::Texture, &'static str>;
 
     fn draw(
-        &self,
-        surface: &Self::Surface,
+        &mut self,
+        surface: &mut Self::Surface,
         display_list: &<Self::DisplayListBuilder as crate::DisplayListBuilder>::DisplayList,
     ) -> Result<(), &'static str>;
 }

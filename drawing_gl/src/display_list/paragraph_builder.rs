@@ -16,12 +16,12 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     type Fonts = crate::Fonts<GlContextData>;
     type Texture = GlTexture;
 
-    fn new(fonts: &crate::Fonts<GlContextData>) -> Self {
-        ParagraphBuilder {
+    fn new(fonts: &crate::Fonts<GlContextData>) -> Result<Self, &'static str> {
+        Ok(ParagraphBuilder {
             fonts: fonts.clone(),
             paragraph: Vec::new(),
             styles: Vec::new(),
-        }
+        })
     }
 
     fn push_style(

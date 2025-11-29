@@ -696,7 +696,7 @@ impl Context for GlContext {
     type Texture = GlTexture;
 
     fn wrap_gl_framebuffer(
-        &self,
+        &mut self,
         framebuffer_id: u32,
         width: u16,
         height: u16,
@@ -724,8 +724,8 @@ impl Context for GlContext {
     }
 
     fn draw(
-        &self,
-        surface: &Self::Surface,
+        &mut self,
+        surface: &mut Self::Surface,
         display_list: &<Self::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
     ) -> Result<(), &'static str> {
         let mut renderer = Renderer::new();

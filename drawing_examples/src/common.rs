@@ -54,7 +54,7 @@ where
                 let drawing_context = new_context_func(gl_window_clone.clone());
                 resources = Some(initialize_resources(&drawing_context));
 
-                register_fonts(&resources.as_ref().unwrap().fonts).unwrap();
+                register_fonts(&mut resources.as_mut().unwrap().fonts).unwrap();
 
                 gl_window_clone.borrow_mut().gl_context = Some(drawing_context);
 
@@ -84,7 +84,7 @@ where
     gl_window_rc_clone
 }
 
-fn register_fonts<F: drawing_api::Fonts>(fonts: &F) -> Result<(), &'static str> {
+fn register_fonts<F: drawing_api::Fonts>(fonts: &mut F) -> Result<(), &'static str> {
     fonts.register_font(
         &Assets::get("OpenSans-Regular.ttf").unwrap().data,
         Some("F1"),
@@ -152,9 +152,10 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image2,
-        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        // rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
         rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
-        TextureSampling::Linear,
+        TextureSampling::NearestNeighbor,
         None,
     );
 
@@ -171,7 +172,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         image: resources.image2.clone(),
         horizontal_tile_mode: drawing_api::TileMode::Repeat,
         vertical_tile_mode: drawing_api::TileMode::Repeat,
-        sampling: TextureSampling::Linear,
+        sampling: TextureSampling::NearestNeighbor,
         transformation: Some(
             Transform3D::identity()
                 .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
@@ -182,18 +183,20 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
-        TextureSampling::Linear,
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
+        TextureSampling::NearestNeighbor,
         None,
     );
     dlb.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
-        TextureSampling::Linear,
+        TextureSampling::NearestNeighbor,
         None,
     );
     dlb.draw_line(
@@ -204,14 +207,15 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(
             width as f32 - 4.0f32,
             height as f32 - 4.0f32,
             4.0f32,
             4.0f32,
         ),
-        TextureSampling::Linear,
+        TextureSampling::NearestNeighbor,
         None,
     );
     dlb.draw_line(
@@ -222,7 +226,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
+        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
         TextureSampling::Linear,
         None,
@@ -233,42 +238,62 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         &paint,
     );
 
-    let mut pb = C::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
     font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 10.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = C::Paint::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 12.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = C::Paint::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 14.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = C::Paint::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 16.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = C::Paint::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 18.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
@@ -342,15 +367,32 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut paint_layer = C::Paint::default();
     paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
-    dlb.save_layer(DipRect::zero(), Some(&paint_layer), None);
+    dlb.save_layer(
+        rect(0.0f32, 0.0f32, 1000.0f32, 1000.0f32),
+        Some(&paint_layer),
+        None,
+        /*None,
+        Some(drawing_api::ImageFilter::Blur {
+            x_sigma: 8.0f32,
+            y_sigma: 8.0f32,
+            tile_mode: drawing_api::TileMode::Clamp,
+        }),*/
+    );
 
-    paint.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
-    dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint);
+    let mut paint2 = <C as Context>::Paint::default();
+    paint2.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
+    dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint2);
 
-    let mut pb = C::ParagraphBuilder::new(&resources.fonts);
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut paragraph_style = ParagraphStyle::default();
+    paragraph_style.family = "F1".to_string();
+    let mut font_paint = C::Paint::default();
+    font_paint.set_color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 22.0f32;
-    pb.push_style(paragraph_style.clone());
+    pb.push_style(paragraph_style);
     pb.add_text("Render target test");
+    pb.pop_style();
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((207.0f32, 232.0f32), &paragraph);
 
@@ -358,8 +400,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let display_list = dlb.build().unwrap();
 
-    if let Some(ref drawing_context) = gl_window.gl_context {
-        let drawing_surface = drawing_context
+    if let Some(ref mut drawing_context) = gl_window.gl_context {
+        let mut drawing_surface = drawing_context
             .wrap_gl_framebuffer(
                 framebuffer_id,
                 width as u16,
@@ -369,7 +411,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
             .unwrap();
 
         drawing_context
-            .draw(&drawing_surface, &display_list)
+            .draw(&mut drawing_surface, &display_list)
             .unwrap();
     }
 
