@@ -1,9 +1,11 @@
 use crate::ImpellerTexture;
 
-use super::{convert_paragraph_style, ttx};
+use super::convert_paragraph_style;
 
 pub struct ParagraphBuilder {
     pub(crate) paragraph_builder: impellers::ParagraphBuilder,
+
+    context: impellers::TypographyContext,
 }
 
 impl drawing_api::ParagraphBuilder for ParagraphBuilder {
@@ -13,17 +15,12 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     type Texture = crate::ImpellerTexture;
 
     fn new(fonts: &crate::Fonts) -> Result<Self, &'static str> {
-        /*Ok(ParagraphBuilder {
-                    paragraph_builder: impellers::ParagraphBuilder::new(&fonts.typography_context.borrow())
-                        .ok_or("Couldn't create impeller ParagraphBuilder")?,
-        })*/
-        unsafe {
-            #[allow(static_mut_refs)]
-            Ok(ParagraphBuilder {
-                paragraph_builder: impellers::ParagraphBuilder::new(ttx.as_ref().unwrap())
-                    .ok_or("Couldn't create impeller ParagraphBuilder")?,
-            })
-        }
+        let context_clone = fonts.typography_context.clone();
+        Ok(ParagraphBuilder {
+            paragraph_builder: impellers::ParagraphBuilder::new(&context_clone)
+                .ok_or("Couldn't create impeller ParagraphBuilder")?,
+            context: context_clone,
+        })
     }
 
     fn push_style(&mut self, style: drawing_api::ParagraphStyle<ImpellerTexture, crate::Paint>) {
@@ -40,10 +37,27 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     }
 
     fn build(mut self) -> Result<Self::Paragraph, &'static str> {
-        // TODO: width
-        Ok(self
+        let mut pb = ParagraphBuilder {
+            paragraph_builder: impellers::ParagraphBuilder::new(&self.context).unwrap(),
+            context: self.context.clone(),
+        };
+
+        let mut paragraph_style = drawing_api::ParagraphStyle::default();
+        paragraph_style.family = "F1".to_string();
+
+        pb.push_style(paragraph_style);
+
+        pb.add_text("ggg HELLO EVERYONE ąęśćżółĄĘŚŻŹ");
+
+        Ok(pb
             .paragraph_builder
             .build(600.0f32)
             .ok_or("Impeller couldn't build the paragraph")?)
+
+        // TODO: width
+        /*Ok(self
+        .paragraph_builder
+        .build(600.0f32)
+        .ok_or("Impeller couldn't build the paragraph")?)*/
     }
 }
