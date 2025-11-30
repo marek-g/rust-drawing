@@ -58,7 +58,7 @@ impl drawing_api::Context for ImpellerContext {
 
     fn create_texture(
         &self,
-        contents: &[u8],
+        contents: Box<[u8]>,
         width: u16,
         height: u16,
         format: drawing_api::ColorFormat,
