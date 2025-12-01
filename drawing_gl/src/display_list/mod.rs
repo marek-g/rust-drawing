@@ -7,6 +7,9 @@ pub use fonts::*;
 mod paint;
 pub use paint::*;
 
+mod paragraph;
+pub use paragraph::*;
+
 mod paragraph_builder;
 pub use paragraph_builder::*;
 

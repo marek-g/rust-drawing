@@ -103,7 +103,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paragraph: &<Self::ParagraphBuilder as drawing_api::ParagraphBuilder>::Paragraph,
     ) {
         self.display_list_builder
-            .draw_paragraph(paragraph, convert_point(&location.into()));
+            .draw_paragraph(&paragraph.paragraph, convert_point(&location.into()));
     }
 
     fn build(mut self) -> Result<Self::DisplayList, &'static str> {

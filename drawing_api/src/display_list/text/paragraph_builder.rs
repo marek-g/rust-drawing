@@ -1,7 +1,7 @@
 use super::ParagraphStyle;
 
 pub trait ParagraphBuilder: Sized {
-    type Paragraph;
+    type Paragraph: crate::Paragraph;
     type Paint: crate::Paint<Texture = Self::Texture>;
     type Fonts: crate::Fonts;
     type Texture: crate::Texture;

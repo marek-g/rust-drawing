@@ -7,7 +7,7 @@ pub struct ParagraphBuilder {
 }
 
 impl drawing_api::ParagraphBuilder for ParagraphBuilder {
-    type Paragraph = impellers::Paragraph;
+    type Paragraph = crate::Paragraph;
     type Paint = crate::Paint;
     type Fonts = crate::Fonts;
     type Texture = crate::ImpellerTexture;
@@ -93,6 +93,6 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
         //println!("height: {}", paragraph.get_word_boundary_utf16(code_unit_index));
         //println!("line_metrics: {:?}", paragraph..get_line_metrics());
 
-        Ok(paragraph)
+        Ok(crate::Paragraph { paragraph })
     }
 }

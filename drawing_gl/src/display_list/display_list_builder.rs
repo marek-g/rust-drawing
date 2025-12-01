@@ -238,7 +238,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let location = location.into();
         let location = PixelPoint::new(location.x, location.y);
-        for el in paragraph {
+        for el in &paragraph.primitives {
             match el {
                 Primitive::Text {
                     fonts,

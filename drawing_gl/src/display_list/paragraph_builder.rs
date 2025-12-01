@@ -6,12 +6,12 @@ use super::Primitive;
 
 pub struct ParagraphBuilder {
     fonts: crate::Fonts<GlContextData>,
-    paragraph: Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
+    paragraph: crate::display_list::Paragraph,
     styles: Vec<drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>,
 }
 
 impl drawing_api::ParagraphBuilder for ParagraphBuilder {
-    type Paragraph = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
+    type Paragraph = crate::display_list::Paragraph;
     type Paint = crate::display_list::Paint;
     type Fonts = crate::Fonts<GlContextData>;
     type Texture = GlTexture;
@@ -19,7 +19,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     fn new(fonts: &crate::Fonts<GlContextData>) -> Result<Self, &'static str> {
         Ok(ParagraphBuilder {
             fonts: fonts.clone(),
-            paragraph: Vec::new(),
+            paragraph: crate::display_list::Paragraph::default(),
             styles: Vec::new(),
         })
     }
@@ -37,7 +37,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
 
     fn add_text(&mut self, text: &str) {
         let style = &self.styles.last();
-        self.paragraph.push(Primitive::Text {
+        self.paragraph.primitives.push(Primitive::Text {
             fonts: self.fonts.clone(),
             family_name: style
                 .map(|s| s.family.clone())
