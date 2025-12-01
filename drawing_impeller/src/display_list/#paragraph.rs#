@@ -40,9 +40,7 @@ impl drawing_api::Paragraph for Paragraph {
     }
 
     fn get_line_metrics(&self) -> Option<Self::LineMetrics> {
-        self.paragraph
-            .get_line_metrics()
-            .map(|l| crate::LineMetrics { line_metrics: l })
+        self.paragraph.get_line_metrics().map(|r| self::Li)
     }
 
     fn get_word_boundary_utf16(&self, code_unit_index: usize) -> drawing_api::Range {

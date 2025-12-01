@@ -7,6 +7,12 @@ pub use font_weight::*;
 mod fonts;
 pub use fonts::*;
 
+mod glyph_info;
+pub use glyph_info::*;
+
+mod line_metrics;
+pub use line_metrics::*;
+
 mod paragraph;
 pub use paragraph::*;
 
@@ -15,3 +21,9 @@ pub use paragraph_builder::*;
 
 mod paragraph_style;
 pub use paragraph_style::*;
+
+mod range;
+pub use range::*;
+
+mod text_direction;
+pub use text_direction::*;

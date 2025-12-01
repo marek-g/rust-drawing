@@ -7,6 +7,12 @@ pub use display_list_builder::*;
 mod fonts;
 pub use fonts::*;
 
+mod glyph_info;
+pub use glyph_info::*;
+
+mod line_metrics;
+pub use line_metrics::*;
+
 mod paint;
 pub use paint::*;
 
