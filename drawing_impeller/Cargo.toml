@@ -13,4 +13,4 @@ edition = "2024"
 
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
-impellers = "0.4"
+impellers = { path = "/home/marek/Ext/Src/temp/impellers/", version = "0.4" }
