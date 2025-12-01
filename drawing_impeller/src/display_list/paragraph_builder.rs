@@ -40,7 +40,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
             .build(600.0f32)
             .ok_or("Impeller couldn't build the paragraph")?;
 
-        println!(
+        /*println!(
             "alphabetic_baseline: {}",
             paragraph.get_alphabetic_baseline()
         );
@@ -88,7 +88,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
 
         println!("     Word boundary for code unit 0:");
         let word_boundary = paragraph.get_word_boundary_utf16(0);
-        println!("   range: {:?}", word_boundary);
+        println!("   range: {:?}", word_boundary);*/
 
         //println!("height: {}", paragraph.get_word_boundary_utf16(code_unit_index));
         //println!("line_metrics: {:?}", paragraph..get_line_metrics());
