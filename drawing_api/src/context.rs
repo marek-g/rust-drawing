@@ -34,7 +34,7 @@ pub trait Context: Clone {
         contents: Box<[u8]>,
         width: u16,
         height: u16,
-        format: ColorFormat,
+        color_format: ColorFormat,
     ) -> Result<Self::Texture, &'static str>;
 
     fn draw(

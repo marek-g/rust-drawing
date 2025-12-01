@@ -1,10 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
 use drawing_api::{
-    Color, ColorFormat, Context, DipRect, DisplayListBuilder, Fonts, Paint, ParagraphBuilder,
-    ParagraphStyle, PathBuilder, TextureSampling,
+    Color, ColorFormat, Context, DisplayListBuilder, Paint, ParagraphBuilder, ParagraphStyle,
+    PathBuilder, TextureSampling,
 };
-use euclid::{rect, Angle, Transform3D, Vector3D};
+use euclid::rect;
 use gl::types::GLuint;
 use rust_embed::RustEmbed;
 
@@ -58,7 +58,7 @@ where
 
                 gl_window_clone.borrow_mut().gl_context = Some(drawing_context);
 
-                let mut time_query: GLuint = 0;
+                let time_query: GLuint = 0;
                 /*unsafe {
                     gl::GenQueries(1, &mut time_query);
                     gl::BeginQuery(gl::TIME_ELAPSED, time_query);

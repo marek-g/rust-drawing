@@ -43,6 +43,10 @@ impl drawing_api::Context for ImpellerContext {
         height: u16,
         color_format: drawing_api::ColorFormat,
     ) -> Result<Self::Surface, &'static str> {
+        if color_format != drawing_api::ColorFormat::RGBA {
+            return Err("color format not supported!");
+        }
+
         unsafe {
             let surface = self
                 .context
@@ -61,8 +65,12 @@ impl drawing_api::Context for ImpellerContext {
         contents: Box<[u8]>,
         width: u16,
         height: u16,
-        format: drawing_api::ColorFormat,
+        color_format: drawing_api::ColorFormat,
     ) -> Result<Self::Texture, &'static str> {
+        if color_format != drawing_api::ColorFormat::RGBA {
+            return Err("color format not supported!");
+        }
+
         // TODO: ensure texture is destroyed before context
         let texture = unsafe {
             self.context

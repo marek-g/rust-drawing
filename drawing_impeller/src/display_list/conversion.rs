@@ -132,11 +132,11 @@ pub fn convert_paragraph_style(
     if let Some(background) = &style.background {
         result.set_background(&background.paint);
     }
-    //result.set_font_weight(convert_font_weight(style.weight));
-    //result.set_font_style(convert_font_style(style.style));
+    result.set_font_weight(convert_font_weight(style.weight));
+    result.set_font_style(convert_font_style(style.style));
     result.set_font_family(&style.family);
     result.set_font_size(style.size);
-    //result.set_height(style.height);
+    result.set_height(style.height);
     result
 }
 

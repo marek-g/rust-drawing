@@ -36,6 +36,7 @@ pub enum ColorSpace {
     DisplayP3,
 }
 
+#[derive(PartialEq)]
 pub enum ColorFormat {
     // for color images, 24-bit color with 8-bit alpha channel
     RGBA,

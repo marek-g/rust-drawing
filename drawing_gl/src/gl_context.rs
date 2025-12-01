@@ -716,11 +716,11 @@ impl Context for GlContext {
         contents: Box<[u8]>,
         width: u16,
         height: u16,
-        format: drawing_api::ColorFormat,
+        color_format: drawing_api::ColorFormat,
     ) -> Result<Self::Texture, &'static str> {
         self.data
             .borrow()
-            .create_texture(Some(&contents), width, height, format, false)
+            .create_texture(Some(&contents), width, height, color_format, false)
     }
 
     fn draw(

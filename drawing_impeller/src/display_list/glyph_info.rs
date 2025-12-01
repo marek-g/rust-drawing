@@ -28,9 +28,9 @@ impl drawing_api::GlyphInfo for GlyphInfo {
     }
 
     fn get_text_direction(&self) -> drawing_api::TextDirection {
-        match self.get_text_direction() {
-            drawing_api::TextDirection::RTL => drawing_api::TextDirection::RTL,
-            drawing_api::TextDirection::LTR => drawing_api::TextDirection::LTR,
+        match self.glyph_info.get_text_direction() {
+            impellers::TextDirection::RTL => drawing_api::TextDirection::RTL,
+            impellers::TextDirection::LTR => drawing_api::TextDirection::LTR,
         }
     }
 }
