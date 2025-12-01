@@ -136,7 +136,9 @@ pub fn convert_paragraph_style(
     result.set_font_style(convert_font_style(style.style));
     result.set_font_family(&style.family);
     result.set_font_size(style.size);
-    result.set_height(style.height);
+    if let Some(height) = style.height {
+        result.set_height(height);
+    }
     result
 }
 

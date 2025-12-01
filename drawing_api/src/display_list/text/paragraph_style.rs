@@ -7,7 +7,7 @@ pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub style: FontStyle,
     pub family: String,
     pub size: f32,
-    pub height: f32,
+    pub height: Option<f32>,
 }
 
 impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle<T, P> {
@@ -19,7 +19,7 @@ impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle
             style: FontStyle::Normal,
             family: "default".to_string(),
             size: 24.0f32,
-            height: 24.0f32,
+            height: None,
         }
     }
 }
