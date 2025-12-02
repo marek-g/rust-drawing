@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 #[derive(Clone)]
 pub struct Fonts {
     pub(crate) typography_context: impellers::TypographyContext,
@@ -14,7 +16,7 @@ impl Default for Fonts {
 impl drawing_api::Fonts for Fonts {
     fn register_font(
         &mut self,
-        font_data: Box<[u8]>,
+        font_data: Cow<'static, [u8]>,
         family_name_alias: Option<&str>,
     ) -> Result<(), &'static str> {
         self.typography_context

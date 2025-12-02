@@ -16,7 +16,8 @@ euclid = "0.22"
 drawing_gl = { path = "../drawing_gl", version = "0.6.0-pre" }
 drawing_impeller = { path = "../drawing_impeller", version = "0.6.0-pre" }
 windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.14.2" }
-impellers = { path = "/home/marek/Ext/Src/temp/impellers/", version = "0.4", features = ["static_link"] }
+impellers = { path = "../../impellers/", version = "0.4", features = ["static_link"] }
+#impellers = { git = "https://github.com/coderedart/impellers", rev = "12bc8e2bedf92d3bbe302fb31b034abde3f62010", version = "0.4", features = ["static_link"] }
 gl = "0.14"
 rust-embed = "8.4"
 cpu-time = "1.0"

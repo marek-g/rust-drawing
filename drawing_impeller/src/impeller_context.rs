@@ -1,4 +1,4 @@
-use std::os::raw::c_void;
+use std::{borrow::Cow, os::raw::c_void};
 
 use impellers::{ISize, PixelFormat};
 
@@ -62,7 +62,7 @@ impl drawing_api::Context for ImpellerContext {
 
     fn create_texture(
         &self,
-        contents: Box<[u8]>,
+        contents: Cow<'static, [u8]>,
         width: u16,
         height: u16,
         color_format: drawing_api::ColorFormat,

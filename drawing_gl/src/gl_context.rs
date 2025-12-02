@@ -1,7 +1,7 @@
 use drawing_api::{ColorFormat, Context, PixelTransform, Point, Texture, UnknownToDeviceTransform};
 use euclid::Vector2D;
 use gl::types::*;
-use std::{cell::RefCell, ffi::c_void, ops::DerefMut, rc::Rc, sync::Arc};
+use std::{borrow::Cow, cell::RefCell, ffi::c_void, ops::DerefMut, rc::Rc, sync::Arc};
 
 use crate::{
     generic::{
@@ -713,7 +713,7 @@ impl Context for GlContext {
 
     fn create_texture(
         &self,
-        contents: Box<[u8]>,
+        contents: Cow<'static, [u8]>,
         width: u16,
         height: u16,
         color_format: drawing_api::ColorFormat,

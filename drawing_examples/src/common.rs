@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, rc::Rc};
 
 use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Paint, ParagraphBuilder, ParagraphStyle,
@@ -86,11 +86,7 @@ where
 
 fn register_fonts<F: drawing_api::Fonts>(fonts: &mut F) -> Result<(), &'static str> {
     fonts.register_font(
-        Assets::get("OpenSans-Regular.ttf")
-            .unwrap()
-            .data
-            .into_owned()
-            .into_boxed_slice(),
+        Assets::get("OpenSans-Regular.ttf").unwrap().data,
         Some("F1"),
     )
 }
@@ -124,12 +120,7 @@ pub fn create_chessboard<C: drawing_api::Context>(
     }
 
     drawing_context
-        .create_texture(
-            data.into_boxed_slice(),
-            w as u16,
-            h as u16,
-            ColorFormat::RGBA,
-        )
+        .create_texture(Cow::Owned(data), w as u16, h as u16, ColorFormat::RGBA)
         .unwrap()
 }
 

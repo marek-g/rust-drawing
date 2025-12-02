@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::ColorFormat;
 
 /// An abstraction over graphics context (like OpenGL context).
@@ -31,7 +33,7 @@ pub trait Context: Clone {
 
     fn create_texture(
         &self,
-        contents: Box<[u8]>,
+        contents: Cow<'static, [u8]>,
         width: u16,
         height: u16,
         color_format: ColorFormat,
