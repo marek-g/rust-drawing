@@ -60,6 +60,36 @@ impl drawing_api::Context for ImpellerContext {
         }
     }
 
+    fn adopt_gl_texture(
+        &self,
+        texture_handle: u32,
+        width: u16,
+        height: u16,
+        mip_count: u32,
+        color_format: drawing_api::ColorFormat,
+    ) -> Result<Self::Texture, &'static str> {
+        if color_format != drawing_api::ColorFormat::RGBA {
+            return Err("color format not supported!");
+        }
+
+        // TODO: ensure texture is destroyed before context
+        let texture = unsafe {
+            self.context
+                .adopt_opengl_texture(
+                    width as u32,
+                    height as u32,
+                    mip_count,
+                    texture_handle as u64,
+                )
+                .ok_or("")?
+        };
+
+        Ok(ImpellerTexture {
+            texture,
+            size: (width, height),
+        })
+    }
+
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,

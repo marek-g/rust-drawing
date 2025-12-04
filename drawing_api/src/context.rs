@@ -23,6 +23,7 @@ pub trait Context: Clone {
     type Surface: crate::Surface;
     type Texture: crate::Texture;
 
+    /// Creates a new surface by wrapping an existing OpenGL framebuffer object.
     fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
@@ -31,6 +32,17 @@ pub trait Context: Clone {
         color_format: ColorFormat,
     ) -> Result<Self::Surface, &'static str>;
 
+    /// Creates a texture with an externally created OpenGL texture handle.
+    fn adopt_gl_texture(
+        &self,
+        texture_handle: u32,
+        width: u16,
+        height: u16,
+        mip_count: u32,
+        color_format: ColorFormat,
+    ) -> Result<Self::Texture, &'static str>;
+
+    /// Creates a new texture.
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
@@ -39,6 +51,7 @@ pub trait Context: Clone {
         color_format: ColorFormat,
     ) -> Result<Self::Texture, &'static str>;
 
+    /// Draws a display list on the surface.
     fn draw(
         &mut self,
         surface: &mut Self::Surface,

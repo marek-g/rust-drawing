@@ -711,6 +711,22 @@ impl Context for GlContext {
         })
     }
 
+    fn adopt_gl_texture(
+        &self,
+        texture_handle: u32,
+        width: u16,
+        height: u16,
+        mip_count: u32,
+        color_format: ColorFormat,
+    ) -> Result<Self::Texture, &'static str> {
+        Ok(GlTexture::from_external(
+            texture_handle,
+            width,
+            height,
+            color_format,
+        ))
+    }
+
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
