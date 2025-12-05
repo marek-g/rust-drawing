@@ -499,7 +499,7 @@ impl Device for GlContextData {
         if let Some(ref texture) = paint.image {
             unsafe {
                 gl::Enable(gl::TEXTURE_2D);
-                gl::BindTexture(gl::TEXTURE_2D, texture.get_native_handle() as GLuint);
+                gl::BindTexture(gl::TEXTURE_2D, texture.get_gl_handle() as GLuint);
                 if filtering {
                     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
                     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);

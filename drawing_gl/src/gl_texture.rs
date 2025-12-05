@@ -81,7 +81,7 @@ impl Texture for GlTexture {
         (self.data.width, self.data.height)
     }
 
-    fn get_native_handle(&self) -> usize {
+    fn get_gl_handle(&self) -> usize {
         self.data.id as usize
     }
 }

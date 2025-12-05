@@ -9,7 +9,7 @@ impl drawing_api::Texture for ImpellerTexture {
         self.size
     }
 
-    fn get_native_handle(&self) -> usize {
+    fn get_gl_handle(&self) -> usize {
         self.texture.get_opengl_handle() as usize
     }
 }
