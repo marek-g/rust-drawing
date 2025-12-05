@@ -87,6 +87,67 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         }
     }
 
+    fn scale(&mut self, x_scale: f32, y_scale: f32) {
+        todo!()
+    }
+
+    fn rotate(&mut self, angle_degrees: f32) {
+        todo!()
+    }
+
+    fn translate(&mut self, x_translation: f32, y_translation: f32) {
+        todo!()
+    }
+
+    fn transform(&mut self, transform: &drawing_api::Matrix) {
+        todo!()
+    }
+
+    fn set_transform(&mut self, transform: &drawing_api::Matrix) {
+        todo!()
+    }
+
+    fn get_transform(&self) -> drawing_api::Matrix {
+        todo!()
+    }
+
+    fn reset_transform(&mut self) {
+        todo!()
+    }
+
+    fn clip_rect(&mut self, rect: impl Into<DipRect>, operation: drawing_api::ClipOperation) {
+        todo!()
+    }
+
+    fn clip_oval(
+        &mut self,
+        oval_bounds: impl Into<DipRect>,
+        operation: drawing_api::ClipOperation,
+    ) {
+        todo!()
+    }
+
+    fn clip_rounded_rect(
+        &mut self,
+        rect: impl Into<DipRect>,
+        radii: &drawing_api::RoundingRadii,
+        operation: drawing_api::ClipOperation,
+    ) {
+        todo!()
+    }
+
+    fn clip_path(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        operation: drawing_api::ClipOperation,
+    ) {
+        todo!()
+    }
+
+    fn save(&mut self) {
+        todo!()
+    }
+
     fn save_layer(
         &mut self,
         bounds: impl Into<DipRect>,

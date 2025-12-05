@@ -1,6 +1,6 @@
-use crate::{DeviceRect, DipPoint, DipRect};
+use crate::{DeviceRect, DipPoint, DipRect, Matrix};
 
-use super::{ImageFilter, TextureSampling};
+use super::{ClipOperation, ImageFilter, RoundingRadii, TextureSampling};
 
 pub trait DisplayListBuilder {
     type DisplayList;
@@ -13,6 +13,51 @@ pub trait DisplayListBuilder {
     /// An optional cull rectangle may be specified.
     fn new(bounds: impl Into<Option<DipRect>>) -> Self;
 
+    /// Apply a scale to the transformation matrix currently on top of the save stack.
+    fn scale(&mut self, x_scale: f32, y_scale: f32);
+
+    /// Apply a scale to the transformation matrix currently on top of the save stack.
+    fn rotate(&mut self, angle_degrees: f32);
+
+    /// Apply a translation to the transformation matrix currently on top of the save stack.
+    fn translate(&mut self, x_translation: f32, y_translation: f32);
+
+    /// Appends the the provided transformation to the transformation already on the save stack.
+    fn transform(&mut self, transform: &Matrix);
+
+    /// Clear the transformation on top of the save stack and replace it with a new value.
+    fn set_transform(&mut self, transform: &Matrix);
+
+    /// Get the transformation currently built up on the top of the transformation stack.
+    fn get_transform(&self) -> Matrix;
+
+    /// Reset the transformation on top of the transformation stack to identity.
+    fn reset_transform(&mut self);
+
+    /// Reduces the clip region to the intersection of the current clip and the given rectangle taking into account the clip operation.
+    fn clip_rect(&mut self, rect: impl Into<DipRect>, operation: ClipOperation);
+
+    /// Reduces the clip region to the intersection of the current clip and the given oval taking into account the clip operation.
+    fn clip_oval(&mut self, oval_bounds: impl Into<DipRect>, operation: ClipOperation);
+
+    /// Reduces the clip region to the intersection of the current clip and the given rounded rectangle taking into account the clip operation.
+    fn clip_rounded_rect(
+        &mut self,
+        rect: impl Into<DipRect>,
+        radii: &RoundingRadii,
+        operation: ClipOperation,
+    );
+
+    /// Reduces the clip region to the intersection of the current clip and the given path taking into account the clip operation.
+    fn clip_path(
+        &mut self,
+        path: &<Self::PathBuilder as crate::PathBuilder>::Path,
+        operation: ClipOperation,
+    );
+
+    /// Stashes the current transformation and clip state onto a save stack.
+    fn save(&mut self);
+
     /// Stashes the current transformation and clip state onto a save stack
     /// and creates and creates an offscreen layer
     /// onto which subsequent rendering intent will be directed to.
@@ -23,7 +68,7 @@ pub trait DisplayListBuilder {
         filter: Option<ImageFilter>,
     );
 
-    /// Pops the last entry pushed onto the save stack.
+    /// Pops the last entry pushed onto the save stack using a call to Self::save or Self::save_layer.
     fn restore(&mut self);
 
     /// Fills the current clip with the specified paint.

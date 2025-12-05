@@ -10,6 +10,27 @@ pub fn convert_rect(rect: &drawing_api::DipRect) -> impellers::Rect {
     impellers::Rect::new(convert_point(&rect.origin), convert_size(&rect.size))
 }
 
+pub fn convert_radii(rect: &drawing_api::RoundingRadii) -> impellers::RoundingRadii {
+    impellers::RoundingRadii {
+        top_left: bytemuck::cast(impellers::Point::new(
+            rect.top_left.width,
+            rect.top_left.height,
+        )),
+        bottom_left: bytemuck::cast(impellers::Point::new(
+            rect.bottom_left.width,
+            rect.bottom_left.height,
+        )),
+        top_right: bytemuck::cast(impellers::Point::new(
+            rect.top_right.width,
+            rect.top_right.height,
+        )),
+        bottom_right: bytemuck::cast(impellers::Point::new(
+            rect.bottom_right.width,
+            rect.bottom_right.height,
+        )),
+    }
+}
+
 pub fn convert_device_point(point: &drawing_api::DevicePoint) -> impellers::Point {
     impellers::Point::new(point.x, point.y)
 }
@@ -23,6 +44,13 @@ pub fn convert_device_rect(rect: &drawing_api::DeviceRect) -> impellers::Rect {
         convert_device_point(&rect.origin),
         convert_device_size(&rect.size),
     )
+}
+
+pub fn convert_clip_operation(operation: &drawing_api::ClipOperation) -> impellers::ClipOperation {
+    match operation {
+        drawing_api::ClipOperation::Difference => impellers::ClipOperation::Difference,
+        drawing_api::ClipOperation::Intersect => impellers::ClipOperation::Intersect,
+    }
 }
 
 pub fn convert_color(color: &drawing_api::Color) -> impellers::Color {
@@ -98,7 +126,7 @@ pub fn convert_image_filter(image_filter: drawing_api::ImageFilter) -> impellers
         }
         drawing_api::ImageFilter::Matrix { matrix, sampling } => {
             impellers::ImageFilter::new_matrix(
-                &convert_matrix(matrix),
+                &convert_matrix(&matrix),
                 match sampling {
                     drawing_api::TextureSampling::NearestNeighbor => {
                         impellers::TextureSampling::NearestNeighbor
@@ -163,10 +191,10 @@ pub fn convert_font_style(style: drawing_api::FontStyle) -> impellers::FontStyle
     }
 }
 
-pub fn convert_color_matrix(color_matrix: drawing_api::ColorMatrix) -> impellers::ColorMatrix {
+pub fn convert_color_matrix(color_matrix: &drawing_api::ColorMatrix) -> impellers::ColorMatrix {
     impellers::ColorMatrix { m: color_matrix.m }
 }
 
-pub fn convert_matrix(matrix: drawing_api::Matrix) -> impellers::Matrix {
+pub fn convert_matrix(matrix: &drawing_api::Matrix) -> impellers::Matrix {
     impellers::Matrix::from_array(matrix.to_array())
 }

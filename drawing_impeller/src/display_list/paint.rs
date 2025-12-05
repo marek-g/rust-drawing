@@ -2,7 +2,7 @@ use crate::ImpellerTexture;
 
 use super::{
     convert_blend_mode, convert_color, convert_color_matrix, convert_image_filter, convert_matrix,
-    convert_tile_mode,
+    convert_texture_sampling, convert_tile_mode,
 };
 
 pub struct Paint {
@@ -70,7 +70,7 @@ impl drawing_api::Paint for Paint {
                     )
                 }
                 drawing_api::ColorFilter::Matrix(color_matrix) => {
-                    impellers::ColorFilter::new_matrix(convert_color_matrix(color_matrix))
+                    impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
                 }
             };
             self.paint.set_color_filter(&color_filter);
@@ -107,7 +107,7 @@ impl drawing_api::Paint for Paint {
                         .collect::<Vec<_>>(),
                     &stops,
                     convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(t)).as_ref(),
+                    transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
                 drawing_api::ColorSource::RadialGradient {
                     center,
@@ -125,7 +125,7 @@ impl drawing_api::Paint for Paint {
                         .collect::<Vec<_>>(),
                     &stops,
                     convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(t)).as_ref(),
+                    transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
                 drawing_api::ColorSource::ConicalGradient {
                     start_center,
@@ -147,7 +147,7 @@ impl drawing_api::Paint for Paint {
                         .collect::<Vec<_>>(),
                     &stops,
                     convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(t)).as_ref(),
+                    transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
                 drawing_api::ColorSource::SweepGradient {
                     center,
@@ -167,7 +167,7 @@ impl drawing_api::Paint for Paint {
                         .collect::<Vec<_>>(),
                     &stops,
                     convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(t)).as_ref(),
+                    transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
                 drawing_api::ColorSource::Image {
                     image,
@@ -175,13 +175,15 @@ impl drawing_api::Paint for Paint {
                     vertical_tile_mode,
                     sampling,
                     transformation,
-                } => todo!("Add support for sys:Matrix"), /*impellers::ColorSource::new_image(
-                                                              &image.texture,
-                                                              convert_tile_mode(horizontal_tile_mode),
-                                                              convert_tile_mode(vertical_tile_mode),
-                                                              convert_texture_sampling(sampling),
-                                                              //impellers::DisplayListBuilder::get_transform(&self), //transformation.map(|t| convert_matrix(t)).as_ref(),
-                                                          ),*/
+                } => impellers::ColorSource::new_image(
+                    &image.texture,
+                    convert_tile_mode(horizontal_tile_mode),
+                    convert_tile_mode(vertical_tile_mode),
+                    convert_texture_sampling(sampling),
+                    transformation
+                        .map(|t| bytemuck::cast(convert_matrix(&t)))
+                        .as_ref(),
+                ),
             };
             self.paint.set_color_source(&color_source);
         } else {

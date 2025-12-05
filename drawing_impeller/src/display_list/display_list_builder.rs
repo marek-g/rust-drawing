@@ -1,8 +1,8 @@
 use drawing_api::DipRect;
 
 use super::{
-    convert_device_rect, convert_image_filter, convert_point, convert_rect,
-    convert_texture_sampling,
+    convert_clip_operation, convert_device_rect, convert_image_filter, convert_matrix,
+    convert_point, convert_radii, convert_rect, convert_texture_sampling,
 };
 
 pub struct DisplayListBuilder {
@@ -25,6 +25,79 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         Self {
             display_list_builder: impellers::DisplayListBuilder::new(bounds.as_ref()),
         }
+    }
+
+    fn scale(&mut self, x_scale: f32, y_scale: f32) {
+        self.display_list_builder.scale(x_scale, y_scale);
+    }
+
+    fn rotate(&mut self, angle_degrees: f32) {
+        self.display_list_builder.rotate(angle_degrees);
+    }
+
+    fn translate(&mut self, x_translation: f32, y_translation: f32) {
+        self.display_list_builder
+            .translate(x_translation, y_translation);
+    }
+
+    fn transform(&mut self, transform: &drawing_api::Matrix) {
+        self.display_list_builder
+            .transform(&convert_matrix(transform));
+    }
+
+    fn set_transform(&mut self, transform: &drawing_api::Matrix) {
+        self.display_list_builder
+            .set_transform(&convert_matrix(transform));
+    }
+
+    fn get_transform(&self) -> drawing_api::Matrix {
+        drawing_api::Matrix::from_array(self.display_list_builder.get_transform().m)
+    }
+
+    fn reset_transform(&mut self) {
+        self.display_list_builder.reset_transform();
+    }
+
+    fn clip_rect(&mut self, rect: impl Into<DipRect>, operation: drawing_api::ClipOperation) {
+        let rect = convert_rect(&rect.into());
+        let operation = convert_clip_operation(&operation);
+        self.display_list_builder.clip_rect(&rect, operation);
+    }
+
+    fn clip_oval(
+        &mut self,
+        oval_bounds: impl Into<DipRect>,
+        operation: drawing_api::ClipOperation,
+    ) {
+        let ovel_bounds = convert_rect(&oval_bounds.into());
+        let operation = convert_clip_operation(&operation);
+        self.display_list_builder.clip_oval(&ovel_bounds, operation);
+    }
+
+    fn clip_rounded_rect(
+        &mut self,
+        rect: impl Into<DipRect>,
+        radii: &drawing_api::RoundingRadii,
+        operation: drawing_api::ClipOperation,
+    ) {
+        let rect = convert_rect(&rect.into());
+        let radii = convert_radii(&radii);
+        let operation = convert_clip_operation(&operation);
+        self.display_list_builder
+            .clip_rounded_rect(&rect, &radii, operation);
+    }
+
+    fn clip_path(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        operation: drawing_api::ClipOperation,
+    ) {
+        let operation = convert_clip_operation(&operation);
+        self.display_list_builder.clip_path(&path, operation);
+    }
+
+    fn save(&mut self) {
+        self.display_list_builder.save();
     }
 
     fn save_layer(
