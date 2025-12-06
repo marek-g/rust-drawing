@@ -1,9 +1,9 @@
-use crate::{DipPoint, DipRect};
+use crate::{DipPoint, DipRect, RoundingRadii};
 
 use super::FillType;
 
 pub trait PathBuilder: Default {
-    type Path;
+    type Path: crate::Path;
 
     /// Sets the fill type.
     fn set_fill_type(&mut self, fill_type: FillType);
@@ -24,13 +24,13 @@ pub trait PathBuilder: Default {
         end_point: impl Into<DipPoint>,
     ) {
         let control_point = control_point.into();
-        self.bezier_curve_to(control_point.clone(), control_point, end_point);
+        self.cubic_curve_to(control_point.clone(), control_point, end_point);
     }
 
     /// Add a cubic bezier curve whose start point is current cursor location
     /// to the specified end point using the two specified control points.
     /// The cursor location is updated to be at the endpoint.
-    fn bezier_curve_to(
+    fn cubic_curve_to(
         &mut self,
         control_point_1: impl Into<DipPoint>,
         control_point_2: impl Into<DipPoint>,
@@ -54,9 +54,27 @@ pub trait PathBuilder: Default {
         self.close();
     }
 
+    /// Add a rounded rect with potentially non-uniform radii to the path.
+    fn add_rounded_rect(&mut self, rect: impl Into<DipRect>, rounding_radii: &RoundingRadii);
+
+    /// Add an oval to the path.
+    fn add_oval(&mut self, oval_bounds: impl Into<DipRect>);
+
+    /// Add an arc to the path.
+    fn add_arc(
+        &mut self,
+        oval_bounds: impl Into<DipRect>,
+        start_angle_degrees: f32,
+        end_angle_degrees: f32,
+    );
+
     /// Close the path.
     fn close(&mut self);
 
     /// Builds the path.
     fn build(self) -> Result<Self::Path, &'static str>;
+
+    /// Create a new path by copying the existing built-up path.
+    /// The existing path can continue being added to.
+    fn build_copy(&mut self) -> Result<Self::Path, &'static str>;
 }

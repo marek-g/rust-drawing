@@ -2,7 +2,7 @@ use std::{borrow::Cow, cell::RefCell, rc::Rc};
 
 use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Paint, ParagraphBuilder, ParagraphStyle,
-    PathBuilder, TextureSampling,
+    PathBuilder, TextureDescriptor, TextureSampling,
 };
 use euclid::rect;
 use gl::types::GLuint;
@@ -120,7 +120,14 @@ pub fn create_chessboard<C: drawing_api::Context>(
     }
 
     drawing_context
-        .create_texture(Cow::Owned(data), w as u16, h as u16, ColorFormat::RGBA)
+        .create_texture(
+            Cow::Owned(data),
+            TextureDescriptor {
+                width: w as u32,
+                height: h as u32,
+                ..Default::default()
+            },
+        )
         .unwrap()
 }
 
@@ -300,7 +307,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((100.0f32, 350.0f32));
-    pb.bezier_curve_to(
+    pb.cubic_curve_to(
         (120.0f32, 50.0f32),
         (180.0f32, 50.0f32),
         (300.0f32, 150.0f32),
@@ -320,7 +327,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((500.0f32, 350.0f32));
-    pb.bezier_curve_to(
+    pb.cubic_curve_to(
         (520.0f32, 50.0f32),
         (580.0f32, 50.0f32),
         (700.0f32, 150.0f32),
@@ -345,7 +352,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((300.0f32, 550.0f32));
-    pb.bezier_curve_to(
+    pb.cubic_curve_to(
         (320.0f32, 250.0f32),
         (380.0f32, 250.0f32),
         (500.0f32, 350.0f32),
@@ -404,8 +411,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         let mut drawing_surface = drawing_context
             .wrap_gl_framebuffer(
                 framebuffer_id,
-                width as u16,
-                height as u16,
+                width as u32,
+                height as u32,
                 drawing_api::ColorFormat::RGBA,
             )
             .unwrap();

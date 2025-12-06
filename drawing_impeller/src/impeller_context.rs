@@ -1,5 +1,6 @@
 use std::{borrow::Cow, os::raw::c_void};
 
+use drawing_api::TextureDescriptor;
 use impellers::{ISize, PixelFormat};
 
 use crate::{ImpellerSurface, ImpellerTexture};
@@ -39,8 +40,8 @@ impl drawing_api::Context for ImpellerContext {
     fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
-        width: u16,
-        height: u16,
+        width: u32,
+        height: u32,
         color_format: drawing_api::ColorFormat,
     ) -> Result<Self::Surface, &'static str> {
         if color_format != drawing_api::ColorFormat::RGBA {
@@ -63,12 +64,9 @@ impl drawing_api::Context for ImpellerContext {
     fn adopt_gl_texture(
         &self,
         texture_handle: u32,
-        width: u16,
-        height: u16,
-        mip_count: u32,
-        color_format: drawing_api::ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str> {
-        if color_format != drawing_api::ColorFormat::RGBA {
+        if descriptor.color_format != drawing_api::ColorFormat::RGBA {
             return Err("color format not supported!");
         }
 
@@ -76,9 +74,9 @@ impl drawing_api::Context for ImpellerContext {
         let texture = unsafe {
             self.context
                 .adopt_opengl_texture(
-                    width as u32,
-                    height as u32,
-                    mip_count,
+                    descriptor.width,
+                    descriptor.height,
+                    descriptor.mip_count,
                     texture_handle as u64,
                 )
                 .ok_or("")?
@@ -86,29 +84,27 @@ impl drawing_api::Context for ImpellerContext {
 
         Ok(ImpellerTexture {
             texture,
-            size: (width, height),
+            descriptor,
         })
     }
 
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
-        width: u16,
-        height: u16,
-        color_format: drawing_api::ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str> {
-        if color_format != drawing_api::ColorFormat::RGBA {
+        if descriptor.color_format != drawing_api::ColorFormat::RGBA {
             return Err("color format not supported!");
         }
 
         // TODO: ensure texture is destroyed before context
         let texture = unsafe {
             self.context
-                .create_texture_with_rgba8(contents, width as u32, height as u32)?
+                .create_texture_with_rgba8(contents, descriptor.width, descriptor.height)?
         };
         Ok(ImpellerTexture {
             texture,
-            size: (width, height),
+            descriptor,
         })
     }
 

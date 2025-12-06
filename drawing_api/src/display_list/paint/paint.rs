@@ -38,5 +38,5 @@ pub trait Paint: Default {
     fn set_color_source(&mut self, color_source: Option<ColorSource<Self::Texture>>);
 
     // Set the mask filter of a paint.
-    fn set_mask_blur_filter(&mut self, mask_filter: Option<MaskFilter>);
+    fn set_mask_filter(&mut self, mask_filter: Option<MaskFilter>);
 }

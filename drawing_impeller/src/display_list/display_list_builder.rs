@@ -1,8 +1,8 @@
 use drawing_api::DipRect;
 
 use super::{
-    convert_clip_operation, convert_device_rect, convert_image_filter, convert_matrix,
-    convert_point, convert_radii, convert_rect, convert_texture_sampling,
+    convert_clip_operation, convert_color, convert_device_rect, convert_image_filter,
+    convert_matrix, convert_point, convert_radii, convert_rect, convert_texture_sampling,
 };
 
 pub struct DisplayListBuilder {
@@ -93,7 +93,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         operation: drawing_api::ClipOperation,
     ) {
         let operation = convert_clip_operation(&operation);
-        self.display_list_builder.clip_path(&path, operation);
+        self.display_list_builder.clip_path(&path.path, operation);
     }
 
     fn save(&mut self) {
@@ -135,13 +135,109 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         );
     }
 
+    fn draw_dashed_line(
+        &mut self,
+        from: impl Into<drawing_api::DipPoint>,
+        to: impl Into<drawing_api::DipPoint>,
+        on_length: impl Into<drawing_api::DipLength>,
+        off_length: impl Into<drawing_api::DipLength>,
+        paint: &Self::Paint,
+    ) {
+        let on_length: drawing_api::DipLength = on_length.into();
+        let off_length: drawing_api::DipLength = off_length.into();
+        self.display_list_builder.draw_dashed_line(
+            convert_point(&from.into()),
+            convert_point(&to.into()),
+            on_length.0,
+            off_length.0,
+            &paint.paint,
+        );
+    }
+
     fn draw_rect(&mut self, rect: impl Into<drawing_api::DipRect>, paint: &Self::Paint) {
         self.display_list_builder
             .draw_rect(&convert_rect(&rect.into()), &paint.paint);
     }
 
-    fn draw_path(&mut self, path: &impellers::Path, paint: &Self::Paint) {
-        self.display_list_builder.draw_path(path, &paint.paint);
+    fn draw_rounded_rect(
+        &mut self,
+        rect: impl Into<DipRect>,
+        radii: &drawing_api::RoundingRadii,
+        paint: &Self::Paint,
+    ) {
+        self.display_list_builder.draw_rounded_rect(
+            &convert_rect(&rect.into()),
+            &convert_radii(&radii),
+            &paint.paint,
+        );
+    }
+
+    fn draw_rounded_rect_difference(
+        &mut self,
+        outer_rect: impl Into<DipRect>,
+        outer_radii: &drawing_api::RoundingRadii,
+        inner_rect: impl Into<DipRect>,
+        inner_radii: &drawing_api::RoundingRadii,
+        paint: &Self::Paint,
+    ) {
+        self.display_list_builder.draw_rounded_rect_difference(
+            &convert_rect(&outer_rect.into()),
+            &convert_radii(&outer_radii),
+            &convert_rect(&inner_rect.into()),
+            &convert_radii(&inner_radii),
+            &paint.paint,
+        );
+    }
+
+    fn draw_oval(&mut self, oval_bounds: impl Into<DipRect>, paint: &Self::Paint) {
+        self.display_list_builder
+            .draw_rect(&convert_rect(&oval_bounds.into()), &paint.paint);
+    }
+
+    fn draw_path(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        paint: &Self::Paint,
+    ) {
+        self.display_list_builder
+            .draw_path(&path.path, &paint.paint);
+    }
+
+    fn draw_shadow(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        color: &drawing_api::Color,
+        elevation: f32,
+        oocluder_is_transparent: bool,
+        device_pixel_ratio: f32,
+    ) {
+        self.display_list_builder.draw_shadow(
+            &path.path,
+            &convert_color(color),
+            elevation,
+            oocluder_is_transparent,
+            device_pixel_ratio,
+        );
+    }
+
+    fn draw_texture(
+        &mut self,
+        texture: &Self::Texture,
+        point: impl Into<drawing_api::DipPoint>,
+        sampling: drawing_api::TextureSampling,
+        paint: Option<&Self::Paint>,
+    ) {
+        let paint = match paint {
+            Some(paint) => &paint.paint,
+            None => &impellers::Paint::default(),
+        };
+
+        self.display_list_builder.draw_texture(
+            &texture.texture,
+            convert_point(&point.into()),
+            convert_texture_sampling(sampling),
+            &paint,
+        );
     }
 
     fn draw_texture_rect(
@@ -159,15 +255,6 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             convert_texture_sampling(sampling),
             paint.map(|p| &p.paint),
         );
-
-        /*let paint = Self::Paint::default();
-
-        self.display_list_builder.draw_texture(
-            &texture.texture,
-            convert_point(&dst_rect.into().origin),
-            convert_texture_sampling(sampling),
-            &paint.paint,
-        );*/
     }
 
     fn draw_paragraph(
@@ -177,6 +264,11 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         self.display_list_builder
             .draw_paragraph(&paragraph.paragraph, convert_point(&location.into()));
+    }
+
+    fn draw_display_list(&mut self, display_list: &Self::DisplayList, opacity: f32) {
+        self.display_list_builder
+            .draw_display_list(display_list, opacity);
     }
 
     fn build(mut self) -> Result<Self::DisplayList, &'static str> {

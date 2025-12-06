@@ -1,4 +1,7 @@
-use drawing_api::{ColorFormat, Context, PixelTransform, Point, Texture, UnknownToDeviceTransform};
+use drawing_api::{
+    ColorFormat, Context, PixelTransform, Point, Texture, TextureDescriptor,
+    UnknownToDeviceTransform,
+};
 use euclid::Vector2D;
 use gl::types::*;
 use std::{borrow::Cow, cell::RefCell, ffi::c_void, ops::DerefMut, rc::Rc, sync::Arc};
@@ -698,14 +701,14 @@ impl Context for GlContext {
     fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
-        width: u16,
-        height: u16,
+        width: u32,
+        height: u32,
         color_format: ColorFormat,
     ) -> Result<GlSurface, &'static str> {
         Ok(GlSurface {
             framebuffer_id,
-            width,
-            height,
+            width: width as u16,
+            height: height as u16,
             color_format,
             is_owner: false,
         })
@@ -714,29 +717,28 @@ impl Context for GlContext {
     fn adopt_gl_texture(
         &self,
         texture_handle: u32,
-        width: u16,
-        height: u16,
-        mip_count: u32,
-        color_format: ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str> {
         Ok(GlTexture::from_external(
             texture_handle,
-            width,
-            height,
-            color_format,
+            descriptor.width as u16,
+            descriptor.height as u16,
+            descriptor.color_format,
         ))
     }
 
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
-        width: u16,
-        height: u16,
-        color_format: drawing_api::ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str> {
-        self.data
-            .borrow()
-            .create_texture(Some(&contents), width, height, color_format, false)
+        self.data.borrow().create_texture(
+            Some(&contents),
+            descriptor.width as u16,
+            descriptor.height as u16,
+            descriptor.color_format,
+            false,
+        )
     }
 
     fn draw(

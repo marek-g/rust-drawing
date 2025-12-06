@@ -133,7 +133,7 @@ pub trait DisplayListBuilder {
         device_pixel_ratio: f32,
     );
 
-    /// Draw a portion of texture at the specified location.
+	/// Draw a portion of texture at the specified location.
     fn draw_texture_rect(
         &mut self,
         texture: &Self::Texture,
@@ -142,12 +142,13 @@ pub trait DisplayListBuilder {
         sampling: TextureSampling,
         paint: Option<&Self::Paint>,
     );
-
-    /// Draws a texture at the specified point.
-    fn draw_texture(
+	
+    /// Draws a portion of texture at the specified location.
+    fn draw_texture_rect(
         &mut self,
         texture: &Self::Texture,
-        point: impl Into<DipPoint>,
+        src_rect: impl Into<DeviceRect>,
+        dst_rect: impl Into<DipRect>,
         sampling: TextureSampling,
         paint: Option<&Self::Paint>,
     );
@@ -160,7 +161,7 @@ pub trait DisplayListBuilder {
     );
 
     /// Draws another display list.
-    fn draw_display_list(&mut self, display_list: &Self::DisplayList, opacity: f32);
+    fn draw_display_list(&mut self, display_list: &Self::DisplayList);
 
     /// Builds display list.
     fn build(self) -> Result<Self::DisplayList, &'static str>;

@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::ColorFormat;
+use crate::{ColorFormat, TextureDescriptor};
 
 /// An abstraction over graphics context (like OpenGL context).
 ///
@@ -27,8 +27,8 @@ pub trait Context: Clone {
     fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
-        width: u16,
-        height: u16,
+        width: u32,
+        height: u32,
         color_format: ColorFormat,
     ) -> Result<Self::Surface, &'static str>;
 
@@ -36,19 +36,14 @@ pub trait Context: Clone {
     fn adopt_gl_texture(
         &self,
         texture_handle: u32,
-        width: u16,
-        height: u16,
-        mip_count: u32,
-        color_format: ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str>;
 
     /// Creates a new texture.
     fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
-        width: u16,
-        height: u16,
-        color_format: ColorFormat,
+        descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str>;
 
     /// Draws a display list on the surface.

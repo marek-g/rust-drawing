@@ -25,5 +25,11 @@ pub use paragraph_style::*;
 mod range;
 pub use range::*;
 
+mod text_alignment;
+pub use text_alignment::*;
+
+mod text_decoration;
+pub use text_decoration::*;
+
 mod text_direction;
 pub use text_direction::*;

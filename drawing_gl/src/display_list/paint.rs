@@ -80,7 +80,7 @@ impl drawing_api::Paint for Paint {
         self.color_source = color_source;
     }
 
-    fn set_mask_blur_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
+    fn set_mask_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
         self.mask_filter = mask_filter;
     }
 }

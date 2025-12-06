@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use drawing_api::ColorFormat;
 use drawing_api::Texture;
+use drawing_api::TextureDescriptor;
 use gl::types::*;
 
 #[derive(Debug)]
@@ -77,8 +78,17 @@ impl Texture for GlTexture {
         Ok(())
     }*/
 
-    fn get_size(&self) -> (u16, u16) {
-        (self.data.width, self.data.height)
+    fn get_descriptor(&self) -> drawing_api::TextureDescriptor {
+        TextureDescriptor {
+            width: self.data.width as u32,
+            height: self.data.height as u32,
+            color_format: if self.data.gl_format == gl::RGBA {
+                ColorFormat::RGBA
+            } else {
+                ColorFormat::Y8
+            },
+            mip_count: 0,
+        }
     }
 
     fn get_gl_handle(&self) -> usize {

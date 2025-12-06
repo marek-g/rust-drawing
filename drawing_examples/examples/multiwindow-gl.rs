@@ -2,7 +2,7 @@
 
 use drawing_examples::{setup_window, GlWindow};
 use drawing_gl::GlContext;
-use std::{cell::RefCell, error::Error, ptr::null, rc::Rc};
+use std::{cell::RefCell, error::Error, ptr::null_mut, rc::Rc};
 
 use windowing_qt::{Application, ApplicationOptions};
 
@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .borrow_mut()
                 .window
                 .get_opengl_proc_address(symbol)
-                .unwrap_or_else(|_| null())
+                .unwrap_or_else(|_| null_mut())
         })
         .unwrap()
     };

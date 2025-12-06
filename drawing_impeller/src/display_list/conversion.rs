@@ -2,12 +2,24 @@ pub fn convert_point(point: &drawing_api::DipPoint) -> impellers::Point {
     impellers::Point::new(point.x, point.y)
 }
 
+pub fn convert_to_point(point: &impellers::Point) -> drawing_api::DipPoint {
+    drawing_api::DipPoint::new(point.x, point.y)
+}
+
 pub fn convert_size(size: &drawing_api::DipSize) -> impellers::Size {
     impellers::Size::new(size.width, size.height)
 }
 
+pub fn convert_to_size(size: &impellers::Size) -> drawing_api::DipSize {
+    drawing_api::DipSize::new(size.width, size.height)
+}
+
 pub fn convert_rect(rect: &drawing_api::DipRect) -> impellers::Rect {
     impellers::Rect::new(convert_point(&rect.origin), convert_size(&rect.size))
+}
+
+pub fn convert_to_rect(rect: &impellers::Rect) -> drawing_api::DipRect {
+    drawing_api::DipRect::new(convert_to_point(&rect.origin), convert_to_size(&rect.size))
 }
 
 pub fn convert_radii(rect: &drawing_api::RoundingRadii) -> impellers::RoundingRadii {

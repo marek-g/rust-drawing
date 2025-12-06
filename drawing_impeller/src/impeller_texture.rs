@@ -1,12 +1,12 @@
 #[derive(Clone)]
 pub struct ImpellerTexture {
     pub(crate) texture: impellers::Texture,
-    pub(crate) size: (u16, u16),
+    pub(crate) descriptor: drawing_api::TextureDescriptor,
 }
 
 impl drawing_api::Texture for ImpellerTexture {
-    fn get_size(&self) -> (u16, u16) {
-        self.size
+    fn get_descriptor(&self) -> drawing_api::TextureDescriptor {
+        self.descriptor.clone()
     }
 
     fn get_gl_handle(&self) -> usize {

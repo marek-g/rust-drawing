@@ -141,8 +141,8 @@ impl<Texture1: drawing_api::Texture> Paint<Texture1> {
                 alpha,
             } => {
                 let extent_size = {
-                    let size = texture.get_size();
-                    [size.0 as f32, size.1 as f32]
+                    let descriptor = texture.get_descriptor();
+                    [descriptor.width as f32, descriptor.height as f32]
                 };
                 (
                     Paint {

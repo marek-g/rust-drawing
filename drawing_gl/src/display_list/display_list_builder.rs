@@ -1,12 +1,12 @@
 use drawing_api::{
-    DeviceRect, DipPoint, DipRect, FillType, PixelLength, PixelPoint, PixelRect, PixelSize,
-    PixelTransform, TextureSampling,
+    DeviceRect, DipPoint, DipRect, PixelLength, PixelPoint, PixelRect, PixelSize, PixelTransform,
+    TextureSampling,
 };
 use euclid::rect;
 
 use crate::{generic::device::convert_color, GlContextData, GlTexture};
 
-use super::{PathElement, Primitive};
+use super::Primitive;
 
 struct DisplayListLayer {
     bounds: DipRect,
@@ -203,6 +203,17 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
+    fn draw_dashed_line(
+        &mut self,
+        from: impl Into<DipPoint>,
+        to: impl Into<DipPoint>,
+        on_length: impl Into<drawing_api::DipLength>,
+        off_length: impl Into<drawing_api::DipLength>,
+        paint: &Self::Paint,
+    ) {
+        todo!()
+    }
+
     fn draw_rect(&mut self, rect: impl Into<DipRect>, paint: &Self::Paint) {
         let rect = rect.into();
         self.display_list
@@ -218,7 +229,35 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
-    fn draw_path(&mut self, path: &(Vec<PathElement>, FillType), paint: &Self::Paint) {
+    fn draw_rounded_rect(
+        &mut self,
+        rect: impl Into<DipRect>,
+        radii: &drawing_api::RoundingRadii,
+        paint: &Self::Paint,
+    ) {
+        todo!()
+    }
+
+    fn draw_rounded_rect_difference(
+        &mut self,
+        outer_rect: impl Into<DipRect>,
+        outer_radii: &drawing_api::RoundingRadii,
+        inner_rect: impl Into<DipRect>,
+        inner_radii: &drawing_api::RoundingRadii,
+        paint: &Self::Paint,
+    ) {
+        todo!()
+    }
+
+    fn draw_oval(&mut self, oval_bounds: impl Into<DipRect>, paint: &Self::Paint) {
+        todo!()
+    }
+
+    fn draw_path(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        paint: &Self::Paint,
+    ) {
         match paint.draw_style {
             drawing_api::DrawStyle::Fill => self
                 .display_list
@@ -226,7 +265,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 .unwrap()
                 .display_list
                 .push(Primitive::Fill {
-                    path: path.0.to_vec(),
+                    path: path.path.to_vec(),
                     brush: DisplayListBuilder::paint_to_brush(paint),
                 }),
             drawing_api::DrawStyle::Stroke => self
@@ -235,7 +274,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 .unwrap()
                 .display_list
                 .push(Primitive::Stroke {
-                    path: path.0.to_vec(),
+                    path: path.path.to_vec(),
                     thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
                     brush: DisplayListBuilder::paint_to_brush(paint),
                 }),
@@ -245,7 +284,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .unwrap()
                     .display_list
                     .push(Primitive::Fill {
-                        path: path.0.to_vec(),
+                        path: path.path.to_vec(),
                         brush: DisplayListBuilder::paint_to_brush(paint),
                     });
                 self.display_list
@@ -253,12 +292,33 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .unwrap()
                     .display_list
                     .push(Primitive::Stroke {
-                        path: path.0.to_vec(),
+                        path: path.path.to_vec(),
                         thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
                         brush: DisplayListBuilder::paint_to_brush(paint),
                     })
             }
         }
+    }
+
+    fn draw_shadow(
+        &mut self,
+        path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
+        color: &drawing_api::Color,
+        elevation: f32,
+        oocluder_is_transparent: bool,
+        device_pixel_ratio: f32,
+    ) {
+        todo!()
+    }
+
+    fn draw_texture(
+        &mut self,
+        texture: &Self::Texture,
+        point: impl Into<DipPoint>,
+        sampling: TextureSampling,
+        paint: Option<&Self::Paint>,
+    ) {
+        todo!()
     }
 
     fn draw_texture_rect(
@@ -330,6 +390,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 _ => (),
             }
         }
+    }
+
+    fn draw_display_list(&mut self, display_list: &Self::DisplayList, opacity: f32) {
+        todo!()
     }
 
     fn build(mut self) -> Result<Self::DisplayList, &'static str> {

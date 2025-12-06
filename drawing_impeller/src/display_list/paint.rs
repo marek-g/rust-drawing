@@ -191,7 +191,7 @@ impl drawing_api::Paint for Paint {
         }
     }
 
-    fn set_mask_blur_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
+    fn set_mask_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
         if let Some(mask_filter) = mask_filter {
             let mask_filter = match mask_filter {
                 drawing_api::MaskFilter::Blur { style, sigma } => impellers::MaskFilter::new_blur(

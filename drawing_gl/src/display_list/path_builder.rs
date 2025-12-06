@@ -17,7 +17,7 @@ impl Default for PathBuilder {
 }
 
 impl drawing_api::PathBuilder for PathBuilder {
-    type Path = (Vec<PathElement>, FillType);
+    type Path = crate::display_list::Path;
 
     fn set_fill_type(&mut self, fill_type: FillType) {
         self.fill_type = fill_type;
@@ -35,7 +35,7 @@ impl drawing_api::PathBuilder for PathBuilder {
             .push(PathElement::LineTo(PixelPoint::new(location.x, location.y)));
     }
 
-    fn bezier_curve_to(
+    fn cubic_curve_to(
         &mut self,
         control_point_1: impl Into<drawing_api::DipPoint>,
         control_point_2: impl Into<drawing_api::DipPoint>,
@@ -51,11 +51,42 @@ impl drawing_api::PathBuilder for PathBuilder {
         ));
     }
 
+    fn add_rounded_rect(
+        &mut self,
+        rect: impl Into<drawing_api::DipRect>,
+        rounding_radii: &drawing_api::RoundingRadii,
+    ) {
+        todo!()
+    }
+
+    fn add_oval(&mut self, oval_bounds: impl Into<drawing_api::DipRect>) {
+        todo!()
+    }
+
+    fn add_arc(
+        &mut self,
+        oval_bounds: impl Into<drawing_api::DipRect>,
+        start_angle_degrees: f32,
+        end_angle_degrees: f32,
+    ) {
+        todo!()
+    }
+
     fn close(&mut self) {
         self.path.push(PathElement::ClosePath);
     }
 
     fn build(self) -> Result<Self::Path, &'static str> {
-        Ok((self.path, self.fill_type))
+        Ok(super::Path {
+            path: self.path,
+            fill_type: self.fill_type,
+        })
+    }
+
+    fn build_copy(&mut self) -> Result<Self::Path, &'static str> {
+        Ok(super::Path {
+            path: self.path.clone(),
+            fill_type: self.fill_type,
+        })
     }
 }

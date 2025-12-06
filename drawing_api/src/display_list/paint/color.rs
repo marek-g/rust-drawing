@@ -7,6 +7,18 @@ pub struct Color {
     pub color_space: ColorSpace,
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Self {
+            red: 0.0f32,
+            green: 0.0f32,
+            blue: 0.0f32,
+            alpha: 1.0f32,
+            color_space: ColorSpace::SRGB,
+        }
+    }
+}
+
 impl Color {
     pub fn rgb(red: f32, green: f32, blue: f32) -> Self {
         Self {
@@ -36,11 +48,17 @@ pub enum ColorSpace {
     DisplayP3,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum ColorFormat {
     // for color images, 24-bit color with 8-bit alpha channel
     RGBA,
 
     // 8-bit channel, for use with monochromatic textures (like fonts)
     Y8,
+}
+
+impl Default for ColorFormat {
+    fn default() -> Self {
+        ColorFormat::RGBA
+    }
 }

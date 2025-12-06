@@ -19,6 +19,9 @@ pub use paragraph::*;
 mod paragraph_builder;
 pub use paragraph_builder::*;
 
+mod path;
+pub use path::*;
+
 mod path_builder;
 pub use path_builder::*;
 

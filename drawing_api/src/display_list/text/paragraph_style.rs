@@ -1,4 +1,4 @@
-use super::{FontStyle, FontWeight};
+use super::{FontStyle, FontWeight, TextAlignment, TextDecoration, TextDirection};
 
 pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub foreground: Option<P>,
@@ -8,6 +8,11 @@ pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub family: String,
     pub size: f32,
     pub height: Option<f32>,
+    pub text_alignment: TextAlignment,
+    pub text_direction: TextDirection,
+    pub text_decoration: Option<TextDecoration>,
+    pub max_lines: Option<u32>,
+    pub ellipsis: Option<String>,
 }
 
 impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle<T, P> {
@@ -20,6 +25,11 @@ impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle
             family: "default".to_string(),
             size: 24.0f32,
             height: None,
+            text_alignment: TextAlignment::Start,
+            text_direction: TextDirection::LTR,
+            text_decoration: None,
+            max_lines: None,
+            ellipsis: None,
         }
     }
 }
