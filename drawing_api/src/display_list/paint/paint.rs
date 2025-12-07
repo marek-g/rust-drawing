@@ -5,6 +5,7 @@ use super::{
 };
 
 pub trait Paint: Default {
+    type FragmentShader: crate::FragmentShader;
     type Texture: crate::Texture;
 
     /// Sets the paint color for stroking or filling.
@@ -32,10 +33,16 @@ pub trait Paint: Default {
     fn set_color_filter(&mut self, color_filter: Option<ColorFilter>);
 
     /// Sets the image filter of a paint.
-    fn set_image_filter(&mut self, image_filter: Option<ImageFilter>);
+    fn set_image_filter(
+        &mut self,
+        image_filter: Option<ImageFilter<Self::Texture, Self::FragmentShader>>,
+    );
 
     /// Sets the color source of the paint.
-    fn set_color_source(&mut self, color_source: Option<ColorSource<Self::Texture>>);
+    fn set_color_source(
+        &mut self,
+        color_source: Option<ColorSource<Self::Texture, Self::FragmentShader>>,
+    );
 
     // Set the mask filter of a paint.
     fn set_mask_filter(&mut self, mask_filter: Option<MaskFilter>);

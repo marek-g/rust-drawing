@@ -4,6 +4,7 @@ use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 
 pub trait DisplayListBuilder {
     type DisplayList;
+    type FragmentShader: crate::FragmentShader;
     type Paint: crate::Paint;
     type ParagraphBuilder: crate::ParagraphBuilder;
     type PathBuilder: crate::PathBuilder;
@@ -65,7 +66,7 @@ pub trait DisplayListBuilder {
         &mut self,
         bounds: impl Into<DipRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<ImageFilter>,
+        filter: Option<ImageFilter<Self::Texture, Self::FragmentShader>>,
     );
 
     /// Pops the last entry pushed onto the save stack using a call to Self::save or Self::save_layer.

@@ -3,6 +3,9 @@ mod display_list;
 mod gl_context;
 pub use gl_context::*;
 
+mod gl_fragment_shader;
+pub use gl_fragment_shader::*;
+
 mod gl_surface;
 pub use gl_surface::*;
 

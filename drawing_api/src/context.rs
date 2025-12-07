@@ -13,6 +13,7 @@ pub trait Context: Clone {
         Texture = Self::Texture,
     >;
     type Fonts: crate::Fonts;
+    type FragmentShader: crate::FragmentShader;
     type Paint: crate::Paint<Texture = Self::Texture>;
     type ParagraphBuilder: crate::ParagraphBuilder<
         Texture = Self::Texture,
@@ -45,6 +46,12 @@ pub trait Context: Clone {
         contents: Cow<'static, [u8]>,
         descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str>;
+
+    /// Creates a new fragment shader using compiled program.
+    fn create_fragment_shader(
+        &self,
+        program: Cow<'static, [u8]>,
+    ) -> Result<Self::FragmentShader, &'static str>;
 
     /// Draws a display list on the surface.
     fn draw(

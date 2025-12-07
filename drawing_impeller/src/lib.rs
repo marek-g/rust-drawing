@@ -4,6 +4,9 @@ pub use display_list::*;
 mod impeller_context;
 pub use impeller_context::*;
 
+mod impeller_fragment_shader;
+pub use impeller_fragment_shader::*;
+
 mod impeller_surface;
 pub use impeller_surface::*;
 

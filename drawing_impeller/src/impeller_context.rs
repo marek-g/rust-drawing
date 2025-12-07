@@ -27,6 +27,8 @@ impl drawing_api::Context for ImpellerContext {
 
     type Fonts = crate::Fonts;
 
+    type FragmentShader = crate::ImpellerFragmentShader;
+
     type Paint = crate::Paint;
 
     type ParagraphBuilder = crate::ParagraphBuilder;
@@ -106,6 +108,13 @@ impl drawing_api::Context for ImpellerContext {
             texture,
             descriptor,
         })
+    }
+
+    fn create_fragment_shader(
+        &self,
+        program: Cow<'static, [u8]>,
+    ) -> Result<Self::FragmentShader, &'static str> {
+        todo!()
     }
 
     fn draw(

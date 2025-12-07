@@ -4,6 +4,9 @@ pub use context::*;
 mod display_list;
 pub use display_list::*;
 
+mod fragment_shader;
+pub use fragment_shader::*;
+
 mod surface;
 pub use surface::*;
 

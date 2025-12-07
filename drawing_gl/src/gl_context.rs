@@ -692,6 +692,7 @@ impl GlContext {
 impl Context for GlContext {
     type DisplayListBuilder = crate::DisplayListBuilder;
     type Fonts = crate::Fonts<GlContextData>;
+    type FragmentShader = crate::GlFragmentShader;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
@@ -739,6 +740,13 @@ impl Context for GlContext {
             descriptor.color_format,
             false,
         )
+    }
+
+    fn create_fragment_shader(
+        &self,
+        program: Cow<'static, [u8]>,
+    ) -> Result<Self::FragmentShader, &'static str> {
+        todo!()
     }
 
     fn draw(

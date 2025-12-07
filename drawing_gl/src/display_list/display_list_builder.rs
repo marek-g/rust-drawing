@@ -4,14 +4,14 @@ use drawing_api::{
 };
 use euclid::rect;
 
-use crate::{generic::device::convert_color, GlContextData, GlTexture};
+use crate::{generic::device::convert_color, GlContextData, GlFragmentShader, GlTexture};
 
 use super::Primitive;
 
 struct DisplayListLayer {
     bounds: DipRect,
     paint: Option<crate::Paint>,
-    filter: Option<drawing_api::ImageFilter>,
+    filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
     display_list: Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
 }
 
@@ -19,7 +19,7 @@ impl DisplayListLayer {
     pub fn new(
         bounds: impl Into<DipRect>,
         paint: Option<&crate::Paint>,
-        filter: Option<drawing_api::ImageFilter>,
+        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
     ) -> Self {
         DisplayListLayer {
             bounds: bounds.into(),
@@ -76,6 +76,7 @@ impl DisplayListBuilder {
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
+    type FragmentShader = crate::GlFragmentShader;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
@@ -152,7 +153,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         &mut self,
         bounds: impl Into<DipRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<drawing_api::ImageFilter>,
+        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
     ) {
         self.display_list
             .push(DisplayListLayer::new(bounds, paint, filter));

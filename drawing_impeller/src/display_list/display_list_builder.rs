@@ -1,5 +1,7 @@
 use drawing_api::DipRect;
 
+use crate::{ImpellerFragmentShader, ImpellerTexture};
+
 use super::{
     convert_clip_operation, convert_color, convert_device_rect, convert_image_filter,
     convert_matrix, convert_point, convert_radii, convert_rect, convert_texture_sampling,
@@ -11,6 +13,8 @@ pub struct DisplayListBuilder {
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = impellers::DisplayList;
+
+    type FragmentShader = crate::ImpellerFragmentShader;
 
     type Paint = crate::Paint;
 
@@ -104,7 +108,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         &mut self,
         bounds: impl Into<drawing_api::DipRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<drawing_api::ImageFilter>,
+        filter: Option<drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentShader>>,
     ) {
         let bounds = convert_rect(&bounds.into());
         self.display_list_builder.save_layer(

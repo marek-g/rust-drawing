@@ -1,6 +1,6 @@
 use crate::{
     generic::device::{convert_color, Color},
-    GlTexture,
+    GlFragmentShader, GlTexture,
 };
 use drawing_api::{BlendMode, DrawStyle, StrokeCap, StrokeJoin};
 
@@ -14,8 +14,8 @@ pub struct Paint {
     pub(crate) stroke_width: f32,
     pub(crate) stroke_miter: f32,
     pub(crate) color_filter: Option<drawing_api::ColorFilter>,
-    pub(crate) image_filter: Option<drawing_api::ImageFilter>,
-    pub(crate) color_source: Option<drawing_api::ColorSource<GlTexture>>,
+    pub(crate) image_filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
+    pub(crate) color_source: Option<drawing_api::ColorSource<GlTexture, GlFragmentShader>>,
     pub(crate) mask_filter: Option<drawing_api::MaskFilter>,
 }
 
@@ -38,6 +38,7 @@ impl Default for Paint {
 }
 
 impl drawing_api::Paint for Paint {
+    type FragmentShader = GlFragmentShader;
     type Texture = GlTexture;
 
     fn set_color(&mut self, color: drawing_api::Color) {
@@ -72,11 +73,17 @@ impl drawing_api::Paint for Paint {
         self.color_filter = color_filter;
     }
 
-    fn set_image_filter(&mut self, image_filter: Option<drawing_api::ImageFilter>) {
+    fn set_image_filter(
+        &mut self,
+        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentShader>>,
+    ) {
         self.image_filter = image_filter;
     }
 
-    fn set_color_source(&mut self, color_source: Option<drawing_api::ColorSource<Self::Texture>>) {
+    fn set_color_source(
+        &mut self,
+        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentShader>>,
+    ) {
         self.color_source = color_source;
     }
 

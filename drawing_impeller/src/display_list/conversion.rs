@@ -1,3 +1,5 @@
+use crate::{ImpellerFragmentShader, ImpellerTexture};
+
 pub fn convert_point(point: &drawing_api::DipPoint) -> impellers::Point {
     impellers::Point::new(point.x, point.y)
 }
@@ -123,7 +125,9 @@ pub fn convert_texture_sampling(
     }
 }
 
-pub fn convert_image_filter(image_filter: drawing_api::ImageFilter) -> impellers::ImageFilter {
+pub fn convert_image_filter(
+    image_filter: drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentShader>,
+) -> impellers::ImageFilter {
     match image_filter {
         drawing_api::ImageFilter::Blur {
             x_sigma,
@@ -152,6 +156,11 @@ pub fn convert_image_filter(image_filter: drawing_api::ImageFilter) -> impellers
             let inner = convert_image_filter(*inner);
             impellers::ImageFilter::new_compose(&outer, &inner)
         }
+        drawing_api::ImageFilter::FragmentShader {
+            program,
+            samplers,
+            data,
+        } => todo!(),
     }
 }
 
