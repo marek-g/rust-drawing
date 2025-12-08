@@ -4,7 +4,7 @@ use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder,
     ParagraphStyle, PathBuilder, TextureDescriptor, TextureSampling,
 };
-use euclid::rect;
+use euclid::{rect, Angle, Vector3D};
 use gl::types::GLuint;
 use rust_embed::RustEmbed;
 
@@ -159,7 +159,6 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image2,
-        // rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
         rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
         TextureSampling::NearestNeighbor,
@@ -175,22 +174,21 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     pb.line_to((300.0f32, 350.0f32));
     pb.line_to((300.0f32, 550.0f32));
     pb.line_to((100.0f32, 550.0f32));
-    /*paint.set_color_source(Some(drawing_api::ColorSource::Image {
+    paint.set_color_source(Some(drawing_api::ColorSource::Image {
         image: resources.image2.clone(),
         horizontal_tile_mode: drawing_api::TileMode::Repeat,
         vertical_tile_mode: drawing_api::TileMode::Repeat,
-        sampling: TextureSampling::NearestNeighbor,
+        sampling: TextureSampling::Linear,
         transformation: Some(
-            Transform3D::identity()
+            Matrix::identity()
                 .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
                 .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
         ),
-    }));*/
+    }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
     dlb.draw_texture_rect(
         &resources.image1,
-        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         TextureSampling::NearestNeighbor,
@@ -200,7 +198,6 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
         TextureSampling::NearestNeighbor,
@@ -214,7 +211,6 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(
             width as f32 - 4.0f32,
@@ -233,7 +229,6 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image1,
-        //rect(0.0f32, 0.0f32, 1.0f32, 1.0f32),
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
         rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
         TextureSampling::Linear,
@@ -417,11 +412,10 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut paint_layer = C::Paint::default();
     paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
     dlb.save_layer(
-        rect(0.0f32, 0.0f32, 1000.0f32, 1000.0f32),
+        rect(200.5f32, 220.5f32, 200.0f32, 50.0f32),
         Some(&paint_layer),
         None,
-        /*None,
-        Some(drawing_api::ImageFilter::Blur {
+        /*Some(drawing_api::ImageFilter::Blur {
             x_sigma: 8.0f32,
             y_sigma: 8.0f32,
             tile_mode: drawing_api::TileMode::Clamp,
