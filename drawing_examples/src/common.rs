@@ -325,6 +325,10 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
+    //
+    // Filled path
+    //
+
     let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((500.0f32, 350.0f32));
     pb.cubic_curve_to(
@@ -350,6 +354,10 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
+    //
+    // Stroke path
+    //
+
     let mut pb = <C as drawing_api::Context>::PathBuilder::default();
     pb.move_to((300.0f32, 550.0f32));
     pb.cubic_curve_to(
@@ -371,6 +379,36 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     }));
     paint.set_draw_style(drawing_api::DrawStyle::Stroke);
     dlb.draw_path(&pb.build().unwrap(), &paint);
+
+    //
+    // Clipping test
+    //
+
+    dlb.save();
+
+    dlb.clip_oval(
+        rect(500.0, 350.0, 200.0, 200.0),
+        drawing_api::ClipOperation::Intersect,
+    );
+
+    dlb.clip_rect(
+        rect(550.0, 400.0, 100.0, 100.0),
+        drawing_api::ClipOperation::Difference,
+    );
+
+    dlb.draw_texture_rect(
+        &resources.image2,
+        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
+        rect(500.0f32, 350.0f32, 200.0f32, 200.0f32),
+        TextureSampling::NearestNeighbor,
+        None,
+    );
+
+    dlb.restore();
+
+    //
+    // Render target test
+    //
 
     let mut paint_layer = C::Paint::default();
     paint_layer.set_color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
@@ -404,6 +442,10 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     dlb.draw_paragraph((207.0f32, 232.0f32), &paragraph);
 
     dlb.restore();
+
+    //
+    // Build display list
+    //
 
     let display_list = dlb.build().unwrap();
 
