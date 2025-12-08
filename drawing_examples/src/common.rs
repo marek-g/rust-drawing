@@ -145,8 +145,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let cpu_time = cpu_time::ProcessTime::now();
 
-    let mut dlb = <C as Context>::DisplayListBuilder::new(None);
-    let mut paint = <C as Context>::Paint::default();
+    let mut dlb = C::DisplayListBuilder::new(None);
+    let mut paint = C::Paint::default();
 
     paint.set_color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
     dlb.draw_paint(&paint);
@@ -257,7 +257,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
@@ -269,7 +269,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
@@ -281,7 +281,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
@@ -293,7 +293,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::ParagraphBuilder::new(&resources.fonts).unwrap();
+    let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
     let mut font_paint = C::Paint::default();
@@ -305,7 +305,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
 
-    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
+    let mut pb = C::PathBuilder::default();
     pb.move_to((100.0f32, 350.0f32));
     pb.cubic_curve_to(
         (120.0f32, 50.0f32),
@@ -329,7 +329,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     // Filled path
     //
 
-    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
+    let mut pb = C::PathBuilder::default();
     pb.move_to((500.0f32, 350.0f32));
     pb.cubic_curve_to(
         (520.0f32, 50.0f32),
@@ -358,7 +358,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     // Stroke path
     //
 
-    let mut pb = <C as drawing_api::Context>::PathBuilder::default();
+    let mut pb = C::PathBuilder::default();
     pb.move_to((300.0f32, 550.0f32));
     pb.cubic_curve_to(
         (320.0f32, 250.0f32),
@@ -424,7 +424,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         }),*/
     );
 
-    let mut paint2 = <C as Context>::Paint::default();
+    let mut paint2 = C::Paint::default();
     paint2.set_color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
     dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint2);
 
