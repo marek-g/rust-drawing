@@ -6,32 +6,32 @@ use euclid::rect;
 
 use crate::{generic::device::convert_color, GlContextData, GlFragmentShader, GlTexture};
 
-use super::Primitive;
+use super::{PathElement, Primitive};
 
-struct DisplayListLayer {
-    bounds: DipRect,
-    paint: Option<crate::Paint>,
-    filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
-    display_list: Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
-}
-
-impl DisplayListLayer {
-    pub fn new(
-        bounds: impl Into<DipRect>,
-        paint: Option<&crate::Paint>,
+enum StackElement {
+    Start,
+    RestorePoint,
+    Transform {
+        transform: PixelTransform,
+    },
+    ClipRect {
+        rect: PixelRect,
+    },
+    ClipPath {
+        path: Vec<PathElement>,
+    },
+    Layer {
+        bounds: DipRect,
+        paint: Option<crate::Paint>,
         filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
-    ) -> Self {
-        DisplayListLayer {
-            bounds: bounds.into(),
-            paint: paint.cloned(),
-            filter,
-            display_list: Vec::new(),
-        }
-    }
+    },
 }
 
 pub struct DisplayListBuilder {
-    display_list: Vec<DisplayListLayer>,
+    display_list_stack: Vec<(
+        StackElement,
+        Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
+    )>,
 }
 
 impl DisplayListBuilder {
@@ -84,7 +84,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn new(bounds: impl Into<Option<DipRect>>) -> Self {
         Self {
-            display_list: vec![DisplayListLayer::new(DipRect::zero(), None, None)],
+            display_list_stack: vec![(StackElement::Start, Vec::new())],
         }
     }
 
@@ -117,7 +117,16 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     }
 
     fn clip_rect(&mut self, rect: impl Into<DipRect>, operation: drawing_api::ClipOperation) {
-        todo!()
+        let rect = rect.into();
+        self.display_list_stack.push((
+            StackElement::ClipRect {
+                rect: PixelRect::new(
+                    PixelPoint::new(rect.origin.x, rect.origin.y),
+                    PixelSize::new(rect.size.width, rect.size.height),
+                ),
+            },
+            Vec::new(),
+        ));
     }
 
     fn clip_oval(
@@ -125,7 +134,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         oval_bounds: impl Into<DipRect>,
         operation: drawing_api::ClipOperation,
     ) {
-        todo!()
+        //todo!()
     }
 
     fn clip_rounded_rect(
@@ -134,7 +143,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         radii: &drawing_api::RoundingRadii,
         operation: drawing_api::ClipOperation,
     ) {
-        todo!()
+        //todo!()
     }
 
     fn clip_path(
@@ -142,11 +151,17 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
         operation: drawing_api::ClipOperation,
     ) {
-        todo!()
+        self.display_list_stack.push((
+            StackElement::ClipPath {
+                path: path.path.to_vec(),
+            },
+            Vec::new(),
+        ));
     }
 
     fn save(&mut self) {
-        todo!()
+        self.display_list_stack
+            .push((StackElement::RestorePoint, Vec::new()));
     }
 
     fn save_layer(
@@ -155,31 +170,97 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: Option<&Self::Paint>,
         filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
     ) {
-        self.display_list
-            .push(DisplayListLayer::new(bounds, paint, filter));
+        self.display_list_stack
+            .push((StackElement::RestorePoint, Vec::new()));
+        self.display_list_stack.push((
+            StackElement::Layer {
+                bounds: bounds.into(),
+                paint: paint.cloned(),
+                filter,
+            },
+            Vec::new(),
+        ));
     }
 
     fn restore(&mut self) {
-        let layer = self.display_list.pop().unwrap();
-        self.display_list
-            .last_mut()
-            .unwrap()
-            .display_list
-            .push(Primitive::Composite {
-                color: layer
-                    .paint
-                    .map(|p| p.color)
-                    .unwrap_or([0.0f32, 0.0f32, 0.0f32, 1.0f32]),
-                primitives: layer.display_list,
-            });
+        loop {
+            if self.display_list_stack.len() <= 1 {
+                return;
+            }
+
+            let mut stack_el = self.display_list_stack.pop().unwrap();
+
+            match stack_el.0 {
+                StackElement::Start => unreachable!(),
+
+                StackElement::RestorePoint => {
+                    self.display_list_stack
+                        .last_mut()
+                        .unwrap()
+                        .1
+                        .append(&mut stack_el.1);
+                    return;
+                }
+
+                StackElement::Transform { transform } => {
+                    self.display_list_stack
+                        .last_mut()
+                        .unwrap()
+                        .1
+                        .push(Primitive::Transform {
+                            transform,
+                            primitives: stack_el.1,
+                        });
+                }
+
+                StackElement::ClipRect { rect } => {
+                    self.display_list_stack
+                        .last_mut()
+                        .unwrap()
+                        .1
+                        .push(Primitive::ClipRect {
+                            rect,
+                            primitives: stack_el.1,
+                        });
+                }
+
+                StackElement::ClipPath { path } => {
+                    self.display_list_stack
+                        .last_mut()
+                        .unwrap()
+                        .1
+                        .push(Primitive::ClipPath {
+                            path,
+                            primitives: stack_el.1,
+                        });
+                }
+
+                StackElement::Layer {
+                    bounds,
+                    paint,
+                    filter,
+                } => {
+                    self.display_list_stack
+                        .last_mut()
+                        .unwrap()
+                        .1
+                        .push(Primitive::Composite {
+                            color: paint
+                                .map(|p| p.color)
+                                .unwrap_or([0.0f32, 0.0f32, 0.0f32, 1.0f32]),
+                            primitives: stack_el.1,
+                        });
+                }
+            }
+        }
     }
 
     fn draw_paint(&mut self, paint: &Self::Paint) {
         // TODO: handle other cases
-        self.display_list
+        self.display_list_stack
             .last_mut()
             .unwrap()
-            .display_list
+            .1
             .push(Primitive::Clear { color: paint.color });
     }
 
@@ -191,10 +272,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let from = from.into();
         let to = to.into();
-        self.display_list
+        self.display_list_stack
             .last_mut()
             .unwrap()
-            .display_list
+            .1
             .push(Primitive::Line {
                 color: paint.color,
                 thickness: PixelLength::new(1.0f32),
@@ -217,10 +298,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_rect(&mut self, rect: impl Into<DipRect>, paint: &Self::Paint) {
         let rect = rect.into();
-        self.display_list
+        self.display_list_stack
             .last_mut()
             .unwrap()
-            .display_list
+            .1
             .push(Primitive::Rectangle {
                 color: paint.color,
                 rect: PixelRect::new(
@@ -260,38 +341,40 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: &Self::Paint,
     ) {
         match paint.draw_style {
-            drawing_api::DrawStyle::Fill => self
-                .display_list
-                .last_mut()
-                .unwrap()
-                .display_list
-                .push(Primitive::Fill {
-                    path: path.path.to_vec(),
-                    brush: DisplayListBuilder::paint_to_brush(paint),
-                }),
-            drawing_api::DrawStyle::Stroke => self
-                .display_list
-                .last_mut()
-                .unwrap()
-                .display_list
-                .push(Primitive::Stroke {
-                    path: path.path.to_vec(),
-                    thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
-                    brush: DisplayListBuilder::paint_to_brush(paint),
-                }),
-            drawing_api::DrawStyle::StrokeAndFill => {
-                self.display_list
+            drawing_api::DrawStyle::Fill => {
+                self.display_list_stack
                     .last_mut()
                     .unwrap()
-                    .display_list
+                    .1
+                    .push(Primitive::Fill {
+                        path: path.path.to_vec(),
+                        brush: DisplayListBuilder::paint_to_brush(paint),
+                    })
+            }
+            drawing_api::DrawStyle::Stroke => {
+                self.display_list_stack
+                    .last_mut()
+                    .unwrap()
+                    .1
+                    .push(Primitive::Stroke {
+                        path: path.path.to_vec(),
+                        thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
+                        brush: DisplayListBuilder::paint_to_brush(paint),
+                    })
+            }
+            drawing_api::DrawStyle::StrokeAndFill => {
+                self.display_list_stack
+                    .last_mut()
+                    .unwrap()
+                    .1
                     .push(Primitive::Fill {
                         path: path.path.to_vec(),
                         brush: DisplayListBuilder::paint_to_brush(paint),
                     });
-                self.display_list
+                self.display_list_stack
                     .last_mut()
                     .unwrap()
-                    .display_list
+                    .1
                     .push(Primitive::Stroke {
                         path: path.path.to_vec(),
                         thickness: PixelLength::new(paint.stroke_width.max(1.0f32)),
@@ -332,10 +415,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let src_rect = src_rect.into();
         let dst_rect = dst_rect.into();
-        self.display_list
+        self.display_list_stack
             .last_mut()
             .unwrap()
-            .display_list
+            .1
             .push(Primitive::Image {
                 texture: texture.clone(),
                 rect: rect(
@@ -373,10 +456,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 } => {
                     let position =
                         PixelPoint::new(location.x + position.x, location.y + position.y);
-                    self.display_list
+                    self.display_list_stack
                         .last_mut()
                         .unwrap()
-                        .display_list
+                        .1
                         .push(Primitive::Text {
                             fonts: fonts.clone(),
                             family_name: family_name.clone(),
@@ -398,6 +481,6 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     }
 
     fn build(mut self) -> Result<Self::DisplayList, &'static str> {
-        Ok(self.display_list.pop().unwrap().display_list)
+        Ok(self.display_list_stack.pop().unwrap().1)
     }
 }
