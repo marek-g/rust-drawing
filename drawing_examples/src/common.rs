@@ -1,8 +1,8 @@
 use std::{borrow::Cow, cell::RefCell, rc::Rc};
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Paint, ParagraphBuilder, ParagraphStyle,
-    PathBuilder, TextureDescriptor, TextureSampling,
+    Color, ColorFormat, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder,
+    ParagraphStyle, PathBuilder, TextureDescriptor, TextureSampling,
 };
 use euclid::rect;
 use gl::types::GLuint;
@@ -381,25 +381,29 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
     //
-    // Clipping test
+    // Clipping & transformation test
     //
 
     dlb.save();
 
+    dlb.translate(600.0f32, 450.0f32);
+    dlb.rotate(pos_y);
+    dlb.translate(-100.0f32, -100.0f32);
+
     dlb.clip_oval(
-        rect(500.0, 350.0, 200.0, 200.0),
+        rect(0.0, 0.0, 200.0, 200.0),
         drawing_api::ClipOperation::Intersect,
     );
 
     dlb.clip_rect(
-        rect(550.0, 400.0, 100.0, 100.0),
+        rect(50.0, 50.0, 100.0, 100.0),
         drawing_api::ClipOperation::Difference,
     );
 
     dlb.draw_texture_rect(
         &resources.image2,
         rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
-        rect(500.0f32, 350.0f32, 200.0f32, 200.0f32),
+        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
         TextureSampling::NearestNeighbor,
         None,
     );

@@ -1,5 +1,5 @@
-use drawing_api::{Matrix, PixelPoint, PixelRect, PixelSize, TextureSampling};
-use euclid::rect;
+use drawing_api::{Matrix, PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
+use euclid::{rect, Angle};
 
 use crate::{
     generic::device::convert_color, units::PixelTransform, GlContextData, GlFragmentShader,
@@ -89,15 +89,36 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     }
 
     fn scale(&mut self, x_scale: f32, y_scale: f32) {
-        todo!()
+        self.display_list_stack.push((
+            StackElement::Transform {
+                transform: PixelTransform::identity().then_scale(x_scale, y_scale),
+            },
+            Vec::new(),
+        ));
     }
 
     fn rotate(&mut self, angle_degrees: f32) {
-        todo!()
+        self.display_list_stack.push((
+            StackElement::Transform {
+                transform: PixelTransform::identity().then_rotate(Angle::degrees(angle_degrees)),
+            },
+            Vec::new(),
+        ));
     }
 
     fn translate(&mut self, x_translation: f32, y_translation: f32) {
-        todo!()
+        self.display_list_stack.push((
+            StackElement::Transform {
+                transform: PixelTransform::identity().then_translate(euclid::Vector2D::<
+                    f32,
+                    PixelUnit,
+                >::new(
+                    x_translation,
+                    y_translation,
+                )),
+            },
+            Vec::new(),
+        ));
     }
 
     fn transform(&mut self, transform: &drawing_api::Matrix) {
