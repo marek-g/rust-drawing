@@ -2,7 +2,7 @@ use crate::{ImpellerFragmentShader, ImpellerTexture};
 
 use super::{
     convert_blend_mode, convert_color, convert_color_matrix, convert_image_filter, convert_matrix,
-    convert_texture_sampling, convert_tile_mode,
+    convert_point, convert_texture_sampling, convert_tile_mode,
 };
 
 pub struct Paint {
@@ -106,8 +106,8 @@ impl drawing_api::Paint for Paint {
                     tile_mode,
                     transformation,
                 } => impellers::ColorSource::new_linear_gradient(
-                    start,
-                    end,
+                    convert_point(&start),
+                    convert_point(&end),
                     &colors
                         .into_iter()
                         .map(|c| convert_color(&c))
@@ -124,7 +124,7 @@ impl drawing_api::Paint for Paint {
                     tile_mode,
                     transformation,
                 } => impellers::ColorSource::new_radial_gradient(
-                    center,
+                    convert_point(&center),
                     radius,
                     &colors
                         .into_iter()
@@ -144,9 +144,9 @@ impl drawing_api::Paint for Paint {
                     tile_mode,
                     transformation,
                 } => impellers::ColorSource::new_conical_gradient(
-                    start_center,
+                    convert_point(&start_center),
                     start_radius,
-                    end_center,
+                    convert_point(&end_center),
                     end_radius,
                     &colors
                         .into_iter()
@@ -165,7 +165,7 @@ impl drawing_api::Paint for Paint {
                     tile_mode,
                     transformation,
                 } => impellers::ColorSource::new_sweep_gradient(
-                    center,
+                    convert_point(&center),
                     start,
                     end,
                     &colors

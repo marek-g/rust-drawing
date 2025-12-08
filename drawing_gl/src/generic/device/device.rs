@@ -6,11 +6,12 @@ use crate::generic::device::Paint;
 use crate::generic::device::RenderTarget;
 use crate::generic::path::{Bounds, Path};
 use crate::generic::renderer::CompositeOperationState;
+use crate::units::PixelToDeviceTransform;
 use crate::PathElement;
 use core::option::Option;
 use drawing_api::ColorFormat;
 use drawing_api::Texture;
-use drawing_api::{DeviceLength, PixelRect, Point, Rect, UnknownToDeviceTransform};
+use drawing_api::{PixelPoint, PixelRect};
 
 use super::Color;
 
@@ -38,7 +39,7 @@ pub trait Device {
         &mut self,
         target: &Self::RenderTarget,
         vertices: &[ColoredVertex],
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     );
 
     fn triangles_textured(
@@ -47,7 +48,7 @@ pub trait Device {
         texture: &Self::Texture,
         filtering: bool,
         vertices: &[TexturedVertex],
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     );
 
     fn triangles_textured_y8(
@@ -56,25 +57,25 @@ pub trait Device {
         texture: &Self::Texture,
         filtering: bool,
         vertices: &[TexturedY8Vertex],
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     );
 
     fn line(
         &mut self,
         target: &Self::RenderTarget,
         color: &Color,
-        thickness: DeviceLength,
-        start_point: Point,
-        end_point: Point,
-        transform: UnknownToDeviceTransform,
+        thickness: f32,
+        start_point: PixelPoint,
+        end_point: PixelPoint,
+        transform: PixelToDeviceTransform,
     );
 
     fn rect_colored(
         &mut self,
         target: &Self::RenderTarget,
         color: &Color,
-        rect: Rect,
-        transform: UnknownToDeviceTransform,
+        rect: PixelRect,
+        transform: PixelToDeviceTransform,
     ) {
         let p1 = [rect.origin.x, rect.origin.y];
         let p2 = [
@@ -102,9 +103,9 @@ pub trait Device {
         texture: &Self::Texture,
         filtering: bool,
         color: &Color,
-        rect: Rect,
+        rect: PixelRect,
         uv: &[f32; 4],
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         let p1 = [rect.origin.x, rect.origin.y];
         let p2 = [
@@ -134,9 +135,9 @@ pub trait Device {
         texture: &Self::Texture,
         filtering: bool,
         color: &Color,
-        rect: Rect,
+        rect: PixelRect,
         uv: &[f32; 4],
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         let p1 = [rect.origin.x, rect.origin.y];
         let p2 = [
@@ -174,7 +175,7 @@ pub trait Device {
         antialiasing: bool,
         scissor: Scissor,
         composite_operation_state: CompositeOperationState,
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     );
 
     fn fill(
@@ -189,7 +190,7 @@ pub trait Device {
         antialiasing: bool,
         scissor: Scissor,
         composite_operation_state: CompositeOperationState,
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     );
 
     // state
@@ -202,5 +203,5 @@ pub trait Device {
 
     fn set_clip_path(&mut self, _path: &[PathElement]) {}
 
-    fn transform(&mut self, _transform: UnknownToDeviceTransform) {}
+    fn transform(&mut self, _transform: PixelToDeviceTransform) {}
 }

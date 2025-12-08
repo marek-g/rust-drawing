@@ -1,4 +1,4 @@
-use drawing_api::{DipPoint, DipSize};
+use drawing_api::{PixelPoint, PixelSize};
 
 pub struct GlyphInfo {
     pub(crate) glyph_info: impellers::GlyphInfo,
@@ -15,11 +15,11 @@ impl drawing_api::GlyphInfo for GlyphInfo {
             .get_grapheme_cluster_code_unit_range_end_utf16()
     }
 
-    fn get_grapheme_cluster_bounds(&self) -> drawing_api::DipRect {
+    fn get_grapheme_cluster_bounds(&self) -> drawing_api::PixelRect {
         let rect = self.glyph_info.get_grapheme_cluster_bounds();
-        drawing_api::DipRect::new(
-            DipPoint::new(rect.origin.x, rect.origin.y),
-            DipSize::new(rect.size.width, rect.size.height),
+        drawing_api::PixelRect::new(
+            PixelPoint::new(rect.origin.x, rect.origin.y),
+            PixelSize::new(rect.size.width, rect.size.height),
         )
     }
 

@@ -23,13 +23,13 @@ impl drawing_api::PathBuilder for PathBuilder {
         self.fill_type = fill_type;
     }
 
-    fn move_to(&mut self, location: impl Into<drawing_api::DipPoint>) {
+    fn move_to(&mut self, location: impl Into<drawing_api::PixelPoint>) {
         let location = location.into();
         self.path
             .push(PathElement::MoveTo(PixelPoint::new(location.x, location.y)));
     }
 
-    fn line_to(&mut self, location: impl Into<drawing_api::DipPoint>) {
+    fn line_to(&mut self, location: impl Into<drawing_api::PixelPoint>) {
         let location = location.into();
         self.path
             .push(PathElement::LineTo(PixelPoint::new(location.x, location.y)));
@@ -37,9 +37,9 @@ impl drawing_api::PathBuilder for PathBuilder {
 
     fn cubic_curve_to(
         &mut self,
-        control_point_1: impl Into<drawing_api::DipPoint>,
-        control_point_2: impl Into<drawing_api::DipPoint>,
-        end_point: impl Into<drawing_api::DipPoint>,
+        control_point_1: impl Into<drawing_api::PixelPoint>,
+        control_point_2: impl Into<drawing_api::PixelPoint>,
+        end_point: impl Into<drawing_api::PixelPoint>,
     ) {
         let control_point_1 = control_point_1.into();
         let control_point_2 = control_point_2.into();
@@ -53,19 +53,19 @@ impl drawing_api::PathBuilder for PathBuilder {
 
     fn add_rounded_rect(
         &mut self,
-        rect: impl Into<drawing_api::DipRect>,
+        rect: impl Into<drawing_api::PixelRect>,
         rounding_radii: &drawing_api::RoundingRadii,
     ) {
         todo!()
     }
 
-    fn add_oval(&mut self, oval_bounds: impl Into<drawing_api::DipRect>) {
+    fn add_oval(&mut self, oval_bounds: impl Into<drawing_api::PixelRect>) {
         todo!()
     }
 
     fn add_arc(
         &mut self,
-        oval_bounds: impl Into<drawing_api::DipRect>,
+        oval_bounds: impl Into<drawing_api::PixelRect>,
         start_angle_degrees: f32,
         end_angle_degrees: f32,
     ) {

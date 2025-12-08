@@ -5,7 +5,7 @@ pub struct Path {
 }
 
 impl drawing_api::Path for Path {
-    fn get_bounds(&self) -> drawing_api::DipRect {
+    fn get_bounds(&self) -> drawing_api::PixelRect {
         let bounds = self.path.get_bounds();
         convert_to_rect(&bounds)
     }

@@ -1,5 +1,6 @@
 use crate::generic::device::{Device, RenderTarget};
 use crate::generic::texture_font::Font;
+use crate::units::{PixelToDeviceTransform, PixelTransform};
 use crate::Fonts;
 use crate::{
     display_list::StrokeStyle,
@@ -51,7 +52,7 @@ impl Renderer {
     ) -> Result<(), &'static str> {
         let pixel_to_device_transform = pixel_transform.then(&render_target.get_device_transform());
         let unknown_to_device_transform =
-            UnknownToDeviceTransform::from_array(pixel_to_device_transform.to_array());
+            PixelToDeviceTransform::from_array(pixel_to_device_transform.to_array());
 
         for primitive in primitives {
             match primitive {
@@ -66,25 +67,22 @@ impl Renderer {
                     end_point,
                 } => {
                     let thickness = pixel_to_device_transform
-                        .transform_point(PixelPoint::new(thickness.get(), thickness.get()))
+                        .transform_point(PixelPoint::new(*thickness, *thickness))
                         .x;
 
                     device.line(
                         render_target,
                         color,
-                        DeviceLength::new(thickness),
-                        start_point.to_untyped(),
-                        end_point.to_untyped(),
+                        thickness,
+                        *start_point,
+                        *end_point,
                         unknown_to_device_transform,
                     );
                 }
 
-                Primitive::Rectangle { color, rect } => device.rect_colored(
-                    render_target,
-                    color,
-                    rect.to_untyped(),
-                    unknown_to_device_transform,
-                ),
+                Primitive::Rectangle { color, rect } => {
+                    device.rect_colored(render_target, color, *rect, unknown_to_device_transform)
+                }
 
                 Primitive::Image { texture, rect, uv } => {
                     device.rect_textured(
@@ -92,7 +90,7 @@ impl Renderer {
                         &texture,
                         false,
                         &[1.0f32, 1.0f32, 1.0f32, 1.0f32],
-                        rect.to_untyped(),
+                        *rect,
                         &uv,
                         unknown_to_device_transform,
                     );
@@ -113,11 +111,9 @@ impl Renderer {
                             render_target,
                             color,
                             text,
-                            position.to_untyped(),
-                            clipping_rect.map(|r| r.to_untyped()),
-                            FontParams {
-                                size: size.get() as u8,
-                            },
+                            *position,
+                            *clipping_rect,
+                            FontParams { size: *size as u8 },
                             unknown_to_device_transform,
                         )?;
                     }
@@ -147,7 +143,7 @@ impl Renderer {
                         texture.as_ref(),
                         true,
                         &flattened_path.paths,
-                        stroke_width.get(),
+                        stroke_width,
                         1.0f32 / aspect_ratio,
                         antialiasing,
                         scissor,
@@ -181,7 +177,7 @@ impl Renderer {
                         texture.as_ref(),
                         true,
                         &flattened_path.paths,
-                        stroke_width.get(),
+                        stroke_width,
                         1.0f32 / aspect_ratio,
                         antialiasing,
                         scissor,
@@ -259,9 +255,9 @@ impl Renderer {
                         &texture2,
                         false,
                         color,
-                        Rect::new(
-                            Point::new(0.0f32, 0.0f32),
-                            Size::new(size.0 as f32, size.1 as f32),
+                        PixelRect::new(
+                            PixelPoint::new(0.0f32, 0.0f32),
+                            PixelSize::new(size.0 as f32, size.1 as f32),
                         ),
                         &[0.0, 0.0, 1.0, 1.0],
                         unknown_to_device_transform,
@@ -275,7 +271,7 @@ impl Renderer {
 
     fn get_stroke_path(
         path: &[PathElement],
-        stroke_width: PixelLength,
+        stroke_width: f32,
         stroke_style: &StrokeStyle,
         aspect_ratio: f32,
         antialiasing: bool,
@@ -285,7 +281,7 @@ impl Renderer {
         let fringe_width = 1.0f32 / aspect_ratio;
         if antialiasing {
             flattened_path.expand_stroke(
-                stroke_width.get() * 0.5f32,
+                stroke_width * 0.5f32,
                 fringe_width,
                 stroke_style.line_cap,
                 stroke_style.line_join,
@@ -294,7 +290,7 @@ impl Renderer {
             );
         } else {
             flattened_path.expand_stroke(
-                stroke_width.get() * 0.5f32,
+                stroke_width * 0.5f32,
                 0.0,
                 stroke_style.line_cap,
                 stroke_style.line_join,

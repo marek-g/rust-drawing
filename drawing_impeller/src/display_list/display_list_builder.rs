@@ -1,10 +1,10 @@
-use drawing_api::DipRect;
+use drawing_api::PixelRect;
 
 use crate::{ImpellerFragmentShader, ImpellerTexture};
 
 use super::{
-    convert_clip_operation, convert_color, convert_device_rect, convert_image_filter,
-    convert_matrix, convert_point, convert_radii, convert_rect, convert_texture_sampling,
+    convert_clip_operation, convert_color, convert_image_filter, convert_matrix, convert_point,
+    convert_radii, convert_rect, convert_texture_sampling,
 };
 
 pub struct DisplayListBuilder {
@@ -24,7 +24,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     type Texture = crate::ImpellerTexture;
 
-    fn new(bounds: impl Into<Option<DipRect>>) -> Self {
+    fn new(bounds: impl Into<Option<PixelRect>>) -> Self {
         let bounds = bounds.into().map(|r| convert_rect(&r));
         Self {
             display_list_builder: impellers::DisplayListBuilder::new(bounds.as_ref()),
@@ -62,7 +62,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         self.display_list_builder.reset_transform();
     }
 
-    fn clip_rect(&mut self, rect: impl Into<DipRect>, operation: drawing_api::ClipOperation) {
+    fn clip_rect(&mut self, rect: impl Into<PixelRect>, operation: drawing_api::ClipOperation) {
         let rect = convert_rect(&rect.into());
         let operation = convert_clip_operation(&operation);
         self.display_list_builder.clip_rect(&rect, operation);
@@ -70,7 +70,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn clip_oval(
         &mut self,
-        oval_bounds: impl Into<DipRect>,
+        oval_bounds: impl Into<PixelRect>,
         operation: drawing_api::ClipOperation,
     ) {
         let ovel_bounds = convert_rect(&oval_bounds.into());
@@ -80,7 +80,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn clip_rounded_rect(
         &mut self,
-        rect: impl Into<DipRect>,
+        rect: impl Into<PixelRect>,
         radii: &drawing_api::RoundingRadii,
         operation: drawing_api::ClipOperation,
     ) {
@@ -106,7 +106,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn save_layer(
         &mut self,
-        bounds: impl Into<drawing_api::DipRect>,
+        bounds: impl Into<drawing_api::PixelRect>,
         paint: Option<&Self::Paint>,
         filter: Option<drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentShader>>,
     ) {
@@ -128,8 +128,8 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_line(
         &mut self,
-        from: impl Into<drawing_api::DipPoint>,
-        to: impl Into<drawing_api::DipPoint>,
+        from: impl Into<drawing_api::PixelPoint>,
+        to: impl Into<drawing_api::PixelPoint>,
         paint: &Self::Paint,
     ) {
         self.display_list_builder.draw_line(
@@ -141,31 +141,29 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_dashed_line(
         &mut self,
-        from: impl Into<drawing_api::DipPoint>,
-        to: impl Into<drawing_api::DipPoint>,
-        on_length: impl Into<drawing_api::DipLength>,
-        off_length: impl Into<drawing_api::DipLength>,
+        from: impl Into<drawing_api::PixelPoint>,
+        to: impl Into<drawing_api::PixelPoint>,
+        on_length: f32,
+        off_length: f32,
         paint: &Self::Paint,
     ) {
-        let on_length: drawing_api::DipLength = on_length.into();
-        let off_length: drawing_api::DipLength = off_length.into();
         self.display_list_builder.draw_dashed_line(
             convert_point(&from.into()),
             convert_point(&to.into()),
-            on_length.0,
-            off_length.0,
+            on_length,
+            off_length,
             &paint.paint,
         );
     }
 
-    fn draw_rect(&mut self, rect: impl Into<drawing_api::DipRect>, paint: &Self::Paint) {
+    fn draw_rect(&mut self, rect: impl Into<drawing_api::PixelRect>, paint: &Self::Paint) {
         self.display_list_builder
             .draw_rect(&convert_rect(&rect.into()), &paint.paint);
     }
 
     fn draw_rounded_rect(
         &mut self,
-        rect: impl Into<DipRect>,
+        rect: impl Into<PixelRect>,
         radii: &drawing_api::RoundingRadii,
         paint: &Self::Paint,
     ) {
@@ -178,9 +176,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_rounded_rect_difference(
         &mut self,
-        outer_rect: impl Into<DipRect>,
+        outer_rect: impl Into<PixelRect>,
         outer_radii: &drawing_api::RoundingRadii,
-        inner_rect: impl Into<DipRect>,
+        inner_rect: impl Into<PixelRect>,
         inner_radii: &drawing_api::RoundingRadii,
         paint: &Self::Paint,
     ) {
@@ -193,7 +191,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         );
     }
 
-    fn draw_oval(&mut self, oval_bounds: impl Into<DipRect>, paint: &Self::Paint) {
+    fn draw_oval(&mut self, oval_bounds: impl Into<PixelRect>, paint: &Self::Paint) {
         self.display_list_builder
             .draw_rect(&convert_rect(&oval_bounds.into()), &paint.paint);
     }
@@ -227,7 +225,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_texture(
         &mut self,
         texture: &Self::Texture,
-        point: impl Into<drawing_api::DipPoint>,
+        point: impl Into<drawing_api::PixelPoint>,
         sampling: drawing_api::TextureSampling,
         paint: Option<&Self::Paint>,
     ) {
@@ -247,14 +245,14 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_texture_rect(
         &mut self,
         texture: &Self::Texture,
-        src_rect: impl Into<drawing_api::DeviceRect>,
-        dst_rect: impl Into<drawing_api::DipRect>,
+        src_rect: impl Into<drawing_api::PixelRect>,
+        dst_rect: impl Into<drawing_api::PixelRect>,
         sampling: drawing_api::TextureSampling,
         paint: Option<&Self::Paint>,
     ) {
         self.display_list_builder.draw_texture_rect(
             &texture.texture,
-            &convert_device_rect(&src_rect.into()),
+            &convert_rect(&src_rect.into()),
             &convert_rect(&dst_rect.into()),
             convert_texture_sampling(sampling),
             paint.map(|p| &p.paint),
@@ -263,7 +261,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_paragraph(
         &mut self,
-        location: impl Into<drawing_api::DipPoint>,
+        location: impl Into<drawing_api::PixelPoint>,
         paragraph: &<Self::ParagraphBuilder as drawing_api::ParagraphBuilder>::Paragraph,
     ) {
         self.display_list_builder

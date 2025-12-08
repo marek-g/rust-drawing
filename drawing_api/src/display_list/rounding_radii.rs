@@ -1,8 +1,8 @@
-use crate::DipSize;
+use crate::PixelSize;
 
 pub struct RoundingRadii {
-    pub top_left: DipSize,
-    pub bottom_left: DipSize,
-    pub top_right: DipSize,
-    pub bottom_right: DipSize,
+    pub top_left: PixelSize,
+    pub bottom_left: PixelSize,
+    pub top_right: PixelSize,
+    pub bottom_right: PixelSize,
 }

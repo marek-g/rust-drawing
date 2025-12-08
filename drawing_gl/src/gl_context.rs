@@ -1,7 +1,4 @@
-use drawing_api::{
-    ColorFormat, Context, PixelTransform, Point, Texture, TextureDescriptor,
-    UnknownToDeviceTransform,
-};
+use drawing_api::{ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
 use euclid::Vector2D;
 use gl::types::*;
 use std::{borrow::Cow, cell::RefCell, ffi::c_void, ops::DerefMut, rc::Rc, sync::Arc};
@@ -16,6 +13,7 @@ use crate::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
         UniversalPipeline,
     },
+    units::{PixelToDeviceTransform, PixelTransform},
     GlSurface, GlTexture, GlTextureData,
 };
 
@@ -115,9 +113,9 @@ impl GlContextData {
     fn line_native(
         &mut self,
         color: &crate::generic::device::Color,
-        start_point: Point,
-        end_point: Point,
-        transform: UnknownToDeviceTransform,
+        start_point: PixelPoint,
+        end_point: PixelPoint,
+        transform: PixelToDeviceTransform,
     ) {
         let transform = [
             [transform.m11, transform.m12, 0.0, 0.0],
@@ -281,7 +279,7 @@ impl Device for GlContextData {
         &mut self,
         target: &Self::RenderTarget,
         vertices: &[crate::generic::device::ColoredVertex],
-        transform: drawing_api::UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
         let transform = [
@@ -302,7 +300,7 @@ impl Device for GlContextData {
         texture: &Self::Texture,
         filtering: bool,
         vertices: &[crate::generic::device::TexturedVertex],
-        transform: drawing_api::UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
         unsafe {
@@ -336,7 +334,7 @@ impl Device for GlContextData {
         texture: &Self::Texture,
         filtering: bool,
         vertices: &[crate::generic::device::TexturedY8Vertex],
-        transform: drawing_api::UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
         unsafe {
@@ -369,10 +367,10 @@ impl Device for GlContextData {
         &mut self,
         target: &Self::RenderTarget,
         color: &crate::generic::device::Color,
-        thickness: drawing_api::DeviceLength,
-        start_point: drawing_api::Point,
-        end_point: drawing_api::Point,
-        transform: drawing_api::UnknownToDeviceTransform,
+        thickness: f32,
+        start_point: PixelPoint,
+        end_point: PixelPoint,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
         // TODO:
@@ -395,7 +393,7 @@ impl Device for GlContextData {
         antialiasing: bool,
         scissor: crate::generic::clipping::Scissor,
         composite_operation_state: crate::generic::renderer::CompositeOperationState,
-        transform: drawing_api::UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
         let transform = [
@@ -495,7 +493,7 @@ impl Device for GlContextData {
         antialiasing: bool,
         scissor: crate::generic::clipping::Scissor,
         composite_operation_state: crate::generic::renderer::CompositeOperationState,
-        transform: drawing_api::UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) {
         self.set_render_target(target);
 

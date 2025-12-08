@@ -2,6 +2,7 @@ use font_size_renderer::FontSizeRenderer;
 
 use crate::generic::device::*;
 use crate::generic::texture_font::*;
+use crate::units::PixelToDeviceTransform;
 use drawing_api::*;
 
 use std::collections::HashMap;
@@ -43,10 +44,10 @@ impl<D: Device> Font<D> for TextureFont<D> {
         target: &D::RenderTarget,
         color: &crate::generic::device::Color,
         text: &str,
-        pos: Point,
-        clipping_rect: Option<Rect>,
+        pos: PixelPoint,
+        clipping_rect: Option<PixelRect>,
         font_params: FontParams,
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) -> Result<(), &'static str> {
         let renderer = self.get_or_create_font_renderer(font_params.size)?;
         renderer.add(

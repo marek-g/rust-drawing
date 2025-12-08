@@ -1,27 +1,27 @@
 use crate::{ImpellerFragmentShader, ImpellerTexture};
 
-pub fn convert_point(point: &drawing_api::DipPoint) -> impellers::Point {
+pub fn convert_point(point: &drawing_api::PixelPoint) -> impellers::Point {
     impellers::Point::new(point.x, point.y)
 }
 
-pub fn convert_to_point(point: &impellers::Point) -> drawing_api::DipPoint {
-    drawing_api::DipPoint::new(point.x, point.y)
+pub fn convert_to_point(point: &impellers::Point) -> drawing_api::PixelPoint {
+    drawing_api::PixelPoint::new(point.x, point.y)
 }
 
-pub fn convert_size(size: &drawing_api::DipSize) -> impellers::Size {
+pub fn convert_size(size: &drawing_api::PixelSize) -> impellers::Size {
     impellers::Size::new(size.width, size.height)
 }
 
-pub fn convert_to_size(size: &impellers::Size) -> drawing_api::DipSize {
-    drawing_api::DipSize::new(size.width, size.height)
+pub fn convert_to_size(size: &impellers::Size) -> drawing_api::PixelSize {
+    drawing_api::PixelSize::new(size.width, size.height)
 }
 
-pub fn convert_rect(rect: &drawing_api::DipRect) -> impellers::Rect {
+pub fn convert_rect(rect: &drawing_api::PixelRect) -> impellers::Rect {
     impellers::Rect::new(convert_point(&rect.origin), convert_size(&rect.size))
 }
 
-pub fn convert_to_rect(rect: &impellers::Rect) -> drawing_api::DipRect {
-    drawing_api::DipRect::new(convert_to_point(&rect.origin), convert_to_size(&rect.size))
+pub fn convert_to_rect(rect: &impellers::Rect) -> drawing_api::PixelRect {
+    drawing_api::PixelRect::new(convert_to_point(&rect.origin), convert_to_size(&rect.size))
 }
 
 pub fn convert_radii(rect: &drawing_api::RoundingRadii) -> impellers::RoundingRadii {
@@ -43,21 +43,6 @@ pub fn convert_radii(rect: &drawing_api::RoundingRadii) -> impellers::RoundingRa
             rect.bottom_right.height,
         )),
     }
-}
-
-pub fn convert_device_point(point: &drawing_api::DevicePoint) -> impellers::Point {
-    impellers::Point::new(point.x, point.y)
-}
-
-pub fn convert_device_size(size: &drawing_api::DeviceSize) -> impellers::Size {
-    impellers::Size::new(size.width, size.height)
-}
-
-pub fn convert_device_rect(rect: &drawing_api::DeviceRect) -> impellers::Rect {
-    impellers::Rect::new(
-        convert_device_point(&rect.origin),
-        convert_device_size(&rect.size),
-    )
 }
 
 pub fn convert_clip_operation(operation: &drawing_api::ClipOperation) -> impellers::ClipOperation {
@@ -185,7 +170,7 @@ pub fn convert_paragraph_style(
     result.set_font_style(convert_font_style(style.style));
     result.set_font_family(&style.family);
     result.set_font_size(style.size);
-    if let Some(height) = style.height {
+    if let Some(height) = style.height_factor {
         result.set_height(height);
     }
     result

@@ -1,12 +1,12 @@
-use crate::{FragmentShader, Matrix, Point, Texture};
+use crate::{FragmentShader, Matrix, PixelPoint, Texture};
 
 use super::{Color, TextureSampling, TileMode};
 
 #[derive(Debug, Clone)]
 pub enum ColorSource<T: Texture, S: FragmentShader> {
     LinearGradient {
-        start: Point,
-        end: Point,
+        start: PixelPoint,
+        end: PixelPoint,
         colors: Vec<Color>,
         stops: Vec<f32>,
         tile_mode: TileMode,
@@ -14,7 +14,7 @@ pub enum ColorSource<T: Texture, S: FragmentShader> {
     },
 
     RadialGradient {
-        center: Point,
+        center: PixelPoint,
         radius: f32,
         colors: Vec<Color>,
         stops: Vec<f32>,
@@ -23,9 +23,9 @@ pub enum ColorSource<T: Texture, S: FragmentShader> {
     },
 
     ConicalGradient {
-        start_center: Point,
+        start_center: PixelPoint,
         start_radius: f32,
-        end_center: Point,
+        end_center: PixelPoint,
         end_radius: f32,
         colors: Vec<Color>,
         stops: Vec<f32>,
@@ -34,7 +34,7 @@ pub enum ColorSource<T: Texture, S: FragmentShader> {
     },
 
     SweepGradient {
-        center: Point,
+        center: PixelPoint,
         start: f32,
         end: f32,
         colors: Vec<Color>,

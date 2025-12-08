@@ -9,7 +9,7 @@ impl drawing_api::GlyphInfo for GlyphInfo {
         todo!()
     }
 
-    fn get_grapheme_cluster_bounds(&self) -> drawing_api::DipRect {
+    fn get_grapheme_cluster_bounds(&self) -> drawing_api::PixelRect {
         todo!()
     }
 

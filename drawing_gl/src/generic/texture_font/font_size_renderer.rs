@@ -29,8 +29,8 @@ use crate::generic::clipping::clip_image;
 use crate::generic::device::Device;
 use crate::generic::device::TexturedY8Vertex;
 use crate::generic::texture_font::bitmap_font::BitmapFont;
+use crate::units::PixelToDeviceTransform;
 use drawing_api::ColorFormat;
-use drawing_api::UnknownToDeviceTransform;
 
 /// Text renderer.
 ///
@@ -154,7 +154,7 @@ impl<D: Device> FontSizeRenderer<D> {
         &mut self,
         device: &mut D,
         target: &D::RenderTarget,
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) -> Result<(), &'static str> {
         if self.texture.is_none() {
             self.texture = Some(device.create_texture(

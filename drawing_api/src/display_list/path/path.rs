@@ -1,5 +1,5 @@
-use crate::DipRect;
+use crate::PixelRect;
 
 pub trait Path {
-    fn get_bounds(&self) -> DipRect;
+    fn get_bounds(&self) -> PixelRect;
 }

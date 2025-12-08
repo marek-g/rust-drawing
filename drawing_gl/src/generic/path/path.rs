@@ -9,7 +9,7 @@ use crate::PathElement;
 use crate::Solidity;
 use bitflags::bitflags;
 use clamped::Clamp;
-use drawing_api::Point;
+use drawing_api::PixelPoint;
 use rawpointer::ptrdistance;
 use std::f32::consts::PI;
 
@@ -25,10 +25,10 @@ bitflags! {
 
 #[derive(Copy, Clone)]
 pub struct VPoint {
-    xy: Point,
-    d: Point,
+    xy: PixelPoint,
+    d: PixelPoint,
     len: f32,
-    dm: Point,
+    dm: PixelPoint,
     flags: PointFlags,
 }
 
@@ -64,8 +64,8 @@ impl Path {
 }
 
 pub struct Bounds {
-    pub min: Point,
-    pub max: Point,
+    pub min: PixelPoint,
+    pub max: PixelPoint,
 }
 
 pub struct FlattenedPath {
@@ -76,12 +76,12 @@ pub struct FlattenedPath {
 }
 
 trait PointExt {
-    fn equals(self, pt: Point, tol: f32) -> bool;
+    fn equals(self, pt: PixelPoint, tol: f32) -> bool;
     fn normalize(&mut self) -> f32;
 }
 
-impl PointExt for Point {
-    fn equals(self, pt: Point, tol: f32) -> bool {
+impl PointExt for PixelPoint {
+    fn equals(self, pt: PixelPoint, tol: f32) -> bool {
         let dx = pt.x - self.x;
         let dy = pt.y - self.y;
         dx * dx + dy * dy < tol * tol
@@ -110,8 +110,8 @@ impl FlattenedPath {
             paths: Vec::new(),
             vertexes: Vec::new(),
             bounds: Bounds {
-                min: Point::new(std::f32::MAX, std::f32::MAX),
-                max: Point::new(std::f32::MIN, std::f32::MIN),
+                min: PixelPoint::new(std::f32::MAX, std::f32::MAX),
+                max: PixelPoint::new(std::f32::MIN, std::f32::MIN),
             },
         };
 
@@ -120,20 +120,20 @@ impl FlattenedPath {
             match cmd {
                 PathElement::MoveTo(point) => {
                     flattened_path.add_path();
-                    flattened_path.add_point(point.to_untyped(), PointFlags::PT_CORNER, dist_tol);
+                    flattened_path.add_point(*point, PointFlags::PT_CORNER, dist_tol);
                 }
 
                 PathElement::LineTo(point) => {
-                    flattened_path.add_point(point.to_untyped(), PointFlags::PT_CORNER, dist_tol);
+                    flattened_path.add_point(*point, PointFlags::PT_CORNER, dist_tol);
                 }
 
                 PathElement::BezierTo(c1, c2, point) => {
                     if let Some(last) = flattened_path.points.last().copied() {
                         flattened_path.tesselate_bezier(
                             last.xy,
-                            c1.to_untyped(),
-                            c2.to_untyped(),
-                            point.to_untyped(),
+                            *c1,
+                            *c2,
+                            *point,
                             0,
                             PointFlags::PT_CORNER,
                             tess_tol,
@@ -276,7 +276,7 @@ impl FlattenedPath {
 
                 if !loop_ {
                     // Add cap
-                    let mut d = Point::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
+                    let mut d = PixelPoint::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
                     d.normalize();
                     match line_cap {
                         LineCap::Butt => {
@@ -391,7 +391,7 @@ impl FlattenedPath {
                     dst = dst.add(1);
                 } else {
                     // Add cap
-                    let mut d = Point::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
+                    let mut d = PixelPoint::new((*p1).xy.x - (*p0).xy.x, (*p1).xy.y - (*p0).xy.y);
                     d.normalize();
                     match line_cap {
                         LineCap::Butt => {
@@ -650,7 +650,7 @@ impl FlattenedPath {
         self.paths.last_mut().unwrap()
     }
 
-    fn add_point(&mut self, pt: Point, flags: PointFlags, dist_tol: f32) {
+    fn add_point(&mut self, pt: PixelPoint, flags: PointFlags, dist_tol: f32) {
         if let Some(path) = self.paths.last_mut() {
             if let Some(last_pt) = self.points.last_mut() {
                 if path.count > 0 && last_pt.xy.equals(pt, dist_tol) {
@@ -695,10 +695,10 @@ impl FlattenedPath {
 
     fn tesselate_bezier(
         &mut self,
-        pt1: Point,
-        pt2: Point,
-        pt3: Point,
-        pt4: Point,
+        pt1: PixelPoint,
+        pt2: PixelPoint,
+        pt3: PixelPoint,
+        pt4: PixelPoint,
         level: usize,
         flags: PointFlags,
         tess_tol: f32,
@@ -707,10 +707,10 @@ impl FlattenedPath {
             return;
         }
 
-        let Point { x: x1, y: y1, .. } = pt1;
-        let Point { x: x2, y: y2, .. } = pt2;
-        let Point { x: x3, y: y3, .. } = pt3;
-        let Point { x: x4, y: y4, .. } = pt4;
+        let PixelPoint { x: x1, y: y1, .. } = pt1;
+        let PixelPoint { x: x2, y: y2, .. } = pt2;
+        let PixelPoint { x: x3, y: y3, .. } = pt3;
+        let PixelPoint { x: x4, y: y4, .. } = pt4;
 
         let x12 = (x1 + x2) * 0.5;
         let y12 = (y1 + y2) * 0.5;
@@ -727,7 +727,7 @@ impl FlattenedPath {
         let d3 = ((x3 - x4) * dy - (y3 - y4) * dx).abs();
 
         if (d2 + d3) * (d2 + d3) < tess_tol * (dx * dx + dy * dy) {
-            self.add_point(Point::new(x4, y4), flags, tess_tol);
+            self.add_point(PixelPoint::new(x4, y4), flags, tess_tol);
             return;
         }
 
@@ -737,19 +737,19 @@ impl FlattenedPath {
         let y1234 = (y123 + y234) * 0.5;
 
         self.tesselate_bezier(
-            Point::new(x1, y1),
-            Point::new(x12, y12),
-            Point::new(x123, y123),
-            Point::new(x1234, y1234),
+            PixelPoint::new(x1, y1),
+            PixelPoint::new(x12, y12),
+            PixelPoint::new(x123, y123),
+            PixelPoint::new(x1234, y1234),
             level + 1,
             PointFlags::empty(),
             tess_tol,
         );
         self.tesselate_bezier(
-            Point::new(x1234, y1234),
-            Point::new(x234, y234),
-            Point::new(x34, y34),
-            Point::new(x4, y4),
+            PixelPoint::new(x1234, y1234),
+            PixelPoint::new(x234, y234),
+            PixelPoint::new(x34, y34),
+            PixelPoint::new(x4, y4),
             level + 1,
             flags,
             tess_tol,

@@ -1,4 +1,4 @@
-use crate::generic::device::Device;
+use crate::{generic::device::Device, units::PixelToDeviceTransform};
 use drawing_api::*;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
@@ -39,9 +39,9 @@ pub trait Font<D: Device> {
         target: &D::RenderTarget,
         color: &crate::generic::device::Color,
         text: &str,
-        pos: Point,
-        clipping_rect: Option<Rect>,
+        pos: PixelPoint,
+        clipping_rect: Option<PixelRect>,
         font_params: FontParams,
-        transform: UnknownToDeviceTransform,
+        transform: PixelToDeviceTransform,
     ) -> Result<(), &'static str>;
 }

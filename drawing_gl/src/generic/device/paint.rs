@@ -2,9 +2,9 @@
 // released on MIT license
 // which was translated from https://github.com/memononen/nanovg (zlib license)
 
+use crate::units::PixelTransform;
 use crate::Brush;
 use drawing_api::PixelRect;
-use drawing_api::PixelTransform;
 
 use super::Color;
 

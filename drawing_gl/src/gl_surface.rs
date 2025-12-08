@@ -1,5 +1,6 @@
 use crate::generic::device::RenderTarget;
-use drawing_api::{ColorFormat, PixelToDeviceTransform};
+use crate::units::PixelToDeviceTransform;
+use drawing_api::ColorFormat;
 use gl::types::GLuint;
 
 pub struct GlSurface {

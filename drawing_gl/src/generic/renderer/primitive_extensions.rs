@@ -258,12 +258,8 @@ pub fn ellipse_path<P: Into<PixelPoint>>(
 ///
 /// * `rect` - marks the boundaries
 /// * `thickness` - thickness of the outline, the outline grows inside the rect
-pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelLength>>(
-    rect: R,
-    thickness: T,
-) -> Vec<PathElement> {
+pub fn pixel_rect_path<R: Into<PixelRect>>(rect: R, thickness: f32) -> Vec<PathElement> {
     let rect = rect.into();
-    let thickness = thickness.into().get();
 
     rect_path(PixelRect::new(
         PixelPoint::new(
@@ -274,13 +270,12 @@ pub fn pixel_rect_path<R: Into<PixelRect>, T: Into<PixelLength>>(
     ))
 }
 
-pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelLength>>(
+pub fn pixel_rect_path_rounded<R: Into<PixelRect>>(
     rect: R,
-    thickness: T,
+    thickness: f32,
     radius: f32,
 ) -> Vec<PathElement> {
     let rect = rect.into();
-    let thickness = thickness.into().get();
 
     rect_path_rounded(
         PixelRect::new(
@@ -294,14 +289,13 @@ pub fn pixel_rect_path_rounded<R: Into<PixelRect>, T: Into<PixelLength>>(
     )
 }
 
-pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelLength>>(
+pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>>(
     rect: R,
-    thickness: T,
+    thickness: f32,
     radius: f32,
     is_upper_left_half: bool,
 ) -> Vec<PathElement> {
     let rect = rect.into();
-    let thickness = thickness.into().get();
 
     rect_path_rounded_half(
         PixelRect::new(
@@ -323,14 +317,12 @@ pub fn pixel_rect_path_rounded_half<R: Into<PixelRect>, T: Into<PixelLength>>(
 /// * `start` - starting point (left top pixel coordinates)
 /// * `length` - length of the line in pixels
 /// * `thickness` - thickness of the line, the outline grows to the bottom
-pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelLength>>(
+pub fn pixel_horizontal_line_path<P: Into<PixelPoint>>(
     start: P,
-    length: T,
-    thickness: T,
+    length: f32,
+    thickness: f32,
 ) -> Vec<PathElement> {
     let start = start.into();
-    let length = length.into().get();
-    let thickness = thickness.into().get();
 
     vec![
         PathElement::MoveTo(PixelPoint::new(start.x, start.y + thickness * 0.5f32)),
@@ -348,14 +340,12 @@ pub fn pixel_horizontal_line_path<P: Into<PixelPoint>, T: Into<PixelLength>>(
 /// * `start` - starting point (left top pixel coordinates)
 /// * `length` - length of the line in pixels
 /// * `thickness` - thickness of the line, the outline grows to the right
-pub fn pixel_vertical_line_path<P: Into<PixelPoint>, T: Into<PixelLength>>(
+pub fn pixel_vertical_line_path<P: Into<PixelPoint>>(
     start: P,
-    length: T,
-    thickness: T,
+    length: f32,
+    thickness: f32,
 ) -> Vec<PathElement> {
     let start = start.into();
-    let length = length.into().get();
-    let thickness = thickness.into().get();
 
     vec![
         PathElement::MoveTo(PixelPoint::new(start.x + thickness * 0.5f32, start.y)),

@@ -1,4 +1,4 @@
-use drawing_api::{PixelLength, PixelPoint};
+use drawing_api::PixelPoint;
 
 use crate::{GlContextData, GlTexture};
 
@@ -42,7 +42,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
             family_name: style
                 .map(|s| s.family.clone())
                 .unwrap_or("default".to_string()),
-            size: PixelLength::new(style.map(|s| s.size).unwrap_or(24.0f32)),
+            size: style.map(|s| s.size).unwrap_or(24.0f32),
             color: style
                 .map(|s| s.foreground.clone().map(|p| p.color))
                 .flatten()

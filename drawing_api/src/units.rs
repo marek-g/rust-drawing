@@ -1,4 +1,14 @@
-// unknown units - doesn't matter what it is as long as the transform matrix to/from something else is provided
+// physical pixel (in range 0 .. window width - 1, 0 .. window height - 1)
+#[derive(Hash, Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct PixelUnit;
+
+pub type PixelPoint = euclid::Point2D<f32, PixelUnit>;
+pub type PixelSize = euclid::Size2D<f32, PixelUnit>;
+pub type PixelRect = euclid::Rect<f32, PixelUnit>;
+
+pub type Matrix = euclid::Transform3D<f32, euclid::UnknownUnit, euclid::UnknownUnit>;
+
+/*// unknown units - doesn't matter what it is as long as the transform matrix to/from something else is provided
 pub type Length = euclid::Length<f32, euclid::UnknownUnit>;
 pub type Point = euclid::Point2D<f32, euclid::UnknownUnit>;
 pub type Size = euclid::Size2D<f32, euclid::UnknownUnit>;
@@ -31,6 +41,14 @@ pub type DipPoint = euclid::Point2D<f32, DipUnit>;
 pub type DipSize = euclid::Size2D<f32, DipUnit>;
 pub type DipRect = euclid::Rect<f32, DipUnit>;
 
+// similar to DipUnit, but for Fonts which can have different scaling factor
+#[derive(Hash, Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct FontUnit;
+
+pub type FontLength = euclid::Length<f32, FontUnit>;
+
+pub type FontToPixelTransform = euclid::Transform2D<f32, FontUnit, PixelUnit>;
+
 pub type UnknownToDeviceTransform = euclid::Transform2D<f32, euclid::UnknownUnit, DeviceUnit>;
 pub type DeviceTransform = euclid::Transform2D<f32, DeviceUnit, DeviceUnit>;
 pub type PixelTransform = euclid::Transform2D<f32, PixelUnit, PixelUnit>;
@@ -40,3 +58,4 @@ pub type DipToDeviceTransform = euclid::Transform2D<f32, DipUnit, DeviceUnit>;
 pub type PixelToDeviceTransform = euclid::Transform2D<f32, PixelUnit, DeviceUnit>;
 
 pub type Matrix = euclid::Transform3D<f32, euclid::UnknownUnit, euclid::UnknownUnit>;
+*/
