@@ -404,7 +404,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         &resources.image2,
         rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
         rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
-        TextureSampling::NearestNeighbor,
+        TextureSampling::Linear,
         None,
     );
 
