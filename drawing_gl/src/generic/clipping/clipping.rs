@@ -2,7 +2,7 @@ use drawing_api::{Fonts, PixelPoint, PixelRect, PixelSize, Texture};
 
 use crate::{PathElement, Primitive};
 
-use super::{clip_image, clip_line, clip_rect};
+use super::{clip_line, clip_rect};
 
 pub trait Clipping<T: Texture> {
     fn clip(self, rect: PixelRect) -> Self;
@@ -68,8 +68,8 @@ impl<T: Texture, F: Fonts> Clipping<T> for Vec<Primitive<T, F>> {
                     }
                 }
 
-                Primitive::Image { texture, rect, uv } => {
-                    if let Some(clipped) = clip_image(
+                Primitive::Image { texture, rect, src } => {
+                    if let Some(clipped) = clip_rect(
                         rect.origin.x,
                         rect.origin.y,
                         rect.size.width,
@@ -78,7 +78,6 @@ impl<T: Texture, F: Fonts> Clipping<T> for Vec<Primitive<T, F>> {
                         clipping_rect.origin.y,
                         clipping_rect.size.width,
                         clipping_rect.size.height,
-                        &uv,
                     ) {
                         res.push(Primitive::Image {
                             texture,
@@ -86,7 +85,13 @@ impl<T: Texture, F: Fonts> Clipping<T> for Vec<Primitive<T, F>> {
                                 PixelPoint::new(clipped.0, clipped.1),
                                 PixelSize::new(clipped.2, clipped.3),
                             ),
-                            uv: clipped.4,
+                            src: PixelRect::new(
+                                PixelPoint::new(
+                                    clipped.0 - rect.origin.x + src.origin.x,
+                                    clipped.1 - rect.origin.y + src.origin.y,
+                                ),
+                                PixelSize::new(clipped.2, clipped.3),
+                            ),
                         });
                     }
                 }

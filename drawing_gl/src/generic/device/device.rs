@@ -6,7 +6,9 @@ use crate::generic::device::Paint;
 use crate::generic::device::RenderTarget;
 use crate::generic::path::{Bounds, Path};
 use crate::generic::renderer::CompositeOperationState;
+use crate::generic::transformation::Transformation;
 use crate::units::PixelToDeviceTransform;
+use crate::units::PixelToUvTransform;
 use crate::PathElement;
 use core::option::Option;
 use drawing_api::ColorFormat;
@@ -104,14 +106,22 @@ pub trait Device {
         filtering: bool,
         color: &Color,
         rect: PixelRect,
-        uv: &[f32; 4],
+        src: PixelRect,
         transform: PixelToDeviceTransform,
+        uv_transform: PixelToUvTransform,
     ) {
         let p1 = [rect.origin.x, rect.origin.y];
         let p2 = [
             rect.origin.x + rect.size.width,
             rect.origin.y + rect.size.height,
         ];
+
+        let x1y1 = uv_transform.transform_point(src.origin);
+        let x2y2 = uv_transform.transform_point(PixelPoint::new(
+            src.origin.x + src.size.width,
+            src.origin.y + src.size.height,
+        ));
+        let uv = [x1y1.x, x1y1.y, x2y2.x, x2y2.y];
 
         self.triangles_textured(
             target,
@@ -136,14 +146,22 @@ pub trait Device {
         filtering: bool,
         color: &Color,
         rect: PixelRect,
-        uv: &[f32; 4],
+        src: PixelRect,
         transform: PixelToDeviceTransform,
+        uv_transform: PixelToUvTransform,
     ) {
         let p1 = [rect.origin.x, rect.origin.y];
         let p2 = [
             rect.origin.x + rect.size.width,
             rect.origin.y + rect.size.height,
         ];
+
+        let x1y1 = uv_transform.transform_point(src.origin);
+        let x2y2 = uv_transform.transform_point(PixelPoint::new(
+            src.origin.x + src.size.width,
+            src.origin.y + src.size.height,
+        ));
+        let uv = [x1y1.x, x1y1.y, x2y2.x, x2y2.y];
 
         self.triangles_textured_y8(
             target,

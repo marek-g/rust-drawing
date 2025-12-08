@@ -23,7 +23,7 @@ pub enum Primitive<Texture: drawing_api::Texture, Fonts: drawing_api::Fonts> {
     Image {
         texture: Texture,
         rect: PixelRect,
-        uv: [f32; 4],
+        src: PixelRect,
     },
 
     Text {

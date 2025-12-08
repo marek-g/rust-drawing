@@ -421,18 +421,8 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .1
             .push(Primitive::Image {
                 texture: texture.clone(),
-                rect: rect(
-                    dst_rect.origin.x,
-                    dst_rect.origin.y,
-                    dst_rect.size.width,
-                    dst_rect.size.height,
-                ),
-                uv: [
-                    src_rect.origin.x,
-                    src_rect.origin.y,
-                    src_rect.origin.x + src_rect.size.width,
-                    src_rect.origin.y + src_rect.size.height,
-                ],
+                rect: dst_rect,
+                src: src_rect,
             });
     }
 

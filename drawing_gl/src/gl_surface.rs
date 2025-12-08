@@ -1,6 +1,7 @@
 use crate::generic::device::RenderTarget;
 use crate::units::PixelToDeviceTransform;
 use drawing_api::ColorFormat;
+use euclid::Vector2D;
 use gl::types::GLuint;
 
 pub struct GlSurface {
@@ -36,14 +37,9 @@ impl RenderTarget for GlSurface {
     }
 
     fn get_device_transform(&self) -> PixelToDeviceTransform {
-        PixelToDeviceTransform::new(
-            2.0f32 / self.width as f32,
-            0.0f32,
-            0.0f32,
-            -2.0f32 / self.height as f32,
-            -1.0f32,
-            1.0f32,
-        )
+        PixelToDeviceTransform::identity()
+            .then_scale(2.0f32 / self.width as f32, -2.0f32 / self.height as f32)
+            .then_translate(Vector2D::new(-1.0f32, 1.0f32))
     }
 }
 

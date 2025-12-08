@@ -1,6 +1,6 @@
 use crate::generic::device::{Device, RenderTarget};
 use crate::generic::texture_font::Font;
-use crate::units::{PixelToDeviceTransform, PixelTransform};
+use crate::units::{PixelToDeviceTransform, PixelToUvTransform, PixelTransform};
 use crate::Fonts;
 use crate::{
     display_list::StrokeStyle,
@@ -51,8 +51,6 @@ impl Renderer {
         scissor: Scissor,
     ) -> Result<(), &'static str> {
         let pixel_to_device_transform = pixel_transform.then(&render_target.get_device_transform());
-        let unknown_to_device_transform =
-            PixelToDeviceTransform::from_array(pixel_to_device_transform.to_array());
 
         for primitive in primitives {
             match primitive {
@@ -76,23 +74,25 @@ impl Renderer {
                         thickness,
                         *start_point,
                         *end_point,
-                        unknown_to_device_transform,
+                        pixel_to_device_transform,
                     );
                 }
 
                 Primitive::Rectangle { color, rect } => {
-                    device.rect_colored(render_target, color, *rect, unknown_to_device_transform)
+                    device.rect_colored(render_target, color, *rect, pixel_to_device_transform)
                 }
 
-                Primitive::Image { texture, rect, uv } => {
+                Primitive::Image { texture, rect, src } => {
+                    let pixel_to_uv_transform = Self::get_uv_transform(texture.get_descriptor());
                     device.rect_textured(
                         render_target,
                         &texture,
                         false,
                         &[1.0f32, 1.0f32, 1.0f32, 1.0f32],
                         *rect,
-                        &uv,
-                        unknown_to_device_transform,
+                        *src,
+                        pixel_to_device_transform,
+                        pixel_to_uv_transform,
                     );
                 }
 
@@ -114,7 +114,7 @@ impl Renderer {
                             *position,
                             *clipping_rect,
                             FontParams { size: *size as u8 },
-                            unknown_to_device_transform,
+                            pixel_to_device_transform,
                         )?;
                     }
                 }
@@ -148,7 +148,7 @@ impl Renderer {
                         antialiasing,
                         scissor,
                         CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
-                        unknown_to_device_transform,
+                        pixel_to_device_transform,
                     );
                 }
 
@@ -182,7 +182,7 @@ impl Renderer {
                         antialiasing,
                         scissor,
                         CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
-                        unknown_to_device_transform,
+                        pixel_to_device_transform,
                     );
                 }
 
@@ -203,7 +203,7 @@ impl Renderer {
                         antialiasing,
                         scissor,
                         CompositeOperation::Basic(BasicCompositeOperation::SrcOver).into(),
-                        unknown_to_device_transform,
+                        pixel_to_device_transform,
                     );
                 }
 
@@ -250,6 +250,7 @@ impl Renderer {
 
                     self.draw(device, &texture2_view, primitives, antialiasing)?;
 
+                    let pixel_to_uv_transform = Self::get_uv_transform(texture2.get_descriptor());
                     device.rect_textured(
                         render_target,
                         &texture2,
@@ -259,8 +260,12 @@ impl Renderer {
                             PixelPoint::new(0.0f32, 0.0f32),
                             PixelSize::new(size.0 as f32, size.1 as f32),
                         ),
-                        &[0.0, 0.0, 1.0, 1.0],
-                        unknown_to_device_transform,
+                        PixelRect::new(
+                            PixelPoint::new(0.0f32, 0.0f32),
+                            PixelSize::new(size.0 as f32, size.1 as f32),
+                        ),
+                        pixel_to_device_transform,
+                        pixel_to_uv_transform,
                     );
                 }
             }
@@ -312,5 +317,12 @@ impl Renderer {
             flattened_path.expand_fill(0.0f32, LineJoin::Miter, 2.4f32, fringe_width);
         }
         flattened_path
+    }
+
+    fn get_uv_transform(descriptor: drawing_api::TextureDescriptor) -> PixelToUvTransform {
+        PixelToUvTransform::identity().then_scale(
+            1.0f32 / descriptor.width as f32,
+            1.0f32 / descriptor.height as f32,
+        )
     }
 }
