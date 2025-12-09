@@ -73,9 +73,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         oval_bounds: impl Into<PixelRect>,
         operation: drawing_api::ClipOperation,
     ) {
-        let ovel_bounds = convert_rect(&oval_bounds.into());
+        let oval_bounds = convert_rect(&oval_bounds.into());
         let operation = convert_clip_operation(&operation);
-        self.display_list_builder.clip_oval(&ovel_bounds, operation);
+        self.display_list_builder.clip_oval(&oval_bounds, operation);
     }
 
     fn clip_rounded_rect(

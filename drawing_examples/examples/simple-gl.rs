@@ -2,7 +2,7 @@
 
 use drawing_examples::setup_window;
 use drawing_gl::GlContext;
-use std::{any::Any, error::Error};
+use std::error::Error;
 
 use windowing_qt::{Application, ApplicationOptions};
 
