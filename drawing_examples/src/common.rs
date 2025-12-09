@@ -198,6 +198,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     }));
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
+    let mut paint = C::Paint::default();
+    paint.set_color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
     dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
