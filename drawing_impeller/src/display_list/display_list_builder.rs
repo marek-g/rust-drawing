@@ -118,8 +118,16 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         );
     }
 
+    fn get_save_count(&mut self) -> usize {
+        self.display_list_builder.get_save_count() as usize
+    }
+
     fn restore(&mut self) {
         self.display_list_builder.restore();
+    }
+
+    fn restore_to_count(&mut self, count: usize) {
+        self.display_list_builder.restore_to_count(count as u32);
     }
 
     fn draw_paint(&mut self, paint: &Self::Paint) {

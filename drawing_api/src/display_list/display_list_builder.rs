@@ -69,8 +69,18 @@ pub trait DisplayListBuilder {
         filter: Option<ImageFilter<Self::Texture, Self::FragmentShader>>,
     );
 
+    /// Gets the current size of the save stack.
+    fn get_save_count(&mut self) -> usize;
+
     /// Pops the last entry pushed onto the save stack using a call to Self::save or Self::save_layer.
     fn restore(&mut self);
+
+    /// Effectively calls restore till the size of the save stack becomes a specified count.
+    fn restore_to_count(&mut self, count: usize) {
+        while self.get_save_count() > count {
+            self.restore();
+        }
+    }
 
     /// Fills the current clip with the specified paint.
     fn draw_paint(&mut self, paint: &Self::Paint);

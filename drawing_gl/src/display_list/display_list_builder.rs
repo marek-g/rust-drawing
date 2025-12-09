@@ -202,6 +202,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         ));
     }
 
+    fn get_save_count(&mut self) -> usize {
+        self.display_list_stack.len()
+    }
+
     fn restore(&mut self) {
         loop {
             if self.display_list_stack.len() <= 1 {

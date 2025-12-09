@@ -13,6 +13,7 @@ pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub text_decoration: Option<TextDecoration>,
     pub max_lines: Option<u32>,
     pub ellipsis: Option<String>,
+    pub locale: Option<String>,
 }
 
 impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle<T, P> {
@@ -30,6 +31,7 @@ impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle
             text_decoration: None,
             max_lines: None,
             ellipsis: None,
+            locale: None,
         }
     }
 }
