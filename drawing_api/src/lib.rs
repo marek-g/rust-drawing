@@ -15,3 +15,6 @@ pub use texture::*;
 
 mod units;
 pub use units::*;
+
+mod vulkan;
+pub use vulkan::*;

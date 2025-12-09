@@ -2,8 +2,7 @@ use drawing_api::{Matrix, PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSa
 use euclid::{rect, Angle};
 
 use crate::{
-    generic::device::convert_color, units::PixelTransform, GlContextData, GlFragmentShader,
-    GlTexture,
+    generic::device::convert_color, units::PixelTransform, GlContext, GlFragmentShader, GlTexture,
 };
 
 use super::{PathElement, Primitive};
@@ -30,7 +29,7 @@ enum StackElement {
 pub struct DisplayListBuilder {
     display_list_stack: Vec<(
         StackElement,
-        Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
+        Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>,
     )>,
 }
 
@@ -75,7 +74,7 @@ impl DisplayListBuilder {
 }
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
-    type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>;
+    type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>;
     type FragmentShader = crate::GlFragmentShader;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;

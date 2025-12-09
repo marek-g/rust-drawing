@@ -6,7 +6,6 @@ use crate::generic::device::Paint;
 use crate::generic::device::RenderTarget;
 use crate::generic::path::{Bounds, Path};
 use crate::generic::renderer::CompositeOperationState;
-use crate::generic::transformation::Transformation;
 use crate::units::PixelToDeviceTransform;
 use crate::units::PixelToUvTransform;
 use crate::PathElement;
@@ -19,7 +18,7 @@ use super::Color;
 
 pub trait Device {
     type Texture: Texture;
-    type RenderTarget: RenderTarget;
+    type RenderTarget: RenderTarget<Device = Self>;
 
     fn create_texture(
         &self,

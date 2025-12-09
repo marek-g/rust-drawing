@@ -31,6 +31,11 @@ pub struct GlContextData {
     universal_pipeline_buffers: (GLuint, GLuint),
 }
 
+#[derive(Clone)]
+pub struct GlContext {
+    data: Rc<RefCell<GlContextData>>,
+}
+
 impl Drop for GlContextData {
     fn drop(&mut self) {
         unsafe {
@@ -49,7 +54,7 @@ impl Drop for GlContextData {
     }
 }
 
-impl GlContextData {
+impl GlContext {
     fn create_texture(
         &self,
         contents: Option<&[u8]>,
@@ -128,9 +133,10 @@ impl GlContextData {
         let v2 = ColoredVertex::new([end_point.x, end_point.y], *color);
         let v3 = ColoredVertex::new([start_point.x, start_point.y], *color);
 
-        self.colored_pipeline.apply();
-        self.colored_pipeline.set_transform(&transform);
-        self.colored_pipeline.draw_lines(&[v1, v2, v3]);
+        let mut context_data = self.data.borrow_mut();
+        context_data.colored_pipeline.apply();
+        context_data.colored_pipeline.set_transform(&transform);
+        context_data.colored_pipeline.draw_lines(&[v1, v2, v3]);
     }
 
     fn convert_paint(
@@ -225,7 +231,7 @@ impl GlContextData {
     }
 }
 
-impl Device for GlContextData {
+impl Device for GlContext {
     type Texture = GlTexture;
     type RenderTarget = GlSurface;
 
@@ -258,6 +264,7 @@ impl Device for GlContextData {
         Ok((
             texture,
             GlSurface {
+                context: self.clone(),
                 framebuffer_id,
                 width,
                 height,
@@ -289,9 +296,10 @@ impl Device for GlContextData {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.colored_pipeline.apply();
-        self.colored_pipeline.set_transform(&transform);
-        self.colored_pipeline.draw(vertices);
+        let mut context_data = self.data.borrow_mut();
+        context_data.colored_pipeline.apply();
+        context_data.colored_pipeline.set_transform(&transform);
+        context_data.colored_pipeline.draw(vertices);
     }
 
     fn triangles_textured(
@@ -322,10 +330,13 @@ impl Device for GlContextData {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.textured_pipeline.apply();
-        self.textured_pipeline.set_transform(&transform);
-        self.textured_pipeline.set_flipped_y(texture.data.flipped_y);
-        self.textured_pipeline.draw(vertices);
+        let mut context_data = self.data.borrow_mut();
+        context_data.textured_pipeline.apply();
+        context_data.textured_pipeline.set_transform(&transform);
+        context_data
+            .textured_pipeline
+            .set_flipped_y(texture.data.flipped_y);
+        context_data.textured_pipeline.draw(vertices);
     }
 
     fn triangles_textured_y8(
@@ -356,11 +367,13 @@ impl Device for GlContextData {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.textured_y8_pipeline.apply();
-        self.textured_y8_pipeline.set_transform(&transform);
-        self.textured_y8_pipeline
+        let mut context_data = self.data.borrow_mut();
+        context_data.textured_y8_pipeline.apply();
+        context_data.textured_y8_pipeline.set_transform(&transform);
+        context_data
+            .textured_y8_pipeline
             .set_flipped_y(texture.data.flipped_y);
-        self.textured_y8_pipeline.draw(vertices);
+        context_data.textured_y8_pipeline.draw(vertices);
     }
 
     fn line(
@@ -403,8 +416,9 @@ impl Device for GlContextData {
             [transform.m31, transform.m32, 0.0, 1.0],
         ];
 
-        self.universal_pipeline.apply();
-        self.universal_pipeline.set_transform(&transform);
+        let mut context_data = self.data.borrow_mut();
+        context_data.universal_pipeline.apply();
+        context_data.universal_pipeline.set_transform(&transform);
 
         unsafe {
             gl::Enable(gl::STENCIL_TEST);
@@ -414,7 +428,8 @@ impl Device for GlContextData {
             gl::StencilFunc(gl::EQUAL, 0x0, 0xff);
             gl::StencilOp(gl::KEEP, gl::KEEP, gl::INCR);
             if antialiasing {
-                self.universal_pipeline
+                context_data
+                    .universal_pipeline
                     .apply_frag_uniforms(&Self::convert_paint(
                         paint,
                         texture,
@@ -424,7 +439,8 @@ impl Device for GlContextData {
                         1.0 - 0.5 / 255.0,
                     ));
             } else {
-                self.universal_pipeline
+                context_data
+                    .universal_pipeline
                     .apply_frag_uniforms(&Self::convert_paint(
                         paint,
                         texture,
@@ -437,14 +453,16 @@ impl Device for GlContextData {
             for path in paths {
                 let stroke_vertices = path.get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
+                    context_data
+                        .universal_pipeline
                         .draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
 
             // Draw anti-aliased pixels.
             if antialiasing {
-                self.universal_pipeline
+                context_data
+                    .universal_pipeline
                     .apply_frag_uniforms(&Self::convert_paint(
                         paint,
                         texture,
@@ -458,7 +476,8 @@ impl Device for GlContextData {
                 for path in paths {
                     let stroke_vertices = path.get_stroke();
                     if !stroke_vertices.is_empty() {
-                        self.universal_pipeline
+                        context_data
+                            .universal_pipeline
                             .draw(stroke_vertices, gl::TRIANGLE_STRIP);
                     }
                 }
@@ -471,7 +490,8 @@ impl Device for GlContextData {
             for path in paths {
                 let stroke_vertices = path.get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
+                    context_data
+                        .universal_pipeline
                         .draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
@@ -523,15 +543,19 @@ impl Device for GlContextData {
                 [transform.m31, transform.m32, 0.0, 1.0],
             ];
 
-            self.universal_pipeline.apply();
-            self.universal_pipeline.set_transform(&transform);
+            let mut context_data = self.data.borrow_mut();
+            context_data.universal_pipeline.apply();
+            context_data.universal_pipeline.set_transform(&transform);
 
-            self.universal_pipeline.apply_frag_uniforms(&uniforms);
+            context_data
+                .universal_pipeline
+                .apply_frag_uniforms(&uniforms);
 
             // fill shape
             let fill_vertices = paths[0].get_fill();
             if !fill_vertices.is_empty() {
-                self.universal_pipeline
+                context_data
+                    .universal_pipeline
                     .draw(fill_vertices, gl::TRIANGLE_FAN);
             }
 
@@ -539,7 +563,8 @@ impl Device for GlContextData {
             if antialiasing {
                 let stroke_vertices = paths[0].get_stroke();
                 if !stroke_vertices.is_empty() {
-                    self.universal_pipeline
+                    context_data
+                        .universal_pipeline
                         .draw(stroke_vertices, gl::TRIANGLE_STRIP);
                 }
             }
@@ -554,8 +579,9 @@ impl Device for GlContextData {
                 [transform.m31, transform.m32, 0.0, 1.0],
             ];
 
-            self.universal_pipeline.apply();
-            self.universal_pipeline.set_transform(&transform);
+            let mut context_data = self.data.borrow_mut();
+            context_data.universal_pipeline.apply();
+            context_data.universal_pipeline.set_transform(&transform);
 
             unsafe {
                 // Draw shapes on stencil buffer
@@ -564,11 +590,13 @@ impl Device for GlContextData {
                 gl::StencilFunc(gl::ALWAYS, 0, 0xff);
                 gl::ColorMask(gl::FALSE, gl::FALSE, gl::FALSE, gl::FALSE);
 
-                self.universal_pipeline.apply_frag_uniforms(&FragUniforms {
-                    stroke_thr: -1.0,
-                    type_: ShaderType::Simple as i32,
-                    ..FragUniforms::default()
-                });
+                context_data
+                    .universal_pipeline
+                    .apply_frag_uniforms(&FragUniforms {
+                        stroke_thr: -1.0,
+                        type_: ShaderType::Simple as i32,
+                        ..FragUniforms::default()
+                    });
 
                 gl::StencilOpSeparate(gl::FRONT, gl::KEEP, gl::KEEP, gl::INCR_WRAP);
                 gl::StencilOpSeparate(gl::BACK, gl::KEEP, gl::KEEP, gl::DECR_WRAP);
@@ -576,7 +604,8 @@ impl Device for GlContextData {
                 for path in paths {
                     let fill_vertices = path.get_fill();
                     if !fill_vertices.is_empty() {
-                        self.universal_pipeline
+                        context_data
+                            .universal_pipeline
                             .draw(fill_vertices, gl::TRIANGLE_FAN);
                     }
                 }
@@ -585,7 +614,9 @@ impl Device for GlContextData {
 
                 gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
 
-                self.universal_pipeline.apply_frag_uniforms(&uniforms);
+                context_data
+                    .universal_pipeline
+                    .apply_frag_uniforms(&uniforms);
 
                 // Draw anti-aliased pixels
                 if antialiasing {
@@ -594,7 +625,8 @@ impl Device for GlContextData {
                     for path in paths {
                         let stroke_vertices = path.get_stroke();
                         if !stroke_vertices.is_empty() {
-                            self.universal_pipeline
+                            context_data
+                                .universal_pipeline
                                 .draw(stroke_vertices, gl::TRIANGLE_STRIP);
                         }
                     }
@@ -628,7 +660,8 @@ impl Device for GlContextData {
 
                 gl::StencilFunc(gl::NOTEQUAL, 0x00, 0xff);
                 gl::StencilOp(gl::ZERO, gl::ZERO, gl::ZERO);
-                self.universal_pipeline
+                context_data
+                    .universal_pipeline
                     .draw(&rect_verts, gl::TRIANGLE_STRIP);
 
                 gl::Disable(gl::STENCIL_TEST);
@@ -637,22 +670,18 @@ impl Device for GlContextData {
     }
 }
 
-#[derive(Clone)]
-pub struct GlContext {
-    data: Rc<RefCell<GlContextData>>,
-}
-
 impl Context for GlContext {
     type DisplayListBuilder = crate::DisplayListBuilder;
-    type Fonts = crate::Fonts<GlContextData>;
+    type Fonts = crate::Fonts<GlContext>;
     type FragmentShader = crate::GlFragmentShader;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
     type Surface = GlSurface;
     type Texture = GlTexture;
+    type VulkanSwapchain = crate::vulkan::VulkanSwapchain;
 
-    unsafe fn new_gl_context<F>(mut loadfn: F) -> Result<Self, &'static str>
+    unsafe fn new_gl<F>(mut loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&'static str) -> *mut c_void,
     {
@@ -701,6 +730,27 @@ impl Context for GlContext {
         })
     }
 
+    unsafe fn new_vulkan<F>(
+        enable_validation: bool,
+        proc_address_callback: F,
+    ) -> Result<Self, &'static str>
+    where
+        F: FnMut(*mut c_void, *const std::os::raw::c_char) -> *mut c_void,
+    {
+        todo!()
+    }
+
+    fn get_vulkan_info(&self) -> Result<drawing_api::ContextVulkanInfo, &'static str> {
+        todo!()
+    }
+
+    unsafe fn create_new_vulkan_swapchain(
+        &self,
+        vulkan_surface_khr: *mut c_void,
+    ) -> Option<Self::VulkanSwapchain> {
+        todo!()
+    }
+
     unsafe fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
@@ -709,6 +759,7 @@ impl Context for GlContext {
         color_format: ColorFormat,
     ) -> Result<GlSurface, &'static str> {
         Ok(GlSurface {
+            context: self.clone(),
             framebuffer_id,
             width: width as u16,
             height: height as u16,
@@ -735,7 +786,7 @@ impl Context for GlContext {
         contents: Cow<'static, [u8]>,
         descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str> {
-        self.data.borrow().create_texture(
+        self.create_texture(
             Some(&contents),
             descriptor.width as u16,
             descriptor.height as u16,
@@ -749,17 +800,6 @@ impl Context for GlContext {
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str> {
         todo!()
-    }
-
-    fn draw(
-        &mut self,
-        surface: &mut Self::Surface,
-        display_list: &<Self::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
-    ) -> Result<(), &'static str> {
-        let mut renderer = Renderer::new();
-        let mut device = self.data.borrow_mut();
-        renderer.draw(device.deref_mut(), surface, display_list, true)?;
-        Ok(())
     }
 }
 

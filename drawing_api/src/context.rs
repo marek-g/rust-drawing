@@ -1,6 +1,9 @@
-use std::{borrow::Cow, os::raw::c_void};
+use std::{
+    borrow::Cow,
+    os::raw::{c_char, c_void},
+};
 
-use crate::{ColorFormat, TextureDescriptor};
+use crate::{ColorFormat, ContextVulkanInfo, TextureDescriptor};
 
 /// An abstraction over graphics context (like OpenGL context).
 ///
@@ -21,13 +24,31 @@ pub trait Context: Clone {
         Fonts = Self::Fonts,
     >;
     type PathBuilder: crate::PathBuilder;
-    type Surface: crate::Surface;
+    type Surface: crate::Surface<Context = Self>;
     type Texture: crate::Texture;
+    type VulkanSwapchain: crate::VulkanSwapchain;
 
     /// Create an OpenGL context.
-    unsafe fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+    unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&str) -> *mut c_void;
+
+    /// Create a Vulkan context.
+    unsafe fn new_vulkan<F>(
+        enable_validation: bool,
+        proc_address_callback: F,
+    ) -> Result<Self, &'static str>
+    where
+        F: FnMut(*mut c_void, *const c_char) -> *mut c_void;
+
+    /// Get internal Vulkan handles managed by the given Vulkan context.
+    fn get_vulkan_info(&self) -> Result<ContextVulkanInfo, &'static str>;
+
+    /// Create a new Vulkan swapchain using a VkSurfaceKHR instance.
+    unsafe fn create_new_vulkan_swapchain(
+        &self,
+        vulkan_surface_khr: *mut c_void,
+    ) -> Option<Self::VulkanSwapchain>;
 
     /// Creates a new surface by wrapping an existing OpenGL framebuffer object.
     unsafe fn wrap_gl_framebuffer(
@@ -57,11 +78,4 @@ pub trait Context: Clone {
         &self,
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str>;
-
-    /// Draws a display list on the surface.
-    fn draw(
-        &mut self,
-        surface: &mut Self::Surface,
-        display_list: &<Self::DisplayListBuilder as crate::DisplayListBuilder>::DisplayList,
-    ) -> Result<(), &'static str>;
 }

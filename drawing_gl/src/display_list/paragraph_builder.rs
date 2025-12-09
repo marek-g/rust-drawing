@@ -1,11 +1,11 @@
 use drawing_api::PixelPoint;
 
-use crate::{GlContextData, GlTexture};
+use crate::{GlContext, GlTexture};
 
 use super::Primitive;
 
 pub struct ParagraphBuilder {
-    fonts: crate::Fonts<GlContextData>,
+    fonts: crate::Fonts<GlContext>,
     paragraph: crate::display_list::Paragraph,
     styles: Vec<drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>,
 }
@@ -13,10 +13,10 @@ pub struct ParagraphBuilder {
 impl drawing_api::ParagraphBuilder for ParagraphBuilder {
     type Paragraph = crate::display_list::Paragraph;
     type Paint = crate::display_list::Paint;
-    type Fonts = crate::Fonts<GlContextData>;
+    type Fonts = crate::Fonts<GlContext>;
     type Texture = GlTexture;
 
-    fn new(fonts: &crate::Fonts<GlContextData>) -> Result<Self, &'static str> {
+    fn new(fonts: &crate::Fonts<GlContext>) -> Result<Self, &'static str> {
         Ok(ParagraphBuilder {
             fonts: fonts.clone(),
             paragraph: crate::display_list::Paragraph::default(),

@@ -20,6 +20,8 @@ mod units;
 
 mod utils;
 
+mod vulkan;
+
 pub use display_list::{
     BasicCompositeOperation, BlendFactor, Brush, CompositeOperation, DisplayListBuilder, Fonts,
     LineCap, LineJoin, Paint, PathBuilder, PathElement, Primitive, Solidity,

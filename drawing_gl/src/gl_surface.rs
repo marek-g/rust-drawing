@@ -1,10 +1,14 @@
 use crate::generic::device::RenderTarget;
+use crate::generic::renderer::Renderer;
 use crate::units::PixelToDeviceTransform;
+use crate::GlContext;
 use drawing_api::ColorFormat;
 use euclid::Vector2D;
 use gl::types::GLuint;
 
 pub struct GlSurface {
+    pub(crate) context: GlContext,
+
     pub(crate) framebuffer_id: GLuint,
     pub(crate) width: u16,
     pub(crate) height: u16,
@@ -23,6 +27,12 @@ impl Drop for GlSurface {
 }
 
 impl RenderTarget for GlSurface {
+    type Device = crate::GlContext;
+
+    fn get_device(&self) -> Self::Device {
+        self.context.clone()
+    }
+
     fn update_size(&mut self, width: u16, height: u16) {
         self.width = width;
         self.height = height;
@@ -43,4 +53,19 @@ impl RenderTarget for GlSurface {
     }
 }
 
-impl drawing_api::Surface for GlSurface {}
+impl drawing_api::Surface for GlSurface {
+    type Context = GlContext;
+
+    fn draw(
+        &mut self,
+        display_list: &<<Self::Context as drawing_api::Context>::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
+    ) -> Result<(), &'static str> {
+        let mut renderer = Renderer::new();
+        renderer.draw::<GlContext>(&self, display_list, true)?;
+        Ok(())
+    }
+
+    fn present(self) -> Result<(), &'static str> {
+        Ok(())
+    }
+}

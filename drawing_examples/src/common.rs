@@ -2,7 +2,7 @@ use std::{borrow::Cow, cell::RefCell, ptr::null_mut, rc::Rc};
 
 use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder,
-    ParagraphStyle, PathBuilder, TextureDescriptor, TextureSampling,
+    ParagraphStyle, PathBuilder, Surface, TextureDescriptor, TextureSampling,
 };
 use euclid::{rect, Angle, Vector3D};
 use gl::types::GLuint;
@@ -51,7 +51,7 @@ where
         move || {
             if !initialized {
                 let drawing_context = unsafe {
-                    <C as drawing_api::Context>::new_gl_context(|symbol| {
+                    <C as drawing_api::Context>::new_gl(|symbol| {
                         gl_window_clone
                             .borrow_mut()
                             .window
@@ -470,9 +470,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
                 .unwrap()
         };
 
-        drawing_context
-            .draw(&mut drawing_surface, &display_list)
-            .unwrap();
+        drawing_surface.draw(&display_list).unwrap();
     }
 
     // end

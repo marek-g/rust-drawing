@@ -1,10 +1,10 @@
-use crate::{GlContextData, GlTexture};
+use crate::{GlContext, GlTexture};
 
 use super::Primitive;
 
 #[derive(Default)]
 pub struct Paragraph {
-    pub(crate) primitives: Vec<Primitive<GlTexture, crate::Fonts<GlContextData>>>,
+    pub(crate) primitives: Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>,
 }
 
 impl drawing_api::Paragraph for Paragraph {

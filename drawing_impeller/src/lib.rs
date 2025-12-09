@@ -12,3 +12,6 @@ pub use impeller_surface::*;
 
 mod impeller_texture;
 pub use impeller_texture::*;
+
+mod vulkan;
+pub use vulkan::*;

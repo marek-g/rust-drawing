@@ -27,7 +27,9 @@ impl drawing_api::Context for ImpellerContext {
 
     type Texture = ImpellerTexture;
 
-    unsafe fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+    type VulkanSwapchain = crate::VulkanSwapchain;
+
+    unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&str) -> *mut c_void,
     {
@@ -35,6 +37,27 @@ impl drawing_api::Context for ImpellerContext {
             let context = impellers::Context::new_opengl_es(loadfn)?;
             Ok(Self { context })
         }
+    }
+
+    unsafe fn new_vulkan<F>(
+        enable_validation: bool,
+        proc_address_callback: F,
+    ) -> Result<Self, &'static str>
+    where
+        F: FnMut(*mut c_void, *const std::os::raw::c_char) -> *mut c_void,
+    {
+        todo!()
+    }
+
+    fn get_vulkan_info(&self) -> Result<drawing_api::ContextVulkanInfo, &'static str> {
+        todo!()
+    }
+
+    unsafe fn create_new_vulkan_swapchain(
+        &self,
+        vulkan_surface_khr: *mut c_void,
+    ) -> Option<Self::VulkanSwapchain> {
+        todo!()
     }
 
     unsafe fn wrap_gl_framebuffer(
@@ -113,13 +136,5 @@ impl drawing_api::Context for ImpellerContext {
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str> {
         todo!()
-    }
-
-    fn draw(
-        &mut self,
-        surface: &mut Self::Surface,
-        display_list: &<Self::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
-    ) -> Result<(), &'static str> {
-        surface.surface.draw_display_list(display_list)
     }
 }

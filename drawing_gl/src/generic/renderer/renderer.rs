@@ -1,6 +1,6 @@
 use crate::generic::device::{Device, RenderTarget};
 use crate::generic::texture_font::Font;
-use crate::units::{PixelToDeviceTransform, PixelToUvTransform, PixelTransform};
+use crate::units::{PixelToUvTransform, PixelTransform};
 use crate::Fonts;
 use crate::{
     display_list::StrokeStyle,
@@ -26,13 +26,13 @@ impl Renderer {
 
     pub fn draw<D: Device>(
         &mut self,
-        device: &mut D,
         render_target: &D::RenderTarget,
         primitives: &[Primitive<D::Texture, Fonts<D>>],
         antialiasing: bool,
     ) -> Result<(), &'static str> {
-        self.draw_internal(
-            device,
+        let mut device = render_target.get_device();
+        self.draw_internal::<D>(
+            &mut device,
             render_target,
             primitives,
             antialiasing,
@@ -248,7 +248,7 @@ impl Renderer {
 
                     device.clear(&texture2_view, &[0.0f32, 0.0f32, 0.0f32, 0.0f32]);
 
-                    self.draw(device, &texture2_view, primitives, antialiasing)?;
+                    self.draw(&texture2_view, primitives, antialiasing)?;
 
                     let pixel_to_uv_transform = Self::get_uv_transform(texture2.get_descriptor());
                     device.rect_textured(
