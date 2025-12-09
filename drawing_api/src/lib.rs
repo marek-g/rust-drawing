@@ -1,3 +1,6 @@
+mod capabilities;
+pub use capabilities::*;
+
 mod context;
 pub use context::*;
 

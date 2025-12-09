@@ -3,7 +3,7 @@ use std::{
     os::raw::{c_char, c_void},
 };
 
-use crate::{ColorFormat, ContextVulkanInfo, TextureDescriptor};
+use crate::{Capabilities, ColorFormat, ContextVulkanInfo, GraphicsApi, TextureDescriptor};
 
 /// An abstraction over graphics context (like OpenGL context).
 ///
@@ -28,12 +28,15 @@ pub trait Context: Clone {
     type Texture: crate::Texture;
     type VulkanSwapchain: crate::VulkanSwapchain;
 
-    /// Create an OpenGL context.
+    /// Gets implementation capabilities depending on graphics API.
+    fn get_capabilities(api: GraphicsApi) -> Option<Capabilities>;
+
+    /// Creates an OpenGL context.
     unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&str) -> *mut c_void;
 
-    /// Create a Vulkan context.
+    /// Creates a Vulkan context.
     unsafe fn new_vulkan<F>(
         enable_validation: bool,
         proc_address_callback: F,
@@ -41,7 +44,7 @@ pub trait Context: Clone {
     where
         F: FnMut(*mut c_void, *const c_char) -> *mut c_void;
 
-    /// Get internal Vulkan handles managed by the given Vulkan context.
+    /// Gets internal Vulkan handles managed by the given Vulkan context.
     fn get_vulkan_info(&self) -> Result<ContextVulkanInfo, &'static str>;
 
     /// Create a new Vulkan swapchain using a VkSurfaceKHR instance.

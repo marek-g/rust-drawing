@@ -1,6 +1,6 @@
-use std::{borrow::Cow, os::raw::c_void};
+use std::{borrow::Cow, os::raw::c_void, ptr::fn_addr_eq};
 
-use drawing_api::TextureDescriptor;
+use drawing_api::{Capabilities, TextureDescriptor};
 use impellers::{ISize, PixelFormat};
 
 use crate::{ImpellerSurface, ImpellerTexture};
@@ -28,6 +28,46 @@ impl drawing_api::Context for ImpellerContext {
     type Texture = ImpellerTexture;
 
     type VulkanSwapchain = crate::VulkanSwapchain;
+
+    fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
+        let capabilities = Capabilities {
+            transformations: true,
+            layers: true,
+            rect_clipping: true,
+            path_clipping: true,
+            color_filters: true,
+            image_filters: true,
+            mask_filters: true,
+            textures: true,
+            text_metrics: true,
+            text_decorations: false, // TODO: add when impellers is updated
+            shadows: true,
+            fragment_shaders: false, // TODO: add when impellers is updated
+        };
+        match api {
+            drawing_api::GraphicsApi::OpenGL { major, minor } => {
+                if major >= 4 || major == 3 && minor >= 1 {
+                    Some(capabilities)
+                } else {
+                    None
+                }
+            }
+            drawing_api::GraphicsApi::OpenGLES { major, minor: _ } => {
+                if major >= 2 {
+                    Some(capabilities)
+                } else {
+                    None
+                }
+            }
+            drawing_api::GraphicsApi::Vulkan { major, minor } => {
+                if major >= 2 || major == 1 && minor >= 1 {
+                    Some(capabilities)
+                } else {
+                    None
+                }
+            }
+        }
+    }
 
     unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
     where

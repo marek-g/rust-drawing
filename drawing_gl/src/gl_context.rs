@@ -1,4 +1,4 @@
-use drawing_api::{ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
+use drawing_api::{Capabilities, ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
 use euclid::Vector2D;
 use gl::types::*;
 use std::{borrow::Cow, cell::RefCell, ops::DerefMut, os::raw::c_void, rc::Rc, sync::Arc};
@@ -680,6 +680,37 @@ impl Context for GlContext {
     type Surface = GlSurface;
     type Texture = GlTexture;
     type VulkanSwapchain = crate::vulkan::VulkanSwapchain;
+
+    fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
+        let capabilities = Capabilities {
+            transformations: true,
+            layers: true,
+            rect_clipping: true,
+            path_clipping: false,
+            color_filters: true,
+            image_filters: false,
+            mask_filters: false,
+            textures: true,
+            text_metrics: false,
+            text_decorations: false,
+            shadows: false,
+            fragment_shaders: false,
+        };
+        match api {
+            drawing_api::GraphicsApi::OpenGL { major, minor } => {
+                if major >= 4 || major == 3 && minor >= 1 {
+                    Some(capabilities)
+                } else {
+                    None
+                }
+            }
+            drawing_api::GraphicsApi::OpenGLES { major: _, minor: _ } => {
+                // TODO: some bugs with stencil buffer?
+                None
+            }
+            drawing_api::GraphicsApi::Vulkan { major: _, minor: _ } => None,
+        }
+    }
 
     unsafe fn new_gl<F>(mut loadfn: F) -> Result<Self, &'static str>
     where
