@@ -652,7 +652,7 @@ impl Context for GlContext {
     type Surface = GlSurface;
     type Texture = GlTexture;
 
-    fn new_gl_context<F>(mut loadfn: F) -> Result<Self, &'static str>
+    unsafe fn new_gl_context<F>(mut loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&'static str) -> *mut c_void,
     {
@@ -701,7 +701,7 @@ impl Context for GlContext {
         })
     }
 
-    fn wrap_gl_framebuffer(
+    unsafe fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
         width: u32,
@@ -717,7 +717,7 @@ impl Context for GlContext {
         })
     }
 
-    fn adopt_gl_texture(
+    unsafe fn adopt_gl_texture(
         &self,
         texture_handle: u32,
         descriptor: TextureDescriptor,
@@ -730,7 +730,7 @@ impl Context for GlContext {
         ))
     }
 
-    fn create_texture(
+    unsafe fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
         descriptor: TextureDescriptor,
@@ -744,7 +744,7 @@ impl Context for GlContext {
         )
     }
 
-    fn create_fragment_shader(
+    unsafe fn create_fragment_shader(
         &self,
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str> {

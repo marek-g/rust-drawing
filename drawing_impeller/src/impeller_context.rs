@@ -27,7 +27,7 @@ impl drawing_api::Context for ImpellerContext {
 
     type Texture = ImpellerTexture;
 
-    fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+    unsafe fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&str) -> *mut c_void,
     {
@@ -37,7 +37,7 @@ impl drawing_api::Context for ImpellerContext {
         }
     }
 
-    fn wrap_gl_framebuffer(
+    unsafe fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
         width: u32,
@@ -61,7 +61,7 @@ impl drawing_api::Context for ImpellerContext {
         }
     }
 
-    fn adopt_gl_texture(
+    unsafe fn adopt_gl_texture(
         &self,
         texture_handle: u32,
         descriptor: TextureDescriptor,
@@ -88,7 +88,7 @@ impl drawing_api::Context for ImpellerContext {
         })
     }
 
-    fn create_texture(
+    unsafe fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
         descriptor: TextureDescriptor,
@@ -108,7 +108,7 @@ impl drawing_api::Context for ImpellerContext {
         })
     }
 
-    fn create_fragment_shader(
+    unsafe fn create_fragment_shader(
         &self,
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str> {

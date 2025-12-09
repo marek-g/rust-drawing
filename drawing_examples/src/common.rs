@@ -50,14 +50,16 @@ where
 
         move || {
             if !initialized {
-                let drawing_context = <C as drawing_api::Context>::new_gl_context(|symbol| {
-                    gl_window_clone
-                        .borrow_mut()
-                        .window
-                        .get_opengl_proc_address(symbol)
-                        .unwrap_or_else(|_| null_mut())
-                })
-                .unwrap();
+                let drawing_context = unsafe {
+                    <C as drawing_api::Context>::new_gl_context(|symbol| {
+                        gl_window_clone
+                            .borrow_mut()
+                            .window
+                            .get_opengl_proc_address(symbol)
+                            .unwrap_or_else(|_| null_mut())
+                    })
+                    .unwrap()
+                };
 
                 resources = Some(initialize_resources(&drawing_context));
 
@@ -126,16 +128,18 @@ pub fn create_chessboard<C: drawing_api::Context>(
         }
     }
 
-    drawing_context
-        .create_texture(
-            Cow::Owned(data),
-            TextureDescriptor {
-                width: w as u32,
-                height: h as u32,
-                ..Default::default()
-            },
-        )
-        .unwrap()
+    unsafe {
+        drawing_context
+            .create_texture(
+                Cow::Owned(data),
+                TextureDescriptor {
+                    width: w as u32,
+                    height: h as u32,
+                    ..Default::default()
+                },
+            )
+            .unwrap()
+    }
 }
 
 fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resources<C>) {
@@ -455,14 +459,16 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let display_list = dlb.build().unwrap();
 
     if let Some(ref mut drawing_context) = gl_window.gl_context {
-        let mut drawing_surface = drawing_context
-            .wrap_gl_framebuffer(
-                framebuffer_id,
-                width as u32,
-                height as u32,
-                drawing_api::ColorFormat::RGBA,
-            )
-            .unwrap();
+        let mut drawing_surface = unsafe {
+            drawing_context
+                .wrap_gl_framebuffer(
+                    framebuffer_id,
+                    width as u32,
+                    height as u32,
+                    drawing_api::ColorFormat::RGBA,
+                )
+                .unwrap()
+        };
 
         drawing_context
             .draw(&mut drawing_surface, &display_list)
