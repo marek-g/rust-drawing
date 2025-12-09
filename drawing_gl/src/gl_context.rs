@@ -1,7 +1,7 @@
 use drawing_api::{ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
 use euclid::Vector2D;
 use gl::types::*;
-use std::{borrow::Cow, cell::RefCell, ffi::c_void, ops::DerefMut, rc::Rc, sync::Arc};
+use std::{borrow::Cow, cell::RefCell, ops::DerefMut, os::raw::c_void, rc::Rc, sync::Arc};
 
 use crate::{
     generic::{
@@ -642,13 +642,28 @@ pub struct GlContext {
     data: Rc<RefCell<GlContextData>>,
 }
 
-impl GlContext {
-    pub fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+impl Context for GlContext {
+    type DisplayListBuilder = crate::DisplayListBuilder;
+    type Fonts = crate::Fonts<GlContextData>;
+    type FragmentShader = crate::GlFragmentShader;
+    type Paint = crate::Paint;
+    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
+    type PathBuilder = crate::PathBuilder;
+    type Surface = GlSurface;
+    type Texture = GlTexture;
+
+    fn new_gl_context<F>(mut loadfn: F) -> Result<Self, &'static str>
     where
-        F: FnMut(&'static str) -> *const c_void,
+        F: FnMut(&'static str) -> *mut c_void,
     {
+        // wrap loadfn function to match gl's declaration
+        let loadfn_wrapped: Box<dyn FnMut(&'static str) -> *const c_void> = Box::new(move |s| {
+            let ptr: *mut c_void = loadfn(s);
+            ptr as *const c_void
+        });
+
         // tell gl crate how to forward gl function calls to the driver
-        gl::load_with(loadfn);
+        gl::load_with(loadfn_wrapped);
 
         unsafe {
             gl::Enable(gl::BLEND);
@@ -685,17 +700,6 @@ impl GlContext {
             })),
         })
     }
-}
-
-impl Context for GlContext {
-    type DisplayListBuilder = crate::DisplayListBuilder;
-    type Fonts = crate::Fonts<GlContextData>;
-    type FragmentShader = crate::GlFragmentShader;
-    type Paint = crate::Paint;
-    type ParagraphBuilder = crate::display_list::ParagraphBuilder;
-    type PathBuilder = crate::PathBuilder;
-    type Surface = GlSurface;
-    type Texture = GlTexture;
 
     fn wrap_gl_framebuffer(
         &mut self,

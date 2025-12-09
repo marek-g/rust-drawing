@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cell::RefCell, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, ptr::null_mut, rc::Rc};
 
 use drawing_api::{
     Color, ColorFormat, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder,
@@ -26,10 +26,9 @@ pub struct Resources<C: drawing_api::Context> {
     pub image2: C::Texture,
 }
 
-pub fn setup_window<C, F>(title: &str, new_context_func: F) -> Rc<RefCell<GlWindow<C>>>
+pub fn setup_window<C>(title: &str) -> Rc<RefCell<GlWindow<C>>>
 where
     C: drawing_api::Context + 'static,
-    F: Fn(Rc<RefCell<GlWindow<C>>>) -> C + 'static,
 {
     let gl_window_rc = Rc::new(RefCell::new(GlWindow::<C> {
         window: windowing_qt::Window::new(None).unwrap(),
@@ -51,7 +50,15 @@ where
 
         move || {
             if !initialized {
-                let drawing_context = new_context_func(gl_window_clone.clone());
+                let drawing_context = <C as drawing_api::Context>::new_gl_context(|symbol| {
+                    gl_window_clone
+                        .borrow_mut()
+                        .window
+                        .get_opengl_proc_address(symbol)
+                        .unwrap_or_else(|_| null_mut())
+                })
+                .unwrap();
+
                 resources = Some(initialize_resources(&drawing_context));
 
                 register_fonts(&mut resources.as_mut().unwrap().fonts).unwrap();

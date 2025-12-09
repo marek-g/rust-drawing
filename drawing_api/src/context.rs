@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, os::raw::c_void};
 
 use crate::{ColorFormat, TextureDescriptor};
 
@@ -23,6 +23,11 @@ pub trait Context: Clone {
     type PathBuilder: crate::PathBuilder;
     type Surface: crate::Surface;
     type Texture: crate::Texture;
+
+    /// Create an OpenGL context.
+    fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+    where
+        F: FnMut(&str) -> *mut c_void;
 
     /// Creates a new surface by wrapping an existing OpenGL framebuffer object.
     fn wrap_gl_framebuffer(

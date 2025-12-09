@@ -10,18 +10,6 @@ pub struct ImpellerContext {
     context: impellers::Context,
 }
 
-impl ImpellerContext {
-    pub fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
-    where
-        F: FnMut(&str) -> *mut c_void,
-    {
-        unsafe {
-            let context = impellers::Context::new_opengl_es(loadfn)?;
-            Ok(Self { context })
-        }
-    }
-}
-
 impl drawing_api::Context for ImpellerContext {
     type DisplayListBuilder = crate::DisplayListBuilder;
 
@@ -38,6 +26,16 @@ impl drawing_api::Context for ImpellerContext {
     type Surface = ImpellerSurface;
 
     type Texture = ImpellerTexture;
+
+    fn new_gl_context<F>(loadfn: F) -> Result<Self, &'static str>
+    where
+        F: FnMut(&str) -> *mut c_void,
+    {
+        unsafe {
+            let context = impellers::Context::new_opengl_es(loadfn)?;
+            Ok(Self { context })
+        }
+    }
 
     fn wrap_gl_framebuffer(
         &mut self,
