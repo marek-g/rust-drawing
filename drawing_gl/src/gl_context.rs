@@ -682,7 +682,7 @@ impl Context for GlContext {
     type VulkanSwapchain = crate::vulkan::VulkanSwapchain;
 
     fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
-        let capabilities = Capabilities {
+        let mut capabilities = Capabilities {
             transformations: true,
             layers: true,
             rect_clipping: true,
@@ -704,9 +704,14 @@ impl Context for GlContext {
                     None
                 }
             }
-            drawing_api::GraphicsApi::OpenGLES { major: _, minor: _ } => {
+            drawing_api::GraphicsApi::OpenGLES { major, minor: _ } => {
                 // TODO: some bugs with stencil buffer?
-                None
+                if major >= 2 {
+                    capabilities.rect_clipping = false;
+                    Some(capabilities)
+                } else {
+                    None
+                }
             }
             drawing_api::GraphicsApi::Vulkan { major: _, minor: _ } => None,
         }

@@ -30,7 +30,7 @@ impl drawing_api::Context for ImpellerContext {
     type VulkanSwapchain = crate::VulkanSwapchain;
 
     fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
-        let capabilities = Capabilities {
+        let mut capabilities = Capabilities {
             transformations: true,
             layers: true,
             rect_clipping: true,
@@ -54,6 +54,8 @@ impl drawing_api::Context for ImpellerContext {
             }
             drawing_api::GraphicsApi::OpenGLES { major, minor: _ } => {
                 if major >= 2 {
+                    capabilities.rect_clipping = false;
+                    capabilities.path_clipping = false;
                     Some(capabilities)
                 } else {
                     None

@@ -10,7 +10,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
             .with_title("Example: multiwindow-gl")
-            .with_opengl_stencil_bits(8),
+            .with_opengl_stencil_bits(8)
+            .with_force_xwayland(true),
     )
     .unwrap();
 
