@@ -41,6 +41,30 @@ impl Color {
     }
 }
 
+impl From<(f32, f32, f32)> for Color {
+    fn from(rgb: (f32, f32, f32)) -> Self {
+        Color::rgb(rgb.0, rgb.1, rgb.2)
+    }
+}
+
+impl From<[f32; 3]> for Color {
+    fn from(rgb: [f32; 3]) -> Self {
+        Color::rgb(rgb[0], rgb[1], rgb[2])
+    }
+}
+
+impl From<(f32, f32, f32, f32)> for Color {
+    fn from(rgba: (f32, f32, f32, f32)) -> Self {
+        Color::rgba(rgba.0, rgba.1, rgba.2, rgba.3)
+    }
+}
+
+impl From<[f32; 4]> for Color {
+    fn from(rgba: [f32; 4]) -> Self {
+        Color::rgba(rgba[0], rgba[1], rgba[2], rgba[3])
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ColorSpace {
     SRGB,

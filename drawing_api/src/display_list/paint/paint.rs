@@ -8,13 +8,13 @@ pub trait Paint: Default {
     type FragmentShader: crate::FragmentShader;
     type Texture: crate::Texture;
 
-    fn color(color: Color) -> Self {
+    fn color(color: impl Into<Color>) -> Self {
         let mut paint = Self::default();
         paint.set_color(color);
         paint
     }
 
-    fn stroke_color(color: Color, stroke_width: f32) -> Self {
+    fn stroke_color(color: impl Into<Color>, stroke_width: f32) -> Self {
         let mut paint = Self::default();
         paint.set_color(color);
         paint.set_draw_style(DrawStyle::Stroke);
@@ -29,7 +29,7 @@ pub trait Paint: Default {
     }
 
     /// Sets the paint color for stroking or filling.
-    fn set_color(&mut self, color: Color);
+    fn set_color(&mut self, color: impl Into<Color>);
 
     /// Sets the paint blend mode.
     fn set_blend_mode(&mut self, blend_mode: BlendMode);

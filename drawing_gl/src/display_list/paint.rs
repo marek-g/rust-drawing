@@ -41,7 +41,8 @@ impl drawing_api::Paint for Paint {
     type FragmentShader = GlFragmentShader;
     type Texture = GlTexture;
 
-    fn set_color(&mut self, color: drawing_api::Color) {
+    fn set_color(&mut self, color: impl Into<drawing_api::Color>) {
+        let color = color.into();
         self.color = convert_color(&color);
     }
 

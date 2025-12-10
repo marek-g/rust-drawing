@@ -21,7 +21,8 @@ impl drawing_api::Paint for Paint {
     type FragmentShader = ImpellerFragmentShader;
     type Texture = ImpellerTexture;
 
-    fn set_color(&mut self, color: drawing_api::Color) {
+    fn set_color(&mut self, color: impl Into<drawing_api::Color>) {
+        let color = color.into();
         self.paint.set_color(convert_color(&color));
     }
 

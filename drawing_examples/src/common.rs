@@ -1,8 +1,8 @@
 use std::{borrow::Cow, cell::RefCell, ptr::null_mut, rc::Rc};
 
 use drawing_api::{
-    Color, ColorFormat, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder,
-    ParagraphStyle, PathBuilder, Surface, TextureDescriptor, TextureSampling,
+    Color, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder, ParagraphStyle,
+    PathBuilder, Surface, TextureDescriptor, TextureSampling,
 };
 use euclid::{rect, Angle, Vector3D};
 use gl::types::GLuint;
@@ -158,13 +158,13 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut dlb = C::DisplayListBuilder::new(None);
 
-    let paint = C::Paint::color(Color::rgb(1.0f32, 0.66f32, 0.33f32));
+    let paint = C::Paint::color((1.0f32, 0.66f32, 0.33f32));
     dlb.draw_paint(&paint);
 
-    let paint = C::Paint::color(Color::rgb(1.0f32, 0.0f32, 0.0f32));
+    let paint = C::Paint::color((1.0f32, 0.0f32, 0.0f32));
     dlb.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
 
-    let paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     dlb.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
 
     dlb.draw_texture_rect(
@@ -175,7 +175,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         None,
     );
 
-    let paint = C::Paint::color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
+    let paint = C::Paint::color((0.0f32, 1.0f32, 0.0f32));
     dlb.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
     dlb.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
 
@@ -197,7 +197,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     });
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let paint = C::Paint::color(Color::rgb(0.0f32, 1.0f32, 0.0f32));
+    let paint = C::Paint::color((0.0f32, 1.0f32, 0.0f32));
     dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
@@ -254,7 +254,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 10.0f32;
     pb.push_style(paragraph_style);
@@ -265,7 +265,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 12.0f32;
     pb.push_style(paragraph_style);
@@ -276,7 +276,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 14.0f32;
     pb.push_style(paragraph_style);
@@ -287,7 +287,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 16.0f32;
     pb.push_style(paragraph_style);
@@ -298,7 +298,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 18.0f32;
     pb.push_style(paragraph_style);
@@ -415,7 +415,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     // Render target test
     //
 
-    let paint_layer = C::Paint::color(Color::rgba(1.0f32, 1.0f32, 1.0f32, 0.5f32));
+    let paint_layer = C::Paint::color((1.0f32, 1.0f32, 1.0f32, 0.5f32));
     dlb.save_layer(
         rect(200.5f32, 220.5f32, 200.0f32, 50.0f32),
         Some(&paint_layer),
@@ -427,13 +427,13 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         }),*/
     );
 
-    let paint2 = C::Paint::color(Color::rgba(0.0f32, 0.5f32, 0.3f32, 1.0f32));
+    let paint2 = C::Paint::color((0.0f32, 0.5f32, 0.3f32, 1.0f32));
     dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint2);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color(Color::rgb(1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
     paragraph_style.foreground = Some(font_paint);
     paragraph_style.size = 22.0f32;
     pb.push_style(paragraph_style);
