@@ -69,6 +69,13 @@ impl drawing_api::Paint for Paint {
         self.stroke_miter = miter;
     }
 
+    fn set_color_source(
+        &mut self,
+        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentShader>>,
+    ) {
+        self.color_source = color_source;
+    }
+
     fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
         self.color_filter = color_filter;
     }
@@ -78,13 +85,6 @@ impl drawing_api::Paint for Paint {
         image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentShader>>,
     ) {
         self.image_filter = image_filter;
-    }
-
-    fn set_color_source(
-        &mut self,
-        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentShader>>,
-    ) {
-        self.color_source = color_source;
     }
 
     fn set_mask_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {

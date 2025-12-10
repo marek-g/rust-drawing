@@ -61,37 +61,6 @@ impl drawing_api::Paint for Paint {
         self.paint.set_stroke_miter(miter);
     }
 
-    fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
-        if let Some(color_filter) = color_filter {
-            let color_filter = match color_filter {
-                drawing_api::ColorFilter::Blend(color, blend_mode) => {
-                    impellers::ColorFilter::new_blend(
-                        convert_color(&color),
-                        convert_blend_mode(blend_mode),
-                    )
-                }
-                drawing_api::ColorFilter::Matrix(color_matrix) => {
-                    impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
-                }
-            };
-            self.paint.set_color_filter(&color_filter);
-        } else {
-            todo!("Clearing color filter is not implemented")
-        }
-    }
-
-    fn set_image_filter(
-        &mut self,
-        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentShader>>,
-    ) {
-        if let Some(image_filter) = image_filter {
-            let image_filter = convert_image_filter(image_filter);
-            self.paint.set_image_filter(&image_filter);
-        } else {
-            todo!("Clearing image filter is not implemented")
-        }
-    }
-
     fn set_color_source(
         &mut self,
         color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentShader>>,
@@ -200,6 +169,37 @@ impl drawing_api::Paint for Paint {
             self.paint.set_color_source(&color_source);
         } else {
             todo!("Clearing color source is not implemented")
+        }
+    }
+
+    fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
+        if let Some(color_filter) = color_filter {
+            let color_filter = match color_filter {
+                drawing_api::ColorFilter::Blend(color, blend_mode) => {
+                    impellers::ColorFilter::new_blend(
+                        convert_color(&color),
+                        convert_blend_mode(blend_mode),
+                    )
+                }
+                drawing_api::ColorFilter::Matrix(color_matrix) => {
+                    impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
+                }
+            };
+            self.paint.set_color_filter(&color_filter);
+        } else {
+            todo!("Clearing color filter is not implemented")
+        }
+    }
+
+    fn set_image_filter(
+        &mut self,
+        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentShader>>,
+    ) {
+        if let Some(image_filter) = image_filter {
+            let image_filter = convert_image_filter(image_filter);
+            self.paint.set_image_filter(&image_filter);
+        } else {
+            todo!("Clearing image filter is not implemented")
         }
     }
 
