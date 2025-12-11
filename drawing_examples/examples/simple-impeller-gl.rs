@@ -10,8 +10,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = Application::new(
         ApplicationOptions::new()
             .with_title("Example: simple-impeller-gl")
-            .with_opengl_stencil_bits(8)
-            .with_force_xwayland(true),
+            .with_opengl_stencil_bits(8) // needed for paths
+            .with_opengl_depth_bits(16), // needed for clipping
     )
     .unwrap();
 
