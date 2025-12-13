@@ -39,6 +39,20 @@ impl Color {
             color_space: ColorSpace::SRGB,
         }
     }
+
+    pub fn from_num(num: u32) -> Self {
+        let a = num >> 24;
+        let r = (num >> 16) & 0xFF;
+        let g = (num >> 8) & 0xFF;
+        let b = num & 0xFF;
+        Self {
+            red: r as f32 / 255.0f32,
+            green: g as f32 / 255.0f32,
+            blue: b as f32 / 255.0f32,
+            alpha: a as f32 / 255.0f32,
+            color_space: ColorSpace::SRGB,
+        }
+    }
 }
 
 impl From<(f32, f32, f32)> for Color {
@@ -62,6 +76,12 @@ impl From<(f32, f32, f32, f32)> for Color {
 impl From<[f32; 4]> for Color {
     fn from(rgba: [f32; 4]) -> Self {
         Color::rgba(rgba[0], rgba[1], rgba[2], rgba[3])
+    }
+}
+
+impl From<u32> for Color {
+    fn from(num: u32) -> Self {
+        Color::from_num(num)
     }
 }
 

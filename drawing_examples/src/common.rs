@@ -158,7 +158,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut dlb = C::DisplayListBuilder::new(None);
 
-    let paint = C::Paint::color((1.0, 0.66, 0.33));
+    let paint = C::Paint::color(0xFFFFA854);
     dlb.draw_paint(&paint);
 
     let paint = C::Paint::color((1.0, 0.0, 0.0));
