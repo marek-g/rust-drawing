@@ -158,14 +158,11 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     let mut dlb = C::DisplayListBuilder::new(None);
 
-    let paint = C::Paint::color("#FFA5");
-    dlb.draw_paint(&paint);
+    dlb.draw_paint(&C::Paint::color("#FFA5"));
 
-    let paint = C::Paint::color((1.0, 0.0, 0.0));
-    dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), &paint);
+    dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), &C::Paint::color("#F00"));
 
-    let paint = C::Paint::color((1.0, 1.0, 1.0));
-    dlb.draw_line((100.0, 100.0), (300.5, 100.5), &paint);
+    dlb.draw_line((100.0, 100.0), (300.5, 100.5), &C::Paint::color("#FFF"));
 
     dlb.draw_texture_rect(
         &resources.image2,
@@ -175,7 +172,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         None,
     );
 
-    let paint = C::Paint::color((0.0, 1.0, 0.0));
+    let paint = C::Paint::color("#0F0");
     dlb.draw_line((100.0, 350.0), (300.0, 150.0), &paint);
     dlb.draw_line((100.0, 150.0), (300.0, 350.0), &paint);
 
@@ -239,56 +236,31 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     dlb.draw_line((0.0, height as f32), (4.0, height as f32 - 4.0), &paint);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 10.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 10.0, C::Paint::color("#FFF")));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 200.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 12.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 12.0, C::Paint::color("#FFF")));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0, 220.0 - pos_y), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 14.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 14.0, C::Paint::color("#FFF")));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 240.0 + pos_y * 2.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 16.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 16.0, C::Paint::color("#FFF")));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 260.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 18.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 18.0, C::Paint::color("#FFF")));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 280.0 + pos_y), &paragraph);
@@ -406,14 +378,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     dlb.draw_rect(rect(200.5, 220.5, 200.0, 50.0), &paint2);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    let mut paragraph_style = ParagraphStyle::default();
-    paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
-    paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 22.0;
-    pb.push_style(paragraph_style);
+    pb.push_style(ParagraphStyle::simple("F1", 22.0, C::Paint::color("#FFF")));
     pb.add_text("Render target test");
-    pb.pop_style();
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((207.0, 232.0), &paragraph);
 
