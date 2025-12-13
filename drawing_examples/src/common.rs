@@ -1,8 +1,8 @@
 use std::{borrow::Cow, cell::RefCell, ptr::null_mut, rc::Rc};
 
 use drawing_api::{
-    Color, Context, DisplayListBuilder, Matrix, Paint, ParagraphBuilder, ParagraphStyle,
-    PathBuilder, Surface, TextureDescriptor, TextureSampling,
+    Color, DisplayListBuilder, Matrix, Paint, ParagraphBuilder, ParagraphStyle, PathBuilder,
+    Surface, TextureDescriptor, TextureSampling,
 };
 use euclid::{rect, Angle, Vector3D};
 use gl::types::GLuint;
@@ -34,7 +34,7 @@ where
         window: windowing_qt::Window::new(None).unwrap(),
         gl_context: None,
         time_query: 0,
-        pos_y: 0.0f32,
+        pos_y: 0.0,
     }));
     let gl_window_rc_clone = gl_window_rc.clone();
 
@@ -151,39 +151,39 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     }
 
     let framebuffer_id = gl_window.window.get_default_framebuffer_id();
-    gl_window.pos_y += 1.0f32;
+    gl_window.pos_y += 1.0;
     let pos_y = gl_window.pos_y;
 
     let cpu_time = cpu_time::ProcessTime::now();
 
     let mut dlb = C::DisplayListBuilder::new(None);
 
-    let paint = C::Paint::color((1.0f32, 0.66f32, 0.33f32));
+    let paint = C::Paint::color((1.0, 0.66, 0.33));
     dlb.draw_paint(&paint);
 
-    let paint = C::Paint::color((1.0f32, 0.0f32, 0.0f32));
-    dlb.draw_rect(rect(100.5f32, 101.5f32, 200.0f32, 50.0f32), &paint);
+    let paint = C::Paint::color((1.0, 0.0, 0.0));
+    dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), &paint);
 
-    let paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
-    dlb.draw_line((100.0f32, 100.0f32), (300.5f32, 100.5f32), &paint);
+    let paint = C::Paint::color((1.0, 1.0, 1.0));
+    dlb.draw_line((100.0, 100.0), (300.5, 100.5), &paint);
 
     dlb.draw_texture_rect(
         &resources.image2,
-        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
-        rect(100.0f32, 150.0f32, 200.0f32, 200.0f32),
+        rect(0.0, 0.0, 200.0, 200.0),
+        rect(100.0, 150.0, 200.0, 200.0),
         TextureSampling::NearestNeighbor,
         None,
     );
 
-    let paint = C::Paint::color((0.0f32, 1.0f32, 0.0f32));
-    dlb.draw_line((100.0f32, 350.0f32), (300.0f32, 150.0f32), &paint);
-    dlb.draw_line((100.0f32, 150.0f32), (300.0f32, 350.0f32), &paint);
+    let paint = C::Paint::color((0.0, 1.0, 0.0));
+    dlb.draw_line((100.0, 350.0), (300.0, 150.0), &paint);
+    dlb.draw_line((100.0, 150.0), (300.0, 350.0), &paint);
 
     let mut pb = C::PathBuilder::default();
-    pb.move_to((100.0f32, 350.0f32));
-    pb.line_to((300.0f32, 350.0f32));
-    pb.line_to((300.0f32, 550.0f32));
-    pb.line_to((100.0f32, 550.0f32));
+    pb.move_to((100.0, 350.0));
+    pb.line_to((300.0, 350.0));
+    pb.line_to((300.0, 550.0));
+    pb.line_to((100.0, 550.0));
     let paint = C::Paint::color_source(drawing_api::ColorSource::Image {
         image: resources.image2.clone(),
         horizontal_tile_mode: drawing_api::TileMode::Repeat,
@@ -191,136 +191,119 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         sampling: TextureSampling::Linear,
         transformation: Some(
             Matrix::identity()
-                .pre_translate(Vector3D::new(100.0f32, 350.0f32, 0.0f32))
-                .pre_rotate(0.0f32, 0.0f32, 1.0f32, Angle::radians(pos_y / 100.0f32)),
+                .pre_translate(Vector3D::new(100.0, 350.0, 0.0))
+                .pre_rotate(0.0, 0.0, 1.0, Angle::radians(pos_y / 100.0)),
         ),
     });
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
-    let paint = C::Paint::color((0.0f32, 1.0f32, 0.0f32));
+    let paint = C::Paint::color((0.0, 1.0, 0.0));
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
-        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
+        rect(0.0, 0.0, 4.0, 4.0),
+        rect(0.0, 0.0, 4.0, 4.0),
         TextureSampling::NearestNeighbor,
         None,
     );
-    dlb.draw_line((0.0f32, 0.0f32), (4.0f32, 4.0f32), &paint);
+    dlb.draw_line((0.0, 0.0), (4.0, 4.0), &paint);
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
-        rect(width as f32 - 4.0f32, 0.0f32, 4.0f32, 4.0f32),
+        rect(0.0, 0.0, 4.0, 4.0),
+        rect(width as f32 - 4.0, 0.0, 4.0, 4.0),
         TextureSampling::NearestNeighbor,
         None,
     );
-    dlb.draw_line(
-        (width as f32 - 4.0f32, 4.0f32),
-        (width as f32, 0.0f32),
-        &paint,
-    );
+    dlb.draw_line((width as f32 - 4.0, 4.0), (width as f32, 0.0), &paint);
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
-        rect(
-            width as f32 - 4.0f32,
-            height as f32 - 4.0f32,
-            4.0f32,
-            4.0f32,
-        ),
+        rect(0.0, 0.0, 4.0, 4.0),
+        rect(width as f32 - 4.0, height as f32 - 4.0, 4.0, 4.0),
         TextureSampling::NearestNeighbor,
         None,
     );
     dlb.draw_line(
         (width as f32, height as f32),
-        (width as f32 - 4.0f32, height as f32 - 4.0f32),
+        (width as f32 - 4.0, height as f32 - 4.0),
         &paint,
     );
 
     dlb.draw_texture_rect(
         &resources.image1,
-        rect(0.0f32, 0.0f32, 4.0f32, 4.0f32),
-        rect(0.0f32, height as f32 - 4.0f32, 4.0f32, 4.0f32),
+        rect(0.0, 0.0, 4.0, 4.0),
+        rect(0.0, height as f32 - 4.0, 4.0, 4.0),
         TextureSampling::Linear,
         None,
     );
-    dlb.draw_line(
-        (0.0f32, height as f32),
-        (4.0f32, height as f32 - 4.0f32),
-        &paint,
-    );
+    dlb.draw_line((0.0, height as f32), (4.0, height as f32 - 4.0), &paint);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 10.0f32;
+    paragraph_style.size = 10.0;
     pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((350.0f32 + pos_y, 200.0f32), &paragraph);
+    dlb.draw_paragraph((350.0 + pos_y, 200.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 12.0f32;
+    paragraph_style.size = 12.0;
     pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((350.0f32, 220.0f32 - pos_y), &paragraph);
+    dlb.draw_paragraph((350.0, 220.0 - pos_y), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 14.0f32;
+    paragraph_style.size = 14.0;
     pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((350.0f32 - pos_y, 240.0f32 + pos_y * 2.0f32), &paragraph);
+    dlb.draw_paragraph((350.0 - pos_y, 240.0 + pos_y * 2.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 16.0f32;
+    paragraph_style.size = 16.0;
     pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((350.0f32 - pos_y, 260.0f32), &paragraph);
+    dlb.draw_paragraph((350.0 - pos_y, 260.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 18.0f32;
+    paragraph_style.size = 18.0;
     pb.push_style(paragraph_style);
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((350.0f32 + pos_y, 280.0f32 + pos_y), &paragraph);
+    dlb.draw_paragraph((350.0 + pos_y, 280.0 + pos_y), &paragraph);
 
     let mut pb = C::PathBuilder::default();
-    pb.move_to((100.0f32, 350.0f32));
-    pb.cubic_curve_to(
-        (120.0f32, 50.0f32),
-        (180.0f32, 50.0f32),
-        (300.0f32, 150.0f32),
-    );
+    pb.move_to((100.0, 350.0));
+    pb.cubic_curve_to((120.0, 50.0), (180.0, 50.0), (300.0, 150.0));
     let paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
-        start: (100.0f32, 150.0f32).into(),
-        end: (350.0f32, 350.0f32).into(),
+        start: (100.0, 150.0).into(),
+        end: (350.0, 350.0).into(),
         colors: vec![
-            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
-            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0, 0.0, 0.0, 0.75),
+            Color::rgba(1.0, 1.0, 0.0, 0.75),
         ],
-        stops: vec![0.0f32, 1.0f32],
+        stops: vec![0.0, 1.0],
         tile_mode: drawing_api::TileMode::Mirror,
         transformation: None,
     });
@@ -331,25 +314,21 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     //
 
     let mut pb = C::PathBuilder::default();
-    pb.move_to((500.0f32, 350.0f32));
-    pb.cubic_curve_to(
-        (520.0f32, 50.0f32),
-        (580.0f32, 50.0f32),
-        (700.0f32, 150.0f32),
-    );
+    pb.move_to((500.0, 350.0));
+    pb.cubic_curve_to((520.0, 50.0), (580.0, 50.0), (700.0, 150.0));
     pb.close();
-    pb.move_to((450.0f32, 100.0f32));
-    pb.line_to((650.0f32, 200.0f32));
-    pb.line_to((750.0f32, 150.0f32));
+    pb.move_to((450.0, 100.0));
+    pb.line_to((650.0, 200.0));
+    pb.line_to((750.0, 150.0));
     pb.close();
     let paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
-        start: (500.0f32, 150.0f32).into(),
-        end: (750.0f32, 350.0f32).into(),
+        start: (500.0, 150.0).into(),
+        end: (750.0, 350.0).into(),
         colors: vec![
-            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
-            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0, 0.0, 0.0, 0.75),
+            Color::rgba(1.0, 1.0, 0.0, 0.75),
         ],
-        stops: vec![0.0f32, 1.0f32],
+        stops: vec![0.0, 1.0],
         tile_mode: drawing_api::TileMode::Mirror,
         transformation: None,
     });
@@ -360,21 +339,17 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     //
 
     let mut pb = C::PathBuilder::default();
-    pb.move_to((300.0f32, 550.0f32));
-    pb.cubic_curve_to(
-        (320.0f32, 250.0f32),
-        (380.0f32, 250.0f32),
-        (500.0f32, 350.0f32),
-    );
+    pb.move_to((300.0, 550.0));
+    pb.cubic_curve_to((320.0, 250.0), (380.0, 250.0), (500.0, 350.0));
     pb.close();
     let mut paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
-        start: (200.0f32, 450.0f32).into(),
-        end: (450.0f32, 650.0f32).into(),
+        start: (200.0, 450.0).into(),
+        end: (450.0, 650.0).into(),
         colors: vec![
-            Color::rgba(1.0f32, 0.0f32, 0.0f32, 0.75f32),
-            Color::rgba(1.0f32, 1.0f32, 0.0f32, 0.75f32),
+            Color::rgba(1.0, 0.0, 0.0, 0.75),
+            Color::rgba(1.0, 1.0, 0.0, 0.75),
         ],
-        stops: vec![0.0f32, 1.0f32],
+        stops: vec![0.0, 1.0],
         tile_mode: drawing_api::TileMode::Mirror,
         transformation: None,
     });
@@ -387,9 +362,9 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.save();
 
-    dlb.translate(600.0f32, 450.0f32);
+    dlb.translate(600.0, 450.0);
     dlb.rotate(pos_y);
-    dlb.translate(-100.0f32, -100.0f32);
+    dlb.translate(-100.0, -100.0);
 
     dlb.clip_oval(
         rect(0.0, 0.0, 200.0, 200.0),
@@ -403,8 +378,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
 
     dlb.draw_texture_rect(
         &resources.image2,
-        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
-        rect(0.0f32, 0.0f32, 200.0f32, 200.0f32),
+        rect(0.0, 0.0, 200.0, 200.0),
+        rect(0.0, 0.0, 200.0, 200.0),
         TextureSampling::Linear,
         None,
     );
@@ -415,32 +390,32 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
     // Render target test
     //
 
-    let paint_layer = C::Paint::color((1.0f32, 1.0f32, 1.0f32, 0.5f32));
+    let paint_layer = C::Paint::color((1.0, 1.0, 1.0, 0.5));
     dlb.save_layer(
-        rect(200.5f32, 220.5f32, 200.0f32, 50.0f32),
+        rect(200.5, 220.5, 200.0, 50.0),
         Some(&paint_layer),
         None,
         /*Some(drawing_api::ImageFilter::Blur {
-            x_sigma: 8.0f32,
-            y_sigma: 8.0f32,
+            x_sigma: 8.0,
+            y_sigma: 8.0,
             tile_mode: drawing_api::TileMode::Clamp,
         }),*/
     );
 
-    let paint2 = C::Paint::color((0.0f32, 0.5f32, 0.3f32, 1.0f32));
-    dlb.draw_rect(rect(200.5f32, 220.5f32, 200.0f32, 50.0f32), &paint2);
+    let paint2 = C::Paint::color((0.0, 0.5, 0.3, 1.0));
+    dlb.draw_rect(rect(200.5, 220.5, 200.0, 50.0), &paint2);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     let mut paragraph_style = ParagraphStyle::default();
     paragraph_style.family = "F1".to_string();
-    let font_paint = C::Paint::color((1.0f32, 1.0f32, 1.0f32));
+    let font_paint = C::Paint::color((1.0, 1.0, 1.0));
     paragraph_style.foreground = Some(font_paint);
-    paragraph_style.size = 22.0f32;
+    paragraph_style.size = 22.0;
     pb.push_style(paragraph_style);
     pb.add_text("Render target test");
     pb.pop_style();
     let paragraph = pb.build().unwrap();
-    dlb.draw_paragraph((207.0f32, 232.0f32), &paragraph);
+    dlb.draw_paragraph((207.0, 232.0), &paragraph);
 
     dlb.restore();
 
