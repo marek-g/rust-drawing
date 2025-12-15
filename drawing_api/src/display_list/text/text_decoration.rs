@@ -1,5 +1,6 @@
 use crate::Color;
 
+#[derive(Clone, Debug)]
 pub struct TextDecoration {
     pub types: TextDecorationType,
     pub color: Color,
@@ -18,6 +19,7 @@ impl Default for TextDecoration {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum TextDecorationStyle {
     Solid,
     Double,
@@ -26,6 +28,7 @@ pub enum TextDecorationStyle {
     Wavy,
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct TextDecorationType {
     pub underline: bool,
     pub overline: bool,

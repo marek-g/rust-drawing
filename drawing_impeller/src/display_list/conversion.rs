@@ -161,6 +161,23 @@ pub fn convert_paragraph_style(
     if let Some(height) = style.height_factor {
         result.set_height(height);
     }
+    result.set_text_alignment(convert_text_alignment(style.text_alignment));
+    result.set_text_direction(convert_text_direction(style.text_direction));
+    if let Some(decoration) = &style.text_decoration {
+        result.set_text_decoration(
+            convert_text_decoration_type(decoration.types),
+            &convert_color(&decoration.color),
+            convert_text_decoration_style(decoration.style),
+            decoration.thickness_multiplier,
+        );
+    }
+    if let Some(max_lines) = style.max_lines {
+        result.set_max_lines(max_lines);
+    }
+    result.set_ellipsis(style.ellipsis.as_deref());
+    if let Some(locale) = &style.locale {
+        result.set_locale(locale);
+    }
     result
 }
 
@@ -182,6 +199,56 @@ pub fn convert_font_style(style: drawing_api::FontStyle) -> impellers::FontStyle
     match style {
         drawing_api::FontStyle::Normal => impellers::FontStyle::Normal,
         drawing_api::FontStyle::Italic => impellers::FontStyle::Italic,
+    }
+}
+
+pub fn convert_text_alignment(
+    text_alignment: drawing_api::TextAlignment,
+) -> impellers::TextAlignment {
+    match text_alignment {
+        drawing_api::TextAlignment::Left => impellers::TextAlignment::Left,
+        drawing_api::TextAlignment::Right => impellers::TextAlignment::Right,
+        drawing_api::TextAlignment::Center => impellers::TextAlignment::Center,
+        drawing_api::TextAlignment::Justify => impellers::TextAlignment::Justify,
+        drawing_api::TextAlignment::Start => impellers::TextAlignment::Start,
+        drawing_api::TextAlignment::End => impellers::TextAlignment::End,
+    }
+}
+
+pub fn convert_text_direction(
+    text_direction: drawing_api::TextDirection,
+) -> impellers::TextDirection {
+    match text_direction {
+        drawing_api::TextDirection::RTL => impellers::TextDirection::RTL,
+        drawing_api::TextDirection::LTR => impellers::TextDirection::LTR,
+    }
+}
+
+pub fn convert_text_decoration_type(
+    text_decoration_type: drawing_api::TextDecorationType,
+) -> impellers::TextDecorationType {
+    let mut res = impellers::TextDecorationType::empty();
+    if text_decoration_type.line_through {
+        res.insert(impellers::TextDecorationType::LINETHROUGH);
+    }
+    if text_decoration_type.overline {
+        res.insert(impellers::TextDecorationType::OVERLINE);
+    }
+    if text_decoration_type.underline {
+        res.insert(impellers::TextDecorationType::UNDERLINE);
+    }
+    res
+}
+
+pub fn convert_text_decoration_style(
+    text_decoration_style: drawing_api::TextDecorationStyle,
+) -> impellers::TextDecorationStyle {
+    match text_decoration_style {
+        drawing_api::TextDecorationStyle::Solid => impellers::TextDecorationStyle::Solid,
+        drawing_api::TextDecorationStyle::Double => impellers::TextDecorationStyle::Double,
+        drawing_api::TextDecorationStyle::Dotted => impellers::TextDecorationStyle::Dotted,
+        drawing_api::TextDecorationStyle::Dashed => impellers::TextDecorationStyle::Dashed,
+        drawing_api::TextDecorationStyle::Wavy => impellers::TextDecorationStyle::Wavy,
     }
 }
 
