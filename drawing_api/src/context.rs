@@ -51,7 +51,7 @@ pub trait Context: Clone {
     unsafe fn create_new_vulkan_swapchain(
         &self,
         vulkan_surface_khr: *mut c_void,
-    ) -> Option<Self::VulkanSwapchain>;
+    ) -> Result<Self::VulkanSwapchain, &'static str>;
 
     /// Creates a new surface by wrapping an existing OpenGL framebuffer object.
     unsafe fn wrap_gl_framebuffer(

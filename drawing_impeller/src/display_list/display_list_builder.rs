@@ -55,7 +55,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     }
 
     fn get_transform(&self) -> drawing_api::Matrix {
-        drawing_api::Matrix::from_array(self.display_list_builder.get_transform().m)
+        convert_matrix(&self.display_list_builder.get_transform())
     }
 
     fn reset_transform(&mut self) {

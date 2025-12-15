@@ -1,13 +1,13 @@
-use std::{borrow::Cow, os::raw::c_void, ptr::fn_addr_eq};
+use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc};
 
-use drawing_api::{Capabilities, TextureDescriptor};
+use drawing_api::{Capabilities, FragmentShader, TextureDescriptor};
 use impellers::{ISize, PixelFormat};
 
 use crate::{ImpellerSurface, ImpellerTexture};
 
 #[derive(Clone)]
 pub struct ImpellerContext {
-    context: impellers::Context,
+    context: Rc<RefCell<impellers::Context>>,
 }
 
 impl drawing_api::Context for ImpellerContext {
@@ -76,7 +76,7 @@ impl drawing_api::Context for ImpellerContext {
         F: FnMut(&str) -> *mut c_void,
     {
         unsafe {
-            let context = impellers::Context::new_opengl_es(loadfn)?;
+            let context = Rc::new(RefCell::new(impellers::Context::new_opengl_es(loadfn)?));
             Ok(Self { context })
         }
     }
@@ -88,18 +88,38 @@ impl drawing_api::Context for ImpellerContext {
     where
         F: FnMut(*mut c_void, *const std::os::raw::c_char) -> *mut c_void,
     {
-        todo!()
+        unsafe {
+            let context = Rc::new(RefCell::new(impellers::Context::new_vulkan(
+                enable_validation,
+                proc_address_callback,
+            )?));
+            Ok(Self { context })
+        }
     }
 
     fn get_vulkan_info(&self) -> Result<drawing_api::ContextVulkanInfo, &'static str> {
-        todo!()
+        let vulkan_info = self.context.borrow().get_vulkan_info()?;
+        Ok(drawing_api::ContextVulkanInfo {
+            vk_instance: vulkan_info.vk_instance,
+            vk_physical_device: vulkan_info.vk_physical_device,
+            vk_logical_device: vulkan_info.vk_logical_device,
+            graphics_queue_family_index: vulkan_info.graphics_queue_family_index,
+            graphics_queue_index: vulkan_info.graphics_queue_index,
+        })
     }
 
     unsafe fn create_new_vulkan_swapchain(
         &self,
         vulkan_surface_khr: *mut c_void,
-    ) -> Option<Self::VulkanSwapchain> {
-        todo!()
+    ) -> Result<Self::VulkanSwapchain, &'static str> {
+        unsafe {
+            let vk_swapchain = self
+                .context
+                .borrow()
+                .create_new_vulkan_swapchain(vulkan_surface_khr)
+                .ok_or("impeller: cannot create new vulkan swapchain")?;
+            Ok(Self::VulkanSwapchain { vk_swapchain })
+        }
     }
 
     unsafe fn wrap_gl_framebuffer(
@@ -116,6 +136,7 @@ impl drawing_api::Context for ImpellerContext {
         unsafe {
             let surface = self
                 .context
+                .borrow_mut()
                 .wrap_fbo(
                     framebuffer_id as u64,
                     PixelFormat::RGBA8888,
@@ -138,6 +159,7 @@ impl drawing_api::Context for ImpellerContext {
         // TODO: ensure texture is destroyed before context
         let texture = unsafe {
             self.context
+                .borrow()
                 .adopt_opengl_texture(
                     descriptor.width,
                     descriptor.height,
@@ -164,8 +186,11 @@ impl drawing_api::Context for ImpellerContext {
 
         // TODO: ensure texture is destroyed before context
         let texture = unsafe {
-            self.context
-                .create_texture_with_rgba8(contents, descriptor.width, descriptor.height)?
+            self.context.borrow().create_texture_with_rgba8(
+                contents,
+                descriptor.width,
+                descriptor.height,
+            )?
         };
         Ok(ImpellerTexture {
             texture,
@@ -177,6 +202,6 @@ impl drawing_api::Context for ImpellerContext {
         &self,
         program: Cow<'static, [u8]>,
     ) -> Result<Self::FragmentShader, &'static str> {
-        todo!()
+        unsafe { Self::FragmentShader::new(program) }
     }
 }

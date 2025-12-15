@@ -5,8 +5,6 @@ use drawing_api::Texture;
 use drawing_api::TextureDescriptor;
 use gl::types::*;
 
-use crate::units::PixelToUvTransform;
-
 #[derive(Debug)]
 pub(crate) struct GlTextureData {
     pub id: GLuint,

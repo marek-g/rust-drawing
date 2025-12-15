@@ -1,5 +1,5 @@
-use drawing_api::{Matrix, PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
-use euclid::{rect, Angle};
+use drawing_api::{PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
+use euclid::Angle;
 
 use crate::{
     generic::device::convert_color, units::PixelTransform, GlContext, GlFragmentShader, GlTexture,

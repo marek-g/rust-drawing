@@ -423,7 +423,7 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 [[package]]
 name = "impellers"
 version = "0.4.1"
-source = "git+https://github.com/coderedart/impellers?rev=a898aa0af08873eaa73e99860cd8fe3255abb52e#a898aa0af08873eaa73e99860cd8fe3255abb52e"
+source = "git+https://github.com/coderedart/impellers?rev=2d10dfac53711ed5e1cd8c9c8ec82106714c4b60#2d10dfac53711ed5e1cd8c9c8ec82106714c4b60"
 dependencies = [
  "bitflags",
  "bytemuck",

@@ -1,13 +1,12 @@
 use drawing_api::{Capabilities, ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
 use euclid::Vector2D;
 use gl::types::*;
-use std::{borrow::Cow, cell::RefCell, ops::DerefMut, os::raw::c_void, rc::Rc, sync::Arc};
+use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc, sync::Arc};
 
 use crate::{
     generic::{
         clipping::Scissor,
         device::{ColoredVertex, Device, Paint, TexturedVertex},
-        renderer::Renderer,
     },
     pipelines::{
         ColoredPipeline, FragUniforms, ShaderType, TexturedPipeline, TexturedY8Pipeline,
@@ -783,7 +782,7 @@ impl Context for GlContext {
     unsafe fn create_new_vulkan_swapchain(
         &self,
         vulkan_surface_khr: *mut c_void,
-    ) -> Option<Self::VulkanSwapchain> {
+    ) -> Result<Self::VulkanSwapchain, &'static str> {
         todo!()
     }
 

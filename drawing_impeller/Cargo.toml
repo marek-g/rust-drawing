@@ -14,5 +14,5 @@ edition = "2024"
 [dependencies]
 drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
 #impellers = { path = "../../impellers/", version = "0.4" }
-impellers = { git = "https://github.com/coderedart/impellers", rev = "a898aa0af08873eaa73e99860cd8fe3255abb52e", version = "0.4" }
+impellers = { git = "https://github.com/coderedart/impellers", rev = "2d10dfac53711ed5e1cd8c9c8ec82106714c4b60", version = "0.4" }
 bytemuck = {version = "1"}

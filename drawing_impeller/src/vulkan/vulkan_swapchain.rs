@@ -1,4 +1,6 @@
-pub struct VulkanSwapchain {}
+pub struct VulkanSwapchain {
+    pub(crate) vk_swapchain: impellers::VkSwapChain,
+}
 
 impl drawing_api::VulkanSwapchain for VulkanSwapchain {
     type Surface = crate::ImpellerSurface;
