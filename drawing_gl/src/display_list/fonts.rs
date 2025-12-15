@@ -1,6 +1,7 @@
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::fmt::Debug;
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::sync::{Arc, Mutex};
 
 use crate::generic::{
     device::Device,
@@ -12,7 +13,7 @@ pub(crate) struct FontsData<D: Device> {
 }
 
 pub struct Fonts<D: Device> {
-    pub(crate) data: Rc<RefCell<FontsData<D>>>,
+    pub(crate) data: Arc<Mutex<FontsData<D>>>,
 }
 
 impl<D: Device> Clone for Fonts<D> {
@@ -26,7 +27,7 @@ impl<D: Device> Clone for Fonts<D> {
 impl<D: Device> Debug for Fonts<D> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Fonts")
-            .field("data", &self.data.borrow().fonts.keys())
+            .field("data", &self.data.lock().unwrap().fonts.keys())
             .finish()
     }
 }
@@ -34,7 +35,7 @@ impl<D: Device> Debug for Fonts<D> {
 impl<D: Device> Default for Fonts<D> {
     fn default() -> Self {
         Self {
-            data: Rc::new(RefCell::new(FontsData {
+            data: Arc::new(Mutex::new(FontsData {
                 fonts: HashMap::new(),
             })),
         }
@@ -50,7 +51,8 @@ impl<D: Device> drawing_api::Fonts for Fonts<D> {
         let font = TextureFont::<D>::create(Vec::from(font_data))?;
         let family_name = family_name_alias.unwrap_or("default");
         self.data
-            .borrow_mut()
+            .lock()
+            .unwrap()
             .fonts
             .insert(family_name.into(), font);
         Ok(())

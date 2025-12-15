@@ -105,7 +105,7 @@ impl Renderer {
                     size,
                     text,
                 } => {
-                    if let Some(font) = fonts.data.borrow_mut().fonts.get_mut(family_name) {
+                    if let Some(font) = fonts.data.lock().unwrap().fonts.get_mut(family_name) {
                         font.draw(
                             device,
                             render_target,
