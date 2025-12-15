@@ -26,22 +26,10 @@ pub fn convert_to_rect(rect: &impellers::Rect) -> drawing_api::PixelRect {
 
 pub fn convert_radii(rect: &drawing_api::RoundingRadii) -> impellers::RoundingRadii {
     impellers::RoundingRadii {
-        top_left: bytemuck::cast(impellers::Point::new(
-            rect.top_left.width,
-            rect.top_left.height,
-        )),
-        bottom_left: bytemuck::cast(impellers::Point::new(
-            rect.bottom_left.width,
-            rect.bottom_left.height,
-        )),
-        top_right: bytemuck::cast(impellers::Point::new(
-            rect.top_right.width,
-            rect.top_right.height,
-        )),
-        bottom_right: bytemuck::cast(impellers::Point::new(
-            rect.bottom_right.width,
-            rect.bottom_right.height,
-        )),
+        top_left: impellers::Point::new(rect.top_left.width, rect.top_left.height),
+        bottom_left: impellers::Point::new(rect.bottom_left.width, rect.bottom_left.height),
+        top_right: impellers::Point::new(rect.top_right.width, rect.top_right.height),
+        bottom_right: impellers::Point::new(rect.bottom_right.width, rect.bottom_right.height),
     }
 }
 

@@ -157,9 +157,7 @@ impl drawing_api::Paint for Paint {
                     convert_tile_mode(horizontal_tile_mode),
                     convert_tile_mode(vertical_tile_mode),
                     convert_texture_sampling(sampling),
-                    transformation
-                        .map(|t| bytemuck::cast(convert_matrix(&t)))
-                        .as_ref(),
+                    transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
                 drawing_api::ColorSource::FragmentShader {
                     program,

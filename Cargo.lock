@@ -289,7 +289,6 @@ dependencies = [
 name = "drawing_impeller"
 version = "0.6.0-pre"
 dependencies = [
- "bytemuck",
  "drawing_api",
  "impellers",
 ]
