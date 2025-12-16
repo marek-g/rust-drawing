@@ -44,9 +44,10 @@ impl drawing_api::Context for ImpellerContext {
             mask_filters: true,
             textures: true,
             text_metrics: true,
-            text_decorations: false, // TODO: add when impellers is updated
+            text_decorations: true,
             shadows: true,
-            fragment_programs: false, // TODO: add when impellers is updated
+            fragment_color_sources: true,
+            fragment_image_filters: true,
         };
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {

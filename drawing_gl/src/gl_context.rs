@@ -695,7 +695,8 @@ impl Context for GlContext {
             text_metrics: false,
             text_decorations: false,
             shadows: false,
-            fragment_programs: false,
+            fragment_color_sources: false,
+            fragment_image_filters: false,
         };
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {
