@@ -672,7 +672,7 @@ impl Device for GlContext {
 impl Context for GlContext {
     type DisplayListBuilder = crate::DisplayListBuilder;
     type Fonts = crate::Fonts<GlContext>;
-    type FragmentShader = crate::GlFragmentShader;
+    type FragmentProgram = crate::GlFragmentProgram;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
@@ -693,7 +693,7 @@ impl Context for GlContext {
             text_metrics: false,
             text_decorations: false,
             shadows: false,
-            fragment_shaders: false,
+            fragment_programs: false,
         };
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {
@@ -830,10 +830,10 @@ impl Context for GlContext {
         )
     }
 
-    unsafe fn create_fragment_shader(
+    unsafe fn create_fragment_program(
         &self,
         program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentShader, &'static str> {
+    ) -> Result<Self::FragmentProgram, &'static str> {
         todo!()
     }
 }

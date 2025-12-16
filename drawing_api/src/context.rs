@@ -16,7 +16,7 @@ pub trait Context: Clone {
         Texture = Self::Texture,
     >;
     type Fonts: crate::Fonts;
-    type FragmentShader: crate::FragmentShader;
+    type FragmentProgram: crate::FragmentProgram;
     type Paint: crate::Paint<Texture = Self::Texture>;
     type ParagraphBuilder: crate::ParagraphBuilder<
         Texture = Self::Texture,
@@ -76,9 +76,16 @@ pub trait Context: Clone {
         descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str>;
 
-    /// Creates a new fragment shader using compiled program.
-    unsafe fn create_fragment_shader(
+    /*pub unsafe fn new_color_source_from_fragment_program(
+        &self,
+        frag_program: &FragmentProgram,
+        samplers: &[Texture],
+        uniform_data: &[u8],
+    ) -> ColorSourceShader;*/
+
+    /// Creates a new fragment program using compiled program.
+    unsafe fn create_fragment_program(
         &self,
         program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentShader, &'static str>;
+    ) -> Result<Self::FragmentProgram, &'static str>;
 }

@@ -1,9 +1,9 @@
-use crate::{FragmentShader, Matrix, PixelPoint, Texture};
+use crate::{FragmentProgram, Matrix, PixelPoint, Texture};
 
 use super::{Color, TextureSampling, TileMode};
 
 #[derive(Debug, Clone)]
-pub enum ColorSource<T: Texture, S: FragmentShader> {
+pub enum ColorSource<T: Texture, S: FragmentProgram> {
     LinearGradient {
         start: PixelPoint,
         end: PixelPoint,
@@ -51,7 +51,7 @@ pub enum ColorSource<T: Texture, S: FragmentShader> {
         transformation: Option<Matrix>,
     },
 
-    FragmentShader {
+    FragmentProgram {
         program: S,
         samplers: Vec<T>,
         data: Vec<u8>,

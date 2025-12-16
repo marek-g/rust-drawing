@@ -2,7 +2,7 @@ use drawing_api::{PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
 use euclid::Angle;
 
 use crate::{
-    generic::device::convert_color, units::PixelTransform, GlContext, GlFragmentShader, GlTexture,
+    generic::device::convert_color, units::PixelTransform, GlContext, GlFragmentProgram, GlTexture,
 };
 
 use super::{PathElement, Primitive};
@@ -22,7 +22,7 @@ enum StackElement {
     Layer {
         bounds: PixelRect,
         paint: Option<crate::Paint>,
-        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
+        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentProgram>>,
     },
 }
 
@@ -75,7 +75,7 @@ impl DisplayListBuilder {
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>;
-    type FragmentShader = crate::GlFragmentShader;
+    type FragmentProgram = crate::GlFragmentProgram;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
@@ -188,7 +188,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         &mut self,
         bounds: impl Into<PixelRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentShader>>,
+        filter: Option<drawing_api::ImageFilter<GlTexture, GlFragmentProgram>>,
     ) {
         self.display_list_stack
             .push((StackElement::RestorePoint, Vec::new()));

@@ -17,5 +17,5 @@ pub struct Capabilities {
     pub text_metrics: bool,
     pub text_decorations: bool,
     pub shadows: bool,
-    pub fragment_shaders: bool,
+    pub fragment_programs: bool,
 }

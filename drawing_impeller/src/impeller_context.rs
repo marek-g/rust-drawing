@@ -1,6 +1,6 @@
 use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc};
 
-use drawing_api::{Capabilities, FragmentShader, TextureDescriptor};
+use drawing_api::{Capabilities, FragmentProgram, TextureDescriptor};
 use impellers::{ISize, PixelFormat};
 
 use crate::{ImpellerSurface, ImpellerTexture};
@@ -15,7 +15,7 @@ impl drawing_api::Context for ImpellerContext {
 
     type Fonts = crate::Fonts;
 
-    type FragmentShader = crate::ImpellerFragmentShader;
+    type FragmentProgram = crate::ImpellerFragmentProgram;
 
     type Paint = crate::Paint;
 
@@ -42,7 +42,7 @@ impl drawing_api::Context for ImpellerContext {
             text_metrics: true,
             text_decorations: false, // TODO: add when impellers is updated
             shadows: true,
-            fragment_shaders: false, // TODO: add when impellers is updated
+            fragment_programs: false, // TODO: add when impellers is updated
         };
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {
@@ -198,10 +198,10 @@ impl drawing_api::Context for ImpellerContext {
         })
     }
 
-    unsafe fn create_fragment_shader(
+    unsafe fn create_fragment_program(
         &self,
         program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentShader, &'static str> {
-        unsafe { Self::FragmentShader::new(program) }
+    ) -> Result<Self::FragmentProgram, &'static str> {
+        unsafe { Self::FragmentProgram::new(program) }
     }
 }

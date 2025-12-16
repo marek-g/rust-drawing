@@ -5,7 +5,7 @@ pub struct ImpellerFragmentShader {
     fragment_program: impellers::FragmentProgram,
 }
 
-impl drawing_api::FragmentShader for ImpellerFragmentShader {
+impl drawing_api::FragmentProgram for ImpellerFragmentShader {
     unsafe fn new(program: Cow<'static, [u8]>) -> Result<Self, &'static str> {
         unsafe {
             Ok(ImpellerFragmentShader {

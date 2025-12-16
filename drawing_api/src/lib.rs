@@ -7,8 +7,8 @@ pub use context::*;
 mod display_list;
 pub use display_list::*;
 
-mod fragment_shader;
-pub use fragment_shader::*;
+mod fragment_program;
+pub use fragment_program::*;
 
 mod surface;
 pub use surface::*;

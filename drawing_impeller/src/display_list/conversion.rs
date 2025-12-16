@@ -1,4 +1,4 @@
-use crate::{ImpellerFragmentShader, ImpellerTexture};
+use crate::{ImpellerFragmentProgram, ImpellerTexture};
 
 pub fn convert_point(point: &drawing_api::PixelPoint) -> impellers::Point {
     impellers::Point::new(point.x, point.y)
@@ -99,7 +99,7 @@ pub fn convert_texture_sampling(
 }
 
 pub fn convert_image_filter(
-    image_filter: drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentShader>,
+    image_filter: drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentProgram>,
 ) -> impellers::ImageFilter {
     match image_filter {
         drawing_api::ImageFilter::Blur {

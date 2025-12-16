@@ -1,9 +1,9 @@
-use crate::{FragmentShader, Matrix, Texture};
+use crate::{FragmentProgram, Matrix, Texture};
 
 use super::{TextureSampling, TileMode};
 
 #[derive(Clone)]
-pub enum ImageFilter<T: Texture, S: FragmentShader> {
+pub enum ImageFilter<T: Texture, S: FragmentProgram> {
     Blur {
         x_sigma: f32,
         y_sigma: f32,

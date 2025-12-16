@@ -5,7 +5,7 @@ use super::{
 };
 
 pub trait Paint: Default {
-    type FragmentShader: crate::FragmentShader;
+    type FragmentProgram: crate::FragmentProgram;
     type Texture: crate::Texture;
 
     fn color(color: impl Into<Color>) -> Self {
@@ -19,7 +19,7 @@ pub trait Paint: Default {
             .with_stroke_width(stroke_width)
     }
 
-    fn color_source(color_source: ColorSource<Self::Texture, Self::FragmentShader>) -> Self {
+    fn color_source(color_source: ColorSource<Self::Texture, Self::FragmentProgram>) -> Self {
         Self::default().with_color_source(Some(color_source))
     }
 
@@ -82,12 +82,12 @@ pub trait Paint: Default {
     /// Sets the color source of the paint.
     fn set_color_source(
         &mut self,
-        color_source: Option<ColorSource<Self::Texture, Self::FragmentShader>>,
+        color_source: Option<ColorSource<Self::Texture, Self::FragmentProgram>>,
     );
 
     fn with_color_source(
         mut self,
-        color_source: Option<ColorSource<Self::Texture, Self::FragmentShader>>,
+        color_source: Option<ColorSource<Self::Texture, Self::FragmentProgram>>,
     ) -> Self {
         self.set_color_source(color_source);
         self
@@ -106,12 +106,12 @@ pub trait Paint: Default {
     /// Image filters are functions that are applied to regions of a texture to produce a single color.
     fn set_image_filter(
         &mut self,
-        image_filter: Option<ImageFilter<Self::Texture, Self::FragmentShader>>,
+        image_filter: Option<ImageFilter<Self::Texture, Self::FragmentProgram>>,
     );
 
     fn with_image_filter(
         mut self,
-        image_filter: Option<ImageFilter<Self::Texture, Self::FragmentShader>>,
+        image_filter: Option<ImageFilter<Self::Texture, Self::FragmentProgram>>,
     ) -> Self {
         self.set_image_filter(image_filter);
         self

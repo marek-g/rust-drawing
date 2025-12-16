@@ -1,4 +1,4 @@
-use crate::{ImpellerFragmentShader, ImpellerTexture};
+use crate::{ImpellerFragmentProgram, ImpellerTexture};
 
 use super::{
     convert_blend_mode, convert_color, convert_color_matrix, convert_image_filter, convert_matrix,
@@ -18,7 +18,7 @@ impl Default for Paint {
 }
 
 impl drawing_api::Paint for Paint {
-    type FragmentShader = ImpellerFragmentShader;
+    type FragmentProgram = ImpellerFragmentProgram;
     type Texture = ImpellerTexture;
 
     fn set_color(&mut self, color: impl Into<drawing_api::Color>) {
@@ -64,7 +64,7 @@ impl drawing_api::Paint for Paint {
 
     fn set_color_source(
         &mut self,
-        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentShader>>,
+        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentProgram>>,
     ) {
         if let Some(color_source) = color_source {
             let color_source = match color_source {
@@ -159,7 +159,7 @@ impl drawing_api::Paint for Paint {
                     convert_texture_sampling(sampling),
                     transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
-                drawing_api::ColorSource::FragmentShader {
+                drawing_api::ColorSource::FragmentProgram {
                     program,
                     samplers,
                     data,
@@ -192,7 +192,7 @@ impl drawing_api::Paint for Paint {
 
     fn set_image_filter(
         &mut self,
-        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentShader>>,
+        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentProgram>>,
     ) {
         if let Some(image_filter) = image_filter {
             let image_filter = convert_image_filter(image_filter);
