@@ -16,6 +16,9 @@ pub struct GlWindow<C: drawing_api::Context> {
     pub window: windowing_qt::Window,
     pub gl_context: Option<C>,
 
+    pub initial_width: u32,
+    pub initial_height: u32,
+
     pub time_query: GLuint,
     pub pos_y: f32,
 }
@@ -33,6 +36,8 @@ where
     let gl_window_rc = Rc::new(RefCell::new(GlWindow::<C> {
         window: windowing_qt::Window::new(None).unwrap(),
         gl_context: None,
+        initial_width: 0,
+        initial_height: 0,
         time_query: 0,
         pos_y: 0.0,
     }));
@@ -150,6 +155,11 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
         return;
     }
 
+    if gl_window.initial_width == 0 && gl_window.initial_height == 0 {
+        gl_window.initial_width = width as u32;
+        gl_window.initial_height = height as u32;
+    }
+
     let framebuffer_id = gl_window.window.get_default_framebuffer_id();
     gl_window.pos_y += 1.0;
     let pos_y = gl_window.pos_y;
@@ -157,6 +167,10 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     let cpu_time = cpu_time::ProcessTime::now();
 
     let mut dlb = C::DisplayListBuilder::new(None);
+    dlb.scale(
+        width as f32 / gl_window.initial_width as f32,
+        height as f32 / gl_window.initial_height as f32,
+    );
 
     dlb.draw_paint(&C::Paint::color("#FFA5"));
 
@@ -207,33 +221,52 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0, 0.0, 4.0, 4.0),
-        rect(width as f32 - 4.0, 0.0, 4.0, 4.0),
-        TextureSampling::NearestNeighbor,
-        None,
-    );
-    dlb.draw_line((width as f32 - 4.0, 4.0), (width as f32, 0.0), &paint);
-
-    dlb.draw_texture_rect(
-        &resources.image1,
-        rect(0.0, 0.0, 4.0, 4.0),
-        rect(width as f32 - 4.0, height as f32 - 4.0, 4.0, 4.0),
+        rect(gl_window.initial_width as f32 - 4.0, 0.0, 4.0, 4.0),
         TextureSampling::NearestNeighbor,
         None,
     );
     dlb.draw_line(
-        (width as f32, height as f32),
-        (width as f32 - 4.0, height as f32 - 4.0),
+        (gl_window.initial_width as f32 - 4.0, 4.0),
+        (gl_window.initial_width as f32, 0.0),
         &paint,
     );
 
     dlb.draw_texture_rect(
         &resources.image1,
         rect(0.0, 0.0, 4.0, 4.0),
-        rect(0.0, height as f32 - 4.0, 4.0, 4.0),
+        rect(
+            gl_window.initial_width as f32 - 4.0,
+            gl_window.initial_height as f32 - 4.0,
+            4.0,
+            4.0,
+        ),
+        TextureSampling::NearestNeighbor,
+        None,
+    );
+    dlb.draw_line(
+        (
+            gl_window.initial_width as f32,
+            gl_window.initial_height as f32,
+        ),
+        (
+            gl_window.initial_width as f32 - 4.0,
+            gl_window.initial_height as f32 - 4.0,
+        ),
+        &paint,
+    );
+
+    dlb.draw_texture_rect(
+        &resources.image1,
+        rect(0.0, 0.0, 4.0, 4.0),
+        rect(0.0, gl_window.initial_height as f32 - 4.0, 4.0, 4.0),
         TextureSampling::Linear,
         None,
     );
-    dlb.draw_line((0.0, height as f32), (4.0, height as f32 - 4.0), &paint);
+    dlb.draw_line(
+        (0.0, gl_window.initial_height as f32),
+        (4.0, gl_window.initial_height as f32 - 4.0),
+        &paint,
+    );
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
     pb.push_style(ParagraphStyle::simple("F1", 10.0, C::Paint::color("#FFF")));
