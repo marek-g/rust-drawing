@@ -172,7 +172,8 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         None,
     );
 
-    let paint = C::Paint::color("#0F0");
+    let paint = C::Paint::color("#0F0").with_stroke_width(10.0);
+    let paint = paint.with_stroke_width(20.0);
     dlb.draw_line((100.0, 350.0), (300.0, 150.0), &paint);
     dlb.draw_line((100.0, 150.0), (300.0, 350.0), &paint);
 
