@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use drawing_examples::setup_window;
-use drawing_impeller::ImpellerContext;
+use drawing_impeller::ImpellerContextGl;
 use std::error::Error;
 
 use windowing_qt::{Application, ApplicationOptions};
@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )
     .unwrap();
 
-    let _gl_window_rc = setup_window::<ImpellerContext>("Window");
+    let _gl_window_rc = setup_window::<ImpellerContextGl>("Window");
 
     app.message_loop();
 

@@ -1,16 +1,15 @@
 use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc};
 
-use drawing_api::{Capabilities, ColorSource, ImageFilter, TextureDescriptor};
-use impellers::{ISize, PixelFormat};
+use drawing_api::{Capabilities, ColorSource, TextureDescriptor};
 
-use crate::{ColorSourceFragment, ImageFilterFragment, ImpellerSurface, ImpellerTexture};
+use crate::{ImpellerSurface, ImpellerTexture};
 
 #[derive(Clone)]
-pub struct ImpellerContext {
+pub struct ImpellerContextGl {
     context: Rc<RefCell<impellers::Context>>,
 }
 
-impl drawing_api::Context for ImpellerContext {
+impl drawing_api::Context for ImpellerContextGl {
     type ColorSourceFragment = crate::ColorSourceFragment;
 
     type DisplayListBuilder = crate::DisplayListBuilder;
@@ -30,8 +29,6 @@ impl drawing_api::Context for ImpellerContext {
     type Surface = ImpellerSurface;
 
     type Texture = ImpellerTexture;
-
-    type VulkanSwapchain = crate::VulkanSwapchain;
 
     fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
         let mut capabilities = Capabilities {
@@ -76,110 +73,6 @@ impl drawing_api::Context for ImpellerContext {
         }
     }
 
-    unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
-    where
-        F: FnMut(&str) -> *mut c_void,
-    {
-        unsafe {
-            let context = Rc::new(RefCell::new(impellers::Context::new_opengl_es(loadfn)?));
-            Ok(Self { context })
-        }
-    }
-
-    unsafe fn new_vulkan<F>(
-        enable_validation: bool,
-        proc_address_callback: F,
-    ) -> Result<Self, &'static str>
-    where
-        F: FnMut(*mut c_void, *const std::os::raw::c_char) -> *mut c_void,
-    {
-        unsafe {
-            let context = Rc::new(RefCell::new(impellers::Context::new_vulkan(
-                enable_validation,
-                proc_address_callback,
-            )?));
-            Ok(Self { context })
-        }
-    }
-
-    fn get_vulkan_info(&self) -> Result<drawing_api::ContextVulkanInfo, &'static str> {
-        let vulkan_info = self.context.borrow().get_vulkan_info()?;
-        Ok(drawing_api::ContextVulkanInfo {
-            vk_instance: vulkan_info.vk_instance,
-            vk_physical_device: vulkan_info.vk_physical_device,
-            vk_logical_device: vulkan_info.vk_logical_device,
-            graphics_queue_family_index: vulkan_info.graphics_queue_family_index,
-            graphics_queue_index: vulkan_info.graphics_queue_index,
-        })
-    }
-
-    unsafe fn create_new_vulkan_swapchain(
-        &self,
-        vulkan_surface_khr: *mut c_void,
-    ) -> Result<Self::VulkanSwapchain, &'static str> {
-        unsafe {
-            let vk_swapchain = self
-                .context
-                .borrow()
-                .create_new_vulkan_swapchain(vulkan_surface_khr)
-                .ok_or("impeller: cannot create new vulkan swapchain")?;
-            Ok(Self::VulkanSwapchain { vk_swapchain })
-        }
-    }
-
-    unsafe fn wrap_gl_framebuffer(
-        &mut self,
-        framebuffer_id: u32,
-        width: u32,
-        height: u32,
-        color_format: drawing_api::ColorFormat,
-    ) -> Result<Self::Surface, &'static str> {
-        if color_format != drawing_api::ColorFormat::RGBA {
-            return Err("color format not supported!");
-        }
-
-        unsafe {
-            let surface = self
-                .context
-                .borrow_mut()
-                .wrap_fbo(
-                    framebuffer_id as u64,
-                    PixelFormat::RGBA8888,
-                    ISize::new(width as i64, height as i64),
-                )
-                .ok_or("ddd")?;
-            Ok(ImpellerSurface { surface })
-        }
-    }
-
-    unsafe fn adopt_gl_texture(
-        &self,
-        texture_handle: u32,
-        descriptor: TextureDescriptor,
-    ) -> Result<Self::Texture, &'static str> {
-        if descriptor.color_format != drawing_api::ColorFormat::RGBA {
-            return Err("color format not supported!");
-        }
-
-        // TODO: ensure texture is destroyed before context
-        let texture = unsafe {
-            self.context
-                .borrow()
-                .adopt_opengl_texture(
-                    descriptor.width,
-                    descriptor.height,
-                    descriptor.mip_count,
-                    texture_handle as u64,
-                )
-                .ok_or("")?
-        };
-
-        Ok(ImpellerTexture {
-            texture,
-            descriptor,
-        })
-    }
-
     unsafe fn create_texture(
         &self,
         contents: Cow<'static, [u8]>,
@@ -221,7 +114,7 @@ impl drawing_api::Context for ImpellerContext {
                     uniform_data,
                 )
         };
-        let color_source_fragment = ColorSourceFragment { color_source };
+        let color_source_fragment = Self::ColorSourceFragment { color_source };
         ColorSource::Fragment {
             color_source: color_source_fragment,
         }
@@ -245,9 +138,74 @@ impl drawing_api::Context for ImpellerContext {
                     uniform_data,
                 )
         };
-        let image_filter_fragment = ImageFilterFragment { image_filter };
-        ImageFilter::Fragment {
+        let image_filter_fragment = Self::ImageFilterFragment { image_filter };
+        drawing_api::ImageFilter::Fragment {
             image_filter: image_filter_fragment,
         }
+    }
+}
+
+impl drawing_api::ContextGl for ImpellerContextGl {
+    unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
+    where
+        F: FnMut(&str) -> *mut c_void,
+    {
+        unsafe {
+            let context = Rc::new(RefCell::new(impellers::Context::new_opengl_es(loadfn)?));
+            Ok(Self { context })
+        }
+    }
+
+    unsafe fn wrap_gl_framebuffer(
+        &mut self,
+        framebuffer_id: u32,
+        width: u32,
+        height: u32,
+        color_format: drawing_api::ColorFormat,
+    ) -> Result<Self::Surface, &'static str> {
+        if color_format != drawing_api::ColorFormat::RGBA {
+            return Err("color format not supported!");
+        }
+
+        unsafe {
+            let surface = self
+                .context
+                .borrow_mut()
+                .wrap_fbo(
+                    framebuffer_id as u64,
+                    impellers::PixelFormat::RGBA8888,
+                    impellers::ISize::new(width as i64, height as i64),
+                )
+                .ok_or("ddd")?;
+            Ok(ImpellerSurface { surface })
+        }
+    }
+
+    unsafe fn adopt_gl_texture(
+        &self,
+        texture_handle: u32,
+        descriptor: TextureDescriptor,
+    ) -> Result<Self::Texture, &'static str> {
+        if descriptor.color_format != drawing_api::ColorFormat::RGBA {
+            return Err("color format not supported!");
+        }
+
+        // TODO: ensure texture is destroyed before context
+        let texture = unsafe {
+            self.context
+                .borrow()
+                .adopt_opengl_texture(
+                    descriptor.width,
+                    descriptor.height,
+                    descriptor.mip_count,
+                    texture_handle as u64,
+                )
+                .ok_or("")?
+        };
+
+        Ok(ImpellerTexture {
+            texture,
+            descriptor,
+        })
     }
 }

@@ -3,12 +3,9 @@ pub struct ImpellerSurface {
 }
 
 impl drawing_api::Surface for ImpellerSurface {
-    type Context = crate::ImpellerContext;
+    type DisplayList = impellers::DisplayList;
 
-    fn draw(
-        &mut self,
-        display_list: &<<Self::Context as drawing_api::Context>::DisplayListBuilder as drawing_api::DisplayListBuilder>::DisplayList,
-    ) -> Result<(), &'static str> {
+    fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str> {
         self.surface.draw_display_list(display_list)
     }
 

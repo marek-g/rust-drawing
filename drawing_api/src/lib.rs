@@ -1,23 +1,8 @@
-mod capabilities;
-pub use capabilities::*;
+mod common;
+pub use common::*;
 
-mod context;
-pub use context::*;
-
-mod display_list;
-pub use display_list::*;
-
-mod fragment_program;
-pub use fragment_program::*;
-
-mod surface;
-pub use surface::*;
-
-mod texture;
-pub use texture::*;
-
-mod units;
-pub use units::*;
+mod gl;
+pub use gl::*;
 
 mod vulkan;
 pub use vulkan::*;

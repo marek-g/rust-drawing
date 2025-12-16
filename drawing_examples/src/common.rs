@@ -28,7 +28,7 @@ pub struct Resources<C: drawing_api::Context> {
 
 pub fn setup_window<C>(title: &str) -> Rc<RefCell<GlWindow<C>>>
 where
-    C: drawing_api::Context + 'static,
+    C: drawing_api::ContextGl + 'static,
 {
     let gl_window_rc = Rc::new(RefCell::new(GlWindow::<C> {
         window: windowing_qt::Window::new(None).unwrap(),
@@ -51,7 +51,7 @@ where
         move || {
             if !initialized {
                 let drawing_context = unsafe {
-                    <C as drawing_api::Context>::new_gl(|symbol| {
+                    C::new_gl(|symbol| {
                         gl_window_clone
                             .borrow_mut()
                             .window
@@ -142,7 +142,7 @@ pub fn create_chessboard<C: drawing_api::Context>(
     }
 }
 
-fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resources<C>) {
+fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Resources<C>) {
     let width = gl_window.window.get_width();
     let height = gl_window.window.get_height();
 
@@ -172,8 +172,7 @@ fn draw<C: drawing_api::Context>(gl_window: &mut GlWindow<C>, resources: &Resour
         None,
     );
 
-    let paint = C::Paint::color("#0F0").with_stroke_width(10.0);
-    let paint = paint.with_stroke_width(20.0);
+    let paint = C::Paint::color("#0F0");
     dlb.draw_line((100.0, 350.0), (300.0, 150.0), &paint);
     dlb.draw_line((100.0, 150.0), (300.0, 350.0), &paint);
 

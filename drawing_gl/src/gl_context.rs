@@ -1,4 +1,6 @@
-use drawing_api::{Capabilities, ColorFormat, Context, PixelPoint, Texture, TextureDescriptor};
+use drawing_api::{
+    Capabilities, ColorFormat, Context, ContextGl, PixelPoint, Texture, TextureDescriptor,
+};
 use euclid::Vector2D;
 use gl::types::*;
 use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc, sync::Arc};
@@ -680,7 +682,6 @@ impl Context for GlContext {
     type PathBuilder = crate::PathBuilder;
     type Surface = GlSurface;
     type Texture = GlTexture;
-    type VulkanSwapchain = crate::vulkan::VulkanSwapchain;
 
     fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
         let mut capabilities = Capabilities {
@@ -719,6 +720,40 @@ impl Context for GlContext {
         }
     }
 
+    unsafe fn create_texture(
+        &self,
+        contents: Cow<'static, [u8]>,
+        descriptor: TextureDescriptor,
+    ) -> Result<Self::Texture, &'static str> {
+        self.create_texture(
+            Some(&contents),
+            descriptor.width as u16,
+            descriptor.height as u16,
+            descriptor.color_format,
+            false,
+        )
+    }
+
+    unsafe fn new_color_source_from_fragment_program(
+        &self,
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> drawing_api::ColorSource<Self::Texture, Self::ColorSourceFragment> {
+        todo!()
+    }
+
+    unsafe fn new_image_filter_from_fragment_program(
+        &self,
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> drawing_api::ImageFilter<Self::ImageFilterFragment> {
+        todo!()
+    }
+}
+
+impl ContextGl for GlContext {
     unsafe fn new_gl<F>(mut loadfn: F) -> Result<Self, &'static str>
     where
         F: FnMut(&'static str) -> *mut c_void,
@@ -768,27 +803,6 @@ impl Context for GlContext {
         })
     }
 
-    unsafe fn new_vulkan<F>(
-        enable_validation: bool,
-        proc_address_callback: F,
-    ) -> Result<Self, &'static str>
-    where
-        F: FnMut(*mut c_void, *const std::os::raw::c_char) -> *mut c_void,
-    {
-        todo!()
-    }
-
-    fn get_vulkan_info(&self) -> Result<drawing_api::ContextVulkanInfo, &'static str> {
-        todo!()
-    }
-
-    unsafe fn create_new_vulkan_swapchain(
-        &self,
-        vulkan_surface_khr: *mut c_void,
-    ) -> Result<Self::VulkanSwapchain, &'static str> {
-        todo!()
-    }
-
     unsafe fn wrap_gl_framebuffer(
         &mut self,
         framebuffer_id: u32,
@@ -817,38 +831,6 @@ impl Context for GlContext {
             descriptor.height as u16,
             descriptor.color_format,
         ))
-    }
-
-    unsafe fn create_texture(
-        &self,
-        contents: Cow<'static, [u8]>,
-        descriptor: TextureDescriptor,
-    ) -> Result<Self::Texture, &'static str> {
-        self.create_texture(
-            Some(&contents),
-            descriptor.width as u16,
-            descriptor.height as u16,
-            descriptor.color_format,
-            false,
-        )
-    }
-
-    unsafe fn new_color_source_from_fragment_program(
-        &self,
-        frag_program: &Self::FragmentProgram,
-        samplers: &[Self::Texture],
-        uniform_data: &[u8],
-    ) -> drawing_api::ColorSource<Self::Texture, Self::ColorSourceFragment> {
-        todo!()
-    }
-
-    unsafe fn new_image_filter_from_fragment_program(
-        &self,
-        frag_program: &Self::FragmentProgram,
-        samplers: &[Self::Texture],
-        uniform_data: &[u8],
-    ) -> drawing_api::ImageFilter<Self::ImageFilterFragment> {
-        todo!()
     }
 }
 
