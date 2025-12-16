@@ -1,10 +1,8 @@
 use drawing_api::PixelRect;
 
-use crate::{ImpellerFragmentProgram, ImpellerTexture};
-
 use super::{
     convert_clip_operation, convert_color, convert_image_filter, convert_matrix, convert_point,
-    convert_radii, convert_rect, convert_texture_sampling,
+    convert_radii, convert_rect, convert_texture_sampling, ImageFilterFragment,
 };
 
 pub struct DisplayListBuilder {
@@ -14,7 +12,7 @@ pub struct DisplayListBuilder {
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     type DisplayList = impellers::DisplayList;
 
-    type FragmentProgram = crate::ImpellerFragmentProgram;
+    type ImageFilterFragment = crate::ImageFilterFragment;
 
     type Paint = crate::Paint;
 
@@ -108,7 +106,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         &mut self,
         bounds: impl Into<drawing_api::PixelRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<drawing_api::ImageFilter<ImpellerTexture, ImpellerFragmentProgram>>,
+        filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
     ) {
         let bounds = convert_rect(&bounds.into());
         self.display_list_builder.save_layer(

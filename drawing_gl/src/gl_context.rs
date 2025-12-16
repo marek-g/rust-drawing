@@ -670,9 +670,11 @@ impl Device for GlContext {
 }
 
 impl Context for GlContext {
+    type ColorSourceFragment = crate::display_list::ColorSourceFragment;
     type DisplayListBuilder = crate::DisplayListBuilder;
     type Fonts = crate::Fonts<GlContext>;
     type FragmentProgram = crate::GlFragmentProgram;
+    type ImageFilterFragment = crate::display_list::ImageFilterFragment;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
     type PathBuilder = crate::PathBuilder;
@@ -830,10 +832,21 @@ impl Context for GlContext {
         )
     }
 
-    unsafe fn create_fragment_program(
+    unsafe fn new_color_source_from_fragment_program(
         &self,
-        program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentProgram, &'static str> {
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> drawing_api::ColorSource<Self::Texture, Self::ColorSourceFragment> {
+        todo!()
+    }
+
+    unsafe fn new_image_filter_from_fragment_program(
+        &self,
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> drawing_api::ImageFilter<Self::ImageFilterFragment> {
         todo!()
     }
 }

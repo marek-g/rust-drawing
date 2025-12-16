@@ -16,11 +16,17 @@ pub use color_matrix::*;
 mod color_source;
 pub use color_source::*;
 
+mod color_source_fragment;
+pub use color_source_fragment::*;
+
 mod draw_style;
 pub use draw_style::*;
 
 mod image_filter;
 pub use image_filter::*;
+
+mod image_filter_fragment;
+pub use image_filter_fragment::*;
 
 mod mask_filter;
 pub use mask_filter::*;

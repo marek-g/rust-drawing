@@ -3,13 +3,18 @@ use std::{
     os::raw::{c_char, c_void},
 };
 
-use crate::{Capabilities, ColorFormat, ContextVulkanInfo, GraphicsApi, TextureDescriptor};
+use crate::{
+    Capabilities, ColorFormat, ColorSource, ContextVulkanInfo, GraphicsApi, ImageFilter,
+    TextureDescriptor,
+};
 
 /// An abstraction over graphics context (like OpenGL context).
 ///
 /// It is reference counted, single threaded object.
 pub trait Context: Clone {
+    type ColorSourceFragment: crate::ColorSourceFragment;
     type DisplayListBuilder: crate::DisplayListBuilder<
+        ImageFilterFragment = Self::ImageFilterFragment,
         Paint = Self::Paint,
         ParagraphBuilder = Self::ParagraphBuilder,
         PathBuilder = Self::PathBuilder,
@@ -17,7 +22,12 @@ pub trait Context: Clone {
     >;
     type Fonts: crate::Fonts;
     type FragmentProgram: crate::FragmentProgram;
-    type Paint: crate::Paint<Texture = Self::Texture>;
+    type ImageFilterFragment: crate::ImageFilterFragment;
+    type Paint: crate::Paint<
+        ColorSourceFragment = Self::ColorSourceFragment,
+        ImageFilterFragment = Self::ImageFilterFragment,
+        Texture = Self::Texture,
+    >;
     type ParagraphBuilder: crate::ParagraphBuilder<
         Texture = Self::Texture,
         Paint = Self::Paint,
@@ -76,16 +86,19 @@ pub trait Context: Clone {
         descriptor: TextureDescriptor,
     ) -> Result<Self::Texture, &'static str>;
 
-    /*pub unsafe fn new_color_source_from_fragment_program(
+    /// Creates a color source whose pixels are shaded by a fragment program.
+    unsafe fn new_color_source_from_fragment_program(
         &self,
-        frag_program: &FragmentProgram,
-        samplers: &[Texture],
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
         uniform_data: &[u8],
-    ) -> ColorSourceShader;*/
+    ) -> ColorSource<Self::Texture, Self::ColorSourceFragment>;
 
-    /// Creates a new fragment program using compiled program.
-    unsafe fn create_fragment_program(
+    /// Creates an image filter where each pixel is shaded by a fragment program.
+    unsafe fn new_image_filter_from_fragment_program(
         &self,
-        program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentProgram, &'static str>;
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> ImageFilter<Self::ImageFilterFragment>;
 }

@@ -1,9 +1,9 @@
 use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc};
 
-use drawing_api::{Capabilities, FragmentProgram, TextureDescriptor};
+use drawing_api::{Capabilities, ColorSource, ImageFilter, TextureDescriptor};
 use impellers::{ISize, PixelFormat};
 
-use crate::{ImpellerSurface, ImpellerTexture};
+use crate::{ColorSourceFragment, ImageFilterFragment, ImpellerSurface, ImpellerTexture};
 
 #[derive(Clone)]
 pub struct ImpellerContext {
@@ -11,11 +11,15 @@ pub struct ImpellerContext {
 }
 
 impl drawing_api::Context for ImpellerContext {
+    type ColorSourceFragment = crate::ColorSourceFragment;
+
     type DisplayListBuilder = crate::DisplayListBuilder;
 
     type Fonts = crate::Fonts;
 
     type FragmentProgram = crate::ImpellerFragmentProgram;
+
+    type ImageFilterFragment = crate::ImageFilterFragment;
 
     type Paint = crate::Paint;
 
@@ -198,10 +202,51 @@ impl drawing_api::Context for ImpellerContext {
         })
     }
 
-    unsafe fn create_fragment_program(
+    unsafe fn new_color_source_from_fragment_program(
         &self,
-        program: Cow<'static, [u8]>,
-    ) -> Result<Self::FragmentProgram, &'static str> {
-        unsafe { Self::FragmentProgram::new(program) }
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> ColorSource<Self::Texture, Self::ColorSourceFragment> {
+        let color_source = unsafe {
+            self.context
+                .borrow()
+                .new_color_source_from_fragment_program(
+                    &frag_program.fragment_program,
+                    &samplers
+                        .iter()
+                        .map(|s| s.texture.clone())
+                        .collect::<Vec<_>>(),
+                    uniform_data,
+                )
+        };
+        let color_source_fragment = ColorSourceFragment { color_source };
+        ColorSource::Fragment {
+            color_source: color_source_fragment,
+        }
+    }
+
+    unsafe fn new_image_filter_from_fragment_program(
+        &self,
+        frag_program: &Self::FragmentProgram,
+        samplers: &[Self::Texture],
+        uniform_data: &[u8],
+    ) -> drawing_api::ImageFilter<Self::ImageFilterFragment> {
+        let image_filter = unsafe {
+            self.context
+                .borrow()
+                .new_image_filter_from_fragment_program(
+                    &frag_program.fragment_program,
+                    &samplers
+                        .iter()
+                        .map(|s| s.texture.clone())
+                        .collect::<Vec<_>>(),
+                    uniform_data,
+                )
+        };
+        let image_filter_fragment = ImageFilterFragment { image_filter };
+        ImageFilter::Fragment {
+            image_filter: image_filter_fragment,
+        }
     }
 }

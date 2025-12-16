@@ -1,8 +1,9 @@
-use crate::{ImpellerFragmentProgram, ImpellerTexture};
+use crate::ImpellerTexture;
 
 use super::{
     convert_blend_mode, convert_color, convert_color_matrix, convert_image_filter, convert_matrix,
-    convert_point, convert_texture_sampling, convert_tile_mode,
+    convert_point, convert_texture_sampling, convert_tile_mode, ColorSourceFragment,
+    ImageFilterFragment,
 };
 
 pub struct Paint {
@@ -18,7 +19,8 @@ impl Default for Paint {
 }
 
 impl drawing_api::Paint for Paint {
-    type FragmentProgram = ImpellerFragmentProgram;
+    type ColorSourceFragment = crate::ColorSourceFragment;
+    type ImageFilterFragment = crate::ImageFilterFragment;
     type Texture = ImpellerTexture;
 
     fn set_color(&mut self, color: impl Into<drawing_api::Color>) {
@@ -64,7 +66,7 @@ impl drawing_api::Paint for Paint {
 
     fn set_color_source(
         &mut self,
-        color_source: Option<drawing_api::ColorSource<Self::Texture, Self::FragmentProgram>>,
+        color_source: Option<drawing_api::ColorSource<Self::Texture, ColorSourceFragment>>,
     ) {
         if let Some(color_source) = color_source {
             let color_source = match color_source {
@@ -159,11 +161,7 @@ impl drawing_api::Paint for Paint {
                     convert_texture_sampling(sampling),
                     transformation.map(|t| convert_matrix(&t)).as_ref(),
                 ),
-                drawing_api::ColorSource::FragmentProgram {
-                    program,
-                    samplers,
-                    data,
-                } => todo!(),
+                drawing_api::ColorSource::Fragment { color_source } => color_source.color_source,
             };
             self.paint.set_color_source(&color_source);
         } else {
@@ -192,7 +190,7 @@ impl drawing_api::Paint for Paint {
 
     fn set_image_filter(
         &mut self,
-        image_filter: Option<drawing_api::ImageFilter<Self::Texture, Self::FragmentProgram>>,
+        image_filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
     ) {
         if let Some(image_filter) = image_filter {
             let image_filter = convert_image_filter(image_filter);

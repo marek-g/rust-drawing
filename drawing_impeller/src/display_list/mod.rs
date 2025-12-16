@@ -1,3 +1,6 @@
+mod color_source_fragment;
+pub use color_source_fragment::*;
+
 mod conversion;
 use conversion::*;
 
@@ -9,6 +12,9 @@ pub use fonts::*;
 
 mod glyph_info;
 pub use glyph_info::*;
+
+mod image_filter_fragment;
+pub use image_filter_fragment::*;
 
 mod line_metrics;
 pub use line_metrics::*;

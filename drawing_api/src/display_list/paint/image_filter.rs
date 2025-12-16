@@ -1,9 +1,9 @@
-use crate::{FragmentProgram, Matrix, Texture};
+use crate::Matrix;
 
-use super::{TextureSampling, TileMode};
+use super::{ImageFilterFragment, TextureSampling, TileMode};
 
 #[derive(Clone)]
-pub enum ImageFilter<T: Texture, S: FragmentProgram> {
+pub enum ImageFilter<F: ImageFilterFragment> {
     Blur {
         x_sigma: f32,
         y_sigma: f32,
@@ -25,14 +25,12 @@ pub enum ImageFilter<T: Texture, S: FragmentProgram> {
         sampling: TextureSampling,
     },
 
-    FragmentShader {
-        program: S,
-        samplers: Vec<T>,
-        data: Vec<u8>,
+    Fragment {
+        image_filter: F,
     },
 
     Compose {
-        outer: Box<ImageFilter<T, S>>,
-        inner: Box<ImageFilter<T, S>>,
+        outer: Box<ImageFilter<F>>,
+        inner: Box<ImageFilter<F>>,
     },
 }

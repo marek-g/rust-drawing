@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 #[derive(Clone)]
 pub struct ImpellerFragmentProgram {
-    fragment_program: impellers::FragmentProgram,
+    pub(crate) fragment_program: impellers::FragmentProgram,
 }
 
 impl drawing_api::FragmentProgram for ImpellerFragmentProgram {

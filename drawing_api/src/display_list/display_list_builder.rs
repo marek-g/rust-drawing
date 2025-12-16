@@ -4,7 +4,7 @@ use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 
 pub trait DisplayListBuilder {
     type DisplayList: Send + Sync + Clone;
-    type FragmentProgram: crate::FragmentProgram;
+    type ImageFilterFragment: crate::ImageFilterFragment;
     type Paint: crate::Paint;
     type ParagraphBuilder: crate::ParagraphBuilder;
     type PathBuilder: crate::PathBuilder;
@@ -66,7 +66,7 @@ pub trait DisplayListBuilder {
         &mut self,
         bounds: impl Into<PixelRect>,
         paint: Option<&Self::Paint>,
-        filter: Option<ImageFilter<Self::Texture, Self::FragmentProgram>>,
+        filter: Option<ImageFilter<Self::ImageFilterFragment>>,
     );
 
     /// Gets the current size of the save stack.
