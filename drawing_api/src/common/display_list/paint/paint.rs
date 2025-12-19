@@ -21,7 +21,7 @@ pub trait Paint: Default {
     }
 
     fn color_source(color_source: ColorSource<Self::Texture, Self::ColorSourceFragment>) -> Self {
-        Self::default().with_color_source(Some(color_source))
+        Self::default().with_color_source(color_source)
     }
 
     /// Sets the paint color for stroking or filling.
@@ -83,21 +83,21 @@ pub trait Paint: Default {
     /// Sets the color source of the paint.
     fn set_color_source(
         &mut self,
-        color_source: Option<ColorSource<Self::Texture, Self::ColorSourceFragment>>,
+        color_source: ColorSource<Self::Texture, Self::ColorSourceFragment>,
     );
 
     fn with_color_source(
         mut self,
-        color_source: Option<ColorSource<Self::Texture, Self::ColorSourceFragment>>,
+        color_source: ColorSource<Self::Texture, Self::ColorSourceFragment>,
     ) -> Self {
         self.set_color_source(color_source);
         self
     }
 
     /// Sets the color filter of the paint.
-    fn set_color_filter(&mut self, color_filter: Option<ColorFilter>);
+    fn set_color_filter(&mut self, color_filter: ColorFilter);
 
-    fn with_color_filter(mut self, color_filter: Option<ColorFilter>) -> Self {
+    fn with_color_filter(mut self, color_filter: ColorFilter) -> Self {
         self.set_color_filter(color_filter);
         self
     }
@@ -105,12 +105,9 @@ pub trait Paint: Default {
     /// Sets the image filter of a paint.
     ///
     /// Image filters are functions that are applied to regions of a texture to produce a single color.
-    fn set_image_filter(&mut self, image_filter: Option<ImageFilter<Self::ImageFilterFragment>>);
+    fn set_image_filter(&mut self, image_filter: ImageFilter<Self::ImageFilterFragment>);
 
-    fn with_image_filter(
-        mut self,
-        image_filter: Option<ImageFilter<Self::ImageFilterFragment>>,
-    ) -> Self {
+    fn with_image_filter(mut self, image_filter: ImageFilter<Self::ImageFilterFragment>) -> Self {
         self.set_image_filter(image_filter);
         self
     }
@@ -118,9 +115,9 @@ pub trait Paint: Default {
     /// Sets the mask filter of a paint.
     ///
     /// Mask filters are functions that are applied over a shape after it has been drawn but before it has been blended into the final image.
-    fn set_mask_filter(&mut self, mask_filter: Option<MaskFilter>);
+    fn set_mask_filter(&mut self, mask_filter: MaskFilter);
 
-    fn with_mask_filter(mut self, mask_filter: Option<MaskFilter>) -> Self {
+    fn with_mask_filter(mut self, mask_filter: MaskFilter) -> Self {
         self.set_mask_filter(mask_filter);
         self
     }

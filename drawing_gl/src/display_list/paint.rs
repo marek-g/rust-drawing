@@ -75,23 +75,20 @@ impl drawing_api::Paint for Paint {
 
     fn set_color_source(
         &mut self,
-        color_source: Option<drawing_api::ColorSource<Self::Texture, ColorSourceFragment>>,
+        color_source: drawing_api::ColorSource<Self::Texture, ColorSourceFragment>,
     ) {
-        self.color_source = color_source;
+        self.color_source = Some(color_source);
     }
 
-    fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
-        self.color_filter = color_filter;
+    fn set_color_filter(&mut self, color_filter: drawing_api::ColorFilter) {
+        self.color_filter = Some(color_filter);
     }
 
-    fn set_image_filter(
-        &mut self,
-        image_filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
-    ) {
-        self.image_filter = image_filter;
+    fn set_image_filter(&mut self, image_filter: drawing_api::ImageFilter<ImageFilterFragment>) {
+        self.image_filter = Some(image_filter);
     }
 
-    fn set_mask_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
-        self.mask_filter = mask_filter;
+    fn set_mask_filter(&mut self, mask_filter: drawing_api::MaskFilter) {
+        self.mask_filter = Some(mask_filter);
     }
 }

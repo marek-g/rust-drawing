@@ -66,156 +66,137 @@ impl drawing_api::Paint for Paint {
 
     fn set_color_source(
         &mut self,
-        color_source: Option<drawing_api::ColorSource<Self::Texture, ColorSourceFragment>>,
+        color_source: drawing_api::ColorSource<Self::Texture, ColorSourceFragment>,
     ) {
-        if let Some(color_source) = color_source {
-            let color_source = match color_source {
-                drawing_api::ColorSource::LinearGradient {
-                    start,
-                    end,
-                    colors,
-                    stops,
-                    tile_mode,
-                    transformation,
-                } => impellers::ColorSource::new_linear_gradient(
-                    convert_point(&start),
-                    convert_point(&end),
-                    &colors
-                        .into_iter()
-                        .map(|c| convert_color(&c))
-                        .collect::<Vec<_>>(),
-                    &stops,
-                    convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(&t)).as_ref(),
-                ),
-                drawing_api::ColorSource::RadialGradient {
-                    center,
-                    radius,
-                    colors,
-                    stops,
-                    tile_mode,
-                    transformation,
-                } => impellers::ColorSource::new_radial_gradient(
-                    convert_point(&center),
-                    radius,
-                    &colors
-                        .into_iter()
-                        .map(|c| convert_color(&c))
-                        .collect::<Vec<_>>(),
-                    &stops,
-                    convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(&t)).as_ref(),
-                ),
-                drawing_api::ColorSource::ConicalGradient {
-                    start_center,
-                    start_radius,
-                    end_center,
-                    end_radius,
-                    colors,
-                    stops,
-                    tile_mode,
-                    transformation,
-                } => impellers::ColorSource::new_conical_gradient(
-                    convert_point(&start_center),
-                    start_radius,
-                    convert_point(&end_center),
-                    end_radius,
-                    &colors
-                        .into_iter()
-                        .map(|c| convert_color(&c))
-                        .collect::<Vec<_>>(),
-                    &stops,
-                    convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(&t)).as_ref(),
-                ),
-                drawing_api::ColorSource::SweepGradient {
-                    center,
-                    start,
-                    end,
-                    colors,
-                    stops,
-                    tile_mode,
-                    transformation,
-                } => impellers::ColorSource::new_sweep_gradient(
-                    convert_point(&center),
-                    start,
-                    end,
-                    &colors
-                        .into_iter()
-                        .map(|c| convert_color(&c))
-                        .collect::<Vec<_>>(),
-                    &stops,
-                    convert_tile_mode(tile_mode),
-                    transformation.map(|t| convert_matrix(&t)).as_ref(),
-                ),
-                drawing_api::ColorSource::Image {
-                    image,
-                    horizontal_tile_mode,
-                    vertical_tile_mode,
-                    sampling,
-                    transformation,
-                } => impellers::ColorSource::new_image(
-                    &image.texture,
-                    convert_tile_mode(horizontal_tile_mode),
-                    convert_tile_mode(vertical_tile_mode),
-                    convert_texture_sampling(sampling),
-                    transformation.map(|t| convert_matrix(&t)).as_ref(),
-                ),
-                drawing_api::ColorSource::Fragment { color_source } => color_source.color_source,
-            };
-            self.paint.set_color_source(&color_source);
-        } else {
-            todo!("Clearing color source is not implemented")
-        }
+        let color_source = match color_source {
+            drawing_api::ColorSource::LinearGradient {
+                start,
+                end,
+                colors,
+                stops,
+                tile_mode,
+                transformation,
+            } => impellers::ColorSource::new_linear_gradient(
+                convert_point(&start),
+                convert_point(&end),
+                &colors
+                    .into_iter()
+                    .map(|c| convert_color(&c))
+                    .collect::<Vec<_>>(),
+                &stops,
+                convert_tile_mode(tile_mode),
+                transformation.map(|t| convert_matrix(&t)).as_ref(),
+            ),
+            drawing_api::ColorSource::RadialGradient {
+                center,
+                radius,
+                colors,
+                stops,
+                tile_mode,
+                transformation,
+            } => impellers::ColorSource::new_radial_gradient(
+                convert_point(&center),
+                radius,
+                &colors
+                    .into_iter()
+                    .map(|c| convert_color(&c))
+                    .collect::<Vec<_>>(),
+                &stops,
+                convert_tile_mode(tile_mode),
+                transformation.map(|t| convert_matrix(&t)).as_ref(),
+            ),
+            drawing_api::ColorSource::ConicalGradient {
+                start_center,
+                start_radius,
+                end_center,
+                end_radius,
+                colors,
+                stops,
+                tile_mode,
+                transformation,
+            } => impellers::ColorSource::new_conical_gradient(
+                convert_point(&start_center),
+                start_radius,
+                convert_point(&end_center),
+                end_radius,
+                &colors
+                    .into_iter()
+                    .map(|c| convert_color(&c))
+                    .collect::<Vec<_>>(),
+                &stops,
+                convert_tile_mode(tile_mode),
+                transformation.map(|t| convert_matrix(&t)).as_ref(),
+            ),
+            drawing_api::ColorSource::SweepGradient {
+                center,
+                start,
+                end,
+                colors,
+                stops,
+                tile_mode,
+                transformation,
+            } => impellers::ColorSource::new_sweep_gradient(
+                convert_point(&center),
+                start,
+                end,
+                &colors
+                    .into_iter()
+                    .map(|c| convert_color(&c))
+                    .collect::<Vec<_>>(),
+                &stops,
+                convert_tile_mode(tile_mode),
+                transformation.map(|t| convert_matrix(&t)).as_ref(),
+            ),
+            drawing_api::ColorSource::Image {
+                image,
+                horizontal_tile_mode,
+                vertical_tile_mode,
+                sampling,
+                transformation,
+            } => impellers::ColorSource::new_image(
+                &image.texture,
+                convert_tile_mode(horizontal_tile_mode),
+                convert_tile_mode(vertical_tile_mode),
+                convert_texture_sampling(sampling),
+                transformation.map(|t| convert_matrix(&t)).as_ref(),
+            ),
+            drawing_api::ColorSource::Fragment { color_source } => color_source.color_source,
+        };
+        self.paint.set_color_source(&color_source);
     }
 
-    fn set_color_filter(&mut self, color_filter: Option<drawing_api::ColorFilter>) {
-        if let Some(color_filter) = color_filter {
-            let color_filter = match color_filter {
-                drawing_api::ColorFilter::Blend(color, blend_mode) => {
-                    impellers::ColorFilter::new_blend(
-                        convert_color(&color),
-                        convert_blend_mode(blend_mode),
-                    )
-                }
-                drawing_api::ColorFilter::Matrix(color_matrix) => {
-                    impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
-                }
-            };
-            self.paint.set_color_filter(&color_filter);
-        } else {
-            todo!("Clearing color filter is not implemented")
-        }
+    fn set_color_filter(&mut self, color_filter: drawing_api::ColorFilter) {
+        let color_filter = match color_filter {
+            drawing_api::ColorFilter::Blend(color, blend_mode) => {
+                impellers::ColorFilter::new_blend(
+                    convert_color(&color),
+                    convert_blend_mode(blend_mode),
+                )
+            }
+            drawing_api::ColorFilter::Matrix(color_matrix) => {
+                impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
+            }
+        };
+        self.paint.set_color_filter(&color_filter);
     }
 
-    fn set_image_filter(
-        &mut self,
-        image_filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
-    ) {
-        if let Some(image_filter) = image_filter {
-            let image_filter = convert_image_filter(image_filter);
-            self.paint.set_image_filter(&image_filter);
-        } else {
-            todo!("Clearing image filter is not implemented")
-        }
+    fn set_image_filter(&mut self, image_filter: drawing_api::ImageFilter<ImageFilterFragment>) {
+        let image_filter = convert_image_filter(image_filter);
+        self.paint.set_image_filter(&image_filter);
     }
 
-    fn set_mask_filter(&mut self, mask_filter: Option<drawing_api::MaskFilter>) {
-        if let Some(mask_filter) = mask_filter {
-            let mask_filter = match mask_filter {
-                drawing_api::MaskFilter::Blur { style, sigma } => impellers::MaskFilter::new_blur(
-                    match style {
-                        drawing_api::BlurStyle::Normal => impellers::BlurStyle::Normal,
-                        drawing_api::BlurStyle::Solid => impellers::BlurStyle::Solid,
-                        drawing_api::BlurStyle::Outer => impellers::BlurStyle::Outer,
-                        drawing_api::BlurStyle::Inner => impellers::BlurStyle::Inner,
-                    },
-                    sigma,
-                ),
-            };
-            self.paint.set_mask_filter(&mask_filter);
-        } else {
-            todo!("Clearing mask blur filter is not implemented")
-        }
+    fn set_mask_filter(&mut self, mask_filter: drawing_api::MaskFilter) {
+        let mask_filter = match mask_filter {
+            drawing_api::MaskFilter::Blur { style, sigma } => impellers::MaskFilter::new_blur(
+                match style {
+                    drawing_api::BlurStyle::Normal => impellers::BlurStyle::Normal,
+                    drawing_api::BlurStyle::Solid => impellers::BlurStyle::Solid,
+                    drawing_api::BlurStyle::Outer => impellers::BlurStyle::Outer,
+                    drawing_api::BlurStyle::Inner => impellers::BlurStyle::Inner,
+                },
+                sigma,
+            ),
+        };
+        self.paint.set_mask_filter(&mask_filter);
     }
 }
