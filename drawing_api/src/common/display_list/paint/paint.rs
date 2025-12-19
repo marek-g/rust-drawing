@@ -1,4 +1,4 @@
-use crate::Color;
+use crate::{Color, Either};
 
 use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
@@ -120,5 +120,23 @@ pub trait Paint: Default {
     fn with_mask_filter(mut self, mask_filter: MaskFilter) -> Self {
         self.set_mask_filter(mask_filter);
         self
+    }
+}
+
+impl<'a, P: Paint> From<&'a P> for Either<&'a P, P> {
+    fn from(value: &'a P) -> Self {
+        Either::Left(value)
+    }
+}
+
+impl<P: Paint> From<P> for Either<&P, P> {
+    fn from(value: P) -> Self {
+        Either::Right(value)
+    }
+}
+
+impl<P: Paint> From<&str> for Either<&P, P> {
+    fn from(value: &str) -> Self {
+        Either::Right(P::color(value))
     }
 }

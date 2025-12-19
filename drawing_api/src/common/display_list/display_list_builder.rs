@@ -1,4 +1,4 @@
-use crate::{Matrix, PixelPoint, PixelRect};
+use crate::{Either, Matrix, PixelPoint, PixelRect};
 
 use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 
@@ -83,7 +83,9 @@ pub trait DisplayListBuilder {
     }
 
     /// Fills the current clip with the specified paint.
-    fn draw_paint(&mut self, paint: &Self::Paint);
+    fn draw_paint<'a>(&mut self, paint: impl Into<Either<&'a Self::Paint, Self::Paint>>)
+    where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a line segment.
     fn draw_line(

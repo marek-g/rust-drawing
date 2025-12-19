@@ -1,4 +1,4 @@
-use drawing_api::{PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
+use drawing_api::{Either, PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
 use euclid::Angle;
 
 use crate::{generic::device::convert_color, units::PixelTransform, GlContext, GlTexture};
@@ -52,7 +52,7 @@ impl DisplayListBuilder {
                 drawing_api::ColorSource::Image {
                     image,
                     horizontal_tile_mode,
-                    vertical_tile_mode,
+                    qvertical_tile_mode,
                     sampling,
                     transformation,
                 } => super::Brush::ImagePattern {
@@ -277,13 +277,21 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         }
     }
 
-    fn draw_paint(&mut self, paint: &Self::Paint) {
+    fn draw_paint<'a>(&mut self, paint: impl Into<Either<&'a Self::Paint, Self::Paint>>) {
+        let paint = paint.into();
+        let paint_ref = match &paint {
+            Either::Left(paint) => *paint,
+            Either::Right(paint) => paint,
+        };
+
         // TODO: handle other cases
         self.display_list_stack
             .last_mut()
             .unwrap()
             .1
-            .push(Primitive::Clear { color: paint.color });
+            .push(Primitive::Clear {
+                color: paint_ref.color,
+            });
     }
 
     fn draw_line(

@@ -172,7 +172,9 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
         height as f32 / gl_window.initial_height as f32,
     );
 
-    dlb.draw_paint(&C::Paint::color("#FFA5"));
+    //dlb.draw_paint(&C::Paint::color("#FFA5"));
+    //dlb.draw_paint(C::Paint::color("#FFA5"));
+    dlb.draw_paint("#FFA5");
 
     dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), &C::Paint::color("#F00"));
 

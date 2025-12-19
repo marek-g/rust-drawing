@@ -1,4 +1,4 @@
-use drawing_api::PixelRect;
+use drawing_api::{Either, PixelRect};
 
 use super::{
     convert_clip_operation, convert_color, convert_image_filter, convert_matrix, convert_point,
@@ -128,8 +128,13 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         self.display_list_builder.restore_to_count(count as u32);
     }
 
-    fn draw_paint(&mut self, paint: &Self::Paint) {
-        self.display_list_builder.draw_paint(&paint.paint);
+    fn draw_paint<'a>(&mut self, paint: impl Into<Either<&'a Self::Paint, Self::Paint>>) {
+        let paint = paint.into();
+        let paint_ref = match &paint {
+            Either::Left(paint) => *paint,
+            Either::Right(paint) => paint,
+        };
+        self.display_list_builder.draw_paint(&paint_ref.paint);
     }
 
     fn draw_line(
