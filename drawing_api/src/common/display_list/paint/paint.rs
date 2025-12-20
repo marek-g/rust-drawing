@@ -1,4 +1,4 @@
-use crate::{Color, Either};
+use crate::{Color, OptRef};
 
 use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
@@ -123,20 +123,20 @@ pub trait Paint: Default {
     }
 }
 
-impl<'a, P: Paint> From<&'a P> for Either<&'a P, P> {
+impl<'a, P: Paint> From<&'a P> for OptRef<'a, P> {
     fn from(value: &'a P) -> Self {
-        Either::Left(value)
+        OptRef::Borrowed(value)
     }
 }
 
-impl<P: Paint> From<P> for Either<&P, P> {
+impl<'a, P: Paint> From<P> for OptRef<'a, P> {
     fn from(value: P) -> Self {
-        Either::Right(value)
+        OptRef::Owned(value)
     }
 }
 
-impl<P: Paint> From<&str> for Either<&P, P> {
+impl<'a, P: Paint> From<&str> for OptRef<'a, P> {
     fn from(value: &str) -> Self {
-        Either::Right(P::color(value))
+        OptRef::Owned(P::color(value))
     }
 }

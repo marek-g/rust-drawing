@@ -7,9 +7,9 @@ pub use gl::*;
 mod vulkan;
 pub use vulkan::*;
 
-pub enum Either<L, R> {
-    Left(L),
-    Right(R),
+/// Represents either an owned or borrowed T.
+/// Useful to pass `T` or `&'a T` to a function when used as `Into<OptRef<'a, T>>`.
+pub enum OptRef<'a, T> {
+    Borrowed(&'a T),
+    Owned(T),
 }
-
-impl<L, R> Either<L, R> {}
