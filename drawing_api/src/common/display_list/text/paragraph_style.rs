@@ -1,3 +1,5 @@
+use crate::Owned;
+
 use super::{FontStyle, FontWeight, TextAlignment, TextDecoration, TextDirection};
 
 pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
@@ -41,22 +43,32 @@ where
     T: crate::Texture,
     P: crate::Paint<Texture = T>,
 {
-    pub fn simple(family: impl Into<String>, size: f32, paint: P) -> Self {
+    pub fn simple(family: impl Into<String>, size: f32, paint: impl Into<Owned<P>>) -> Self {
         ParagraphStyle {
-            foreground: Some(paint),
+            foreground: Some(paint.into().0),
             family: family.into(),
             size,
             ..Default::default()
         }
     }
 
-    pub fn with_foreground(mut self, paint: Option<P>) -> Self {
-        self.foreground = paint;
+    pub fn with_foreground(mut self, paint: impl Into<Owned<P>>) -> Self {
+        self.foreground = Some(paint.into().0);
         self
     }
 
-    pub fn with_background(mut self, paint: Option<P>) -> Self {
-        self.background = paint;
+    pub fn without_foreground(mut self) -> Self {
+        self.foreground = None;
+        self
+    }
+
+    pub fn with_background(mut self, paint: impl Into<Owned<P>>) -> Self {
+        self.background = Some(paint.into().0);
+        self
+    }
+
+    pub fn without_background(mut self) -> Self {
+        self.background = None;
         self
     }
 

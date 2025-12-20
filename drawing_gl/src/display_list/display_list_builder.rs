@@ -182,18 +182,19 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .push((StackElement::RestorePoint, Vec::new()));
     }
 
-    fn save_layer(
+    fn save_layer<'a>(
         &mut self,
         bounds: impl Into<PixelRect>,
-        paint: Option<&Self::Paint>,
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
         filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
     ) {
         self.display_list_stack
             .push((StackElement::RestorePoint, Vec::new()));
+        let paint = paint.into();
         self.display_list_stack.push((
             StackElement::Layer {
                 bounds: bounds.into(),
-                paint: paint.cloned(),
+                paint: paint.map(|p| p.to_owned()),
                 filter,
             },
             Vec::new(),
@@ -279,29 +280,23 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_paint<'a>(&mut self, paint: impl Into<OptRef<'a, Self::Paint>>) {
         let paint = paint.into();
-        let paint_ref = match &paint {
-            OptRef::Borrowed(paint) => *paint,
-            OptRef::Owned(paint) => paint,
-        };
-
         // TODO: handle other cases
         self.display_list_stack
             .last_mut()
             .unwrap()
             .1
-            .push(Primitive::Clear {
-                color: paint_ref.color,
-            });
+            .push(Primitive::Clear { color: paint.color });
     }
 
-    fn draw_line(
+    fn draw_line<'a>(
         &mut self,
         from: impl Into<PixelPoint>,
         to: impl Into<PixelPoint>,
-        paint: &Self::Paint,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         let from = from.into();
         let to = to.into();
+        let paint = paint.into();
         self.display_list_stack
             .last_mut()
             .unwrap()
@@ -315,19 +310,24 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
-    fn draw_dashed_line(
+    fn draw_dashed_line<'a>(
         &mut self,
         from: impl Into<PixelPoint>,
         to: impl Into<PixelPoint>,
         on_length: f32,
         off_length: f32,
-        paint: &Self::Paint,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         todo!()
     }
 
-    fn draw_rect(&mut self, rect: impl Into<PixelRect>, paint: &Self::Paint) {
+    fn draw_rect<'a>(
+        &mut self,
+        rect: impl Into<PixelRect>,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) {
         let rect = rect.into();
+        let paint = paint.into();
         self.display_list_stack
             .last_mut()
             .unwrap()
@@ -341,35 +341,40 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             });
     }
 
-    fn draw_rounded_rect(
+    fn draw_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
         radii: &drawing_api::RoundingRadii,
-        paint: &Self::Paint,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         todo!()
     }
 
-    fn draw_rounded_rect_difference(
+    fn draw_rounded_rect_difference<'a>(
         &mut self,
         outer_rect: impl Into<PixelRect>,
         outer_radii: &drawing_api::RoundingRadii,
         inner_rect: impl Into<PixelRect>,
         inner_radii: &drawing_api::RoundingRadii,
-        paint: &Self::Paint,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         todo!()
     }
 
-    fn draw_oval(&mut self, oval_bounds: impl Into<PixelRect>, paint: &Self::Paint) {
+    fn draw_oval<'a>(
+        &mut self,
+        oval_bounds: impl Into<PixelRect>,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) {
         todo!()
     }
 
-    fn draw_path(
+    fn draw_path<'a>(
         &mut self,
         path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
-        paint: &Self::Paint,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
+        let paint = paint.into();
         match paint.draw_style {
             drawing_api::DrawStyle::Fill => {
                 self.display_list_stack
@@ -378,7 +383,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .1
                     .push(Primitive::Fill {
                         path: path.path.to_vec(),
-                        brush: DisplayListBuilder::paint_to_brush(paint),
+                        brush: DisplayListBuilder::paint_to_brush(&paint),
                     })
             }
             drawing_api::DrawStyle::Stroke => {
@@ -389,7 +394,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .push(Primitive::Stroke {
                         path: path.path.to_vec(),
                         thickness: paint.stroke_width.max(1.0f32),
-                        brush: DisplayListBuilder::paint_to_brush(paint),
+                        brush: DisplayListBuilder::paint_to_brush(&paint),
                     })
             }
             drawing_api::DrawStyle::StrokeAndFill => {
@@ -399,7 +404,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .1
                     .push(Primitive::Fill {
                         path: path.path.to_vec(),
-                        brush: DisplayListBuilder::paint_to_brush(paint),
+                        brush: DisplayListBuilder::paint_to_brush(&paint),
                     });
                 self.display_list_stack
                     .last_mut()
@@ -408,7 +413,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .push(Primitive::Stroke {
                         path: path.path.to_vec(),
                         thickness: paint.stroke_width.max(1.0f32),
-                        brush: DisplayListBuilder::paint_to_brush(paint),
+                        brush: DisplayListBuilder::paint_to_brush(&paint),
                     })
             }
         }
@@ -417,7 +422,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_shadow(
         &mut self,
         path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
-        color: &drawing_api::Color,
+        color: impl Into<drawing_api::Color>,
         elevation: f32,
         oocluder_is_transparent: bool,
         device_pixel_ratio: f32,
@@ -425,23 +430,23 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         todo!()
     }
 
-    fn draw_texture(
+    fn draw_texture<'a>(
         &mut self,
         texture: &Self::Texture,
         point: impl Into<PixelPoint>,
         sampling: TextureSampling,
-        paint: Option<&Self::Paint>,
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
     ) {
         todo!()
     }
 
-    fn draw_texture_rect(
+    fn draw_texture_rect<'a>(
         &mut self,
         texture: &Self::Texture,
         src_rect: impl Into<PixelRect>,
         dst_rect: impl Into<PixelRect>,
         sampling: TextureSampling,
-        paint: Option<&Self::Paint>,
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
     ) {
         let src_rect = src_rect.into();
         let dst_rect = dst_rect.into();

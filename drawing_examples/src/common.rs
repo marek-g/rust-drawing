@@ -172,13 +172,11 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
         height as f32 / gl_window.initial_height as f32,
     );
 
-    //dlb.draw_paint(&C::Paint::color("#FFA5"));
-    //dlb.draw_paint(C::Paint::color("#FFA5"));
     dlb.draw_paint("#FFA5");
 
-    dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), &C::Paint::color("#F00"));
+    dlb.draw_rect(rect(100.5, 101.5, 200.0, 50.0), "#F00");
 
-    dlb.draw_line((100.0, 100.0), (300.5, 100.5), &C::Paint::color("#FFF"));
+    dlb.draw_line((100.0, 100.0), (300.5, 100.5), "#FFF");
 
     dlb.draw_texture_rect(
         &resources.image2,
@@ -197,18 +195,20 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.line_to((300.0, 350.0));
     pb.line_to((300.0, 550.0));
     pb.line_to((100.0, 550.0));
-    let paint = C::Paint::color_source(drawing_api::ColorSource::Image {
-        image: resources.image2.clone(),
-        horizontal_tile_mode: drawing_api::TileMode::Repeat,
-        vertical_tile_mode: drawing_api::TileMode::Repeat,
-        sampling: TextureSampling::Linear,
-        transformation: Some(
-            Matrix::identity()
-                .pre_translate(Vector3D::new(100.0, 350.0, 0.0))
-                .pre_rotate(0.0, 0.0, 1.0, Angle::radians(pos_y / 100.0)),
-        ),
-    });
-    dlb.draw_path(&pb.build().unwrap(), &paint);
+    dlb.draw_path(
+        &pb.build().unwrap(),
+        drawing_api::ColorSource::Image {
+            image: resources.image2.clone(),
+            horizontal_tile_mode: drawing_api::TileMode::Repeat,
+            vertical_tile_mode: drawing_api::TileMode::Repeat,
+            sampling: TextureSampling::Linear,
+            transformation: Some(
+                Matrix::identity()
+                    .pre_translate(Vector3D::new(100.0, 350.0, 0.0))
+                    .pre_rotate(0.0, 0.0, 1.0, Angle::radians(pos_y / 100.0)),
+            ),
+        },
+    );
 
     let paint = C::Paint::color((0.0, 1.0, 0.0));
     dlb.draw_texture_rect(
@@ -271,31 +271,31 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     );
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 10.0, C::Paint::color("#FFF")));
+    pb.push_style(ParagraphStyle::simple("F1", 10.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 200.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 12.0, C::Paint::color("#FFF")));
+    pb.push_style(ParagraphStyle::simple("F1", 12.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0, 220.0 - pos_y), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 14.0, C::Paint::color("#FFF")));
+    pb.push_style(ParagraphStyle::simple("F1", 14.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 240.0 + pos_y * 2.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 16.0, C::Paint::color("#FFF")));
+    pb.push_style(ParagraphStyle::simple("F1", 16.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 260.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 18.0, C::Paint::color("#FFF")));
+    pb.push_style(ParagraphStyle::simple("F1", 18.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 280.0 + pos_y), &paragraph);
@@ -303,18 +303,20 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     let mut pb = C::PathBuilder::default();
     pb.move_to((100.0, 350.0));
     pb.cubic_curve_to((120.0, 50.0), (180.0, 50.0), (300.0, 150.0));
-    let paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
-        start: (100.0, 150.0).into(),
-        end: (350.0, 350.0).into(),
-        colors: vec![
-            Color::rgba(1.0, 0.0, 0.0, 0.75),
-            Color::rgba(1.0, 1.0, 0.0, 0.75),
-        ],
-        stops: vec![0.0, 1.0],
-        tile_mode: drawing_api::TileMode::Mirror,
-        transformation: None,
-    });
-    dlb.draw_path(&pb.build().unwrap(), &paint);
+    dlb.draw_path(
+        &pb.build().unwrap(),
+        drawing_api::ColorSource::LinearGradient {
+            start: (100.0, 150.0).into(),
+            end: (350.0, 350.0).into(),
+            colors: vec![
+                Color::rgba(1.0, 0.0, 0.0, 0.75),
+                Color::rgba(1.0, 1.0, 0.0, 0.75),
+            ],
+            stops: vec![0.0, 1.0],
+            tile_mode: drawing_api::TileMode::Mirror,
+            transformation: None,
+        },
+    );
 
     //
     // Filled path
@@ -328,18 +330,20 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.line_to((650.0, 200.0));
     pb.line_to((750.0, 150.0));
     pb.close();
-    let paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
-        start: (500.0, 150.0).into(),
-        end: (750.0, 350.0).into(),
-        colors: vec![
-            Color::rgba(1.0, 0.0, 0.0, 0.75),
-            Color::rgba(1.0, 1.0, 0.0, 0.75),
-        ],
-        stops: vec![0.0, 1.0],
-        tile_mode: drawing_api::TileMode::Mirror,
-        transformation: None,
-    });
-    dlb.draw_path(&pb.build().unwrap(), &paint);
+    dlb.draw_path(
+        &pb.build().unwrap(),
+        drawing_api::ColorSource::LinearGradient {
+            start: (500.0, 150.0).into(),
+            end: (750.0, 350.0).into(),
+            colors: vec![
+                Color::rgba(1.0, 0.0, 0.0, 0.75),
+                Color::rgba(1.0, 1.0, 0.0, 0.75),
+            ],
+            stops: vec![0.0, 1.0],
+            tile_mode: drawing_api::TileMode::Mirror,
+            transformation: None,
+        },
+    );
 
     //
     // Stroke path
@@ -349,7 +353,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.move_to((300.0, 550.0));
     pb.cubic_curve_to((320.0, 250.0), (380.0, 250.0), (500.0, 350.0));
     pb.close();
-    let mut paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
+    let paint = C::Paint::color_source(drawing_api::ColorSource::LinearGradient {
         start: (200.0, 450.0).into(),
         end: (450.0, 650.0).into(),
         colors: vec![
@@ -359,8 +363,8 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
         stops: vec![0.0, 1.0],
         tile_mode: drawing_api::TileMode::Mirror,
         transformation: None,
-    });
-    paint.set_draw_style(drawing_api::DrawStyle::Stroke);
+    })
+    .with_draw_style(drawing_api::DrawStyle::Stroke);
     dlb.draw_path(&pb.build().unwrap(), &paint);
 
     //
@@ -400,7 +404,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     let paint_layer = C::Paint::color((1.0, 1.0, 1.0, 0.5));
     dlb.save_layer(
         rect(200.5, 220.5, 200.0, 50.0),
-        Some(&paint_layer),
+        Some((&paint_layer).into()),
         None,
         /*Some(drawing_api::ImageFilter::Blur {
             x_sigma: 8.0,

@@ -69,6 +69,16 @@ impl Color {
             color_space: ColorSpace::SRGB,
         }
     }
+
+    pub fn with_alpha(mut self, alpha: f32) -> Self {
+        self.alpha = alpha;
+        self
+    }
+
+    pub fn with_color_space(mut self, color_space: ColorSpace) -> Self {
+        self.color_space = color_space;
+        self
+    }
 }
 
 impl From<(f32, f32, f32)> for Color {

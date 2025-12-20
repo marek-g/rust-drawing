@@ -1,4 +1,4 @@
-use crate::{Color, OptRef};
+use crate::{Color, OptRef, Owned};
 
 use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
@@ -123,6 +123,54 @@ pub trait Paint: Default {
     }
 }
 
+impl<P: Paint> From<P> for Owned<P> {
+    fn from(value: P) -> Self {
+        Owned(value)
+    }
+}
+
+impl<P: Paint> From<(f32, f32, f32)> for Owned<P> {
+    fn from(value: (f32, f32, f32)) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<[f32; 3]> for Owned<P> {
+    fn from(value: [f32; 3]) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<(f32, f32, f32, f32)> for Owned<P> {
+    fn from(value: (f32, f32, f32, f32)) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<[f32; 4]> for Owned<P> {
+    fn from(value: [f32; 4]) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<u32> for Owned<P> {
+    fn from(value: u32) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<&str> for Owned<P> {
+    fn from(value: &str) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<ColorSource<P::Texture, P::ColorSourceFragment>> for Owned<P> {
+    fn from(value: ColorSource<P::Texture, P::ColorSourceFragment>) -> Self {
+        Owned(P::color_source(value))
+    }
+}
+
 impl<'a, P: Paint> From<&'a P> for OptRef<'a, P> {
     fn from(value: &'a P) -> Self {
         OptRef::Borrowed(value)
@@ -135,8 +183,44 @@ impl<'a, P: Paint> From<P> for OptRef<'a, P> {
     }
 }
 
+impl<'a, P: Paint> From<(f32, f32, f32)> for OptRef<'a, P> {
+    fn from(value: (f32, f32, f32)) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<[f32; 3]> for OptRef<'a, P> {
+    fn from(value: [f32; 3]) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<(f32, f32, f32, f32)> for OptRef<'a, P> {
+    fn from(value: (f32, f32, f32, f32)) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<[f32; 4]> for OptRef<'a, P> {
+    fn from(value: [f32; 4]) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<u32> for OptRef<'a, P> {
+    fn from(value: u32) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
 impl<'a, P: Paint> From<&str> for OptRef<'a, P> {
     fn from(value: &str) -> Self {
         OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<ColorSource<P::Texture, P::ColorSourceFragment>> for OptRef<'a, P> {
+    fn from(value: ColorSource<P::Texture, P::ColorSourceFragment>) -> Self {
+        OptRef::Owned(P::color_source(value))
     }
 }

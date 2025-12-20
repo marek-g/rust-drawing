@@ -62,12 +62,13 @@ pub trait DisplayListBuilder {
     /// Stashes the current transformation and clip state onto a save stack
     /// and creates and creates an offscreen layer
     /// onto which subsequent rendering intent will be directed to.
-    fn save_layer(
+    fn save_layer<'a>(
         &mut self,
         bounds: impl Into<PixelRect>,
-        paint: Option<&Self::Paint>,
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
         filter: Option<ImageFilter<Self::ImageFilterFragment>>,
-    );
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Gets the current size of the save stack.
     fn get_save_count(&mut self) -> usize;
@@ -88,82 +89,99 @@ pub trait DisplayListBuilder {
         <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a line segment.
-    fn draw_line(
+    fn draw_line<'a>(
         &mut self,
         from: impl Into<PixelPoint>,
         to: impl Into<PixelPoint>,
-        paint: &Self::Paint,
-    );
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a dash line segment.
-    fn draw_dashed_line(
+    fn draw_dashed_line<'a>(
         &mut self,
         from: impl Into<PixelPoint>,
         to: impl Into<PixelPoint>,
         on_length: f32,
         off_length: f32,
-        paint: &Self::Paint,
-    );
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a rectangle.
-    fn draw_rect(&mut self, rect: impl Into<PixelRect>, paint: &Self::Paint);
+    fn draw_rect<'a>(
+        &mut self,
+        rect: impl Into<PixelRect>,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a rounded rectangle.
-    fn draw_rounded_rect(
+    fn draw_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
         radii: &RoundingRadii,
-        paint: &Self::Paint,
-    );
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a shape that is the different between the specified rectangles.
-    fn draw_rounded_rect_difference(
+    fn draw_rounded_rect_difference<'a>(
         &mut self,
         outer_rect: impl Into<PixelRect>,
         outer_radii: &RoundingRadii,
         inner_rect: impl Into<PixelRect>,
         inner_radii: &RoundingRadii,
-        paint: &Self::Paint,
-    );
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws an oval.
-    fn draw_oval(&mut self, oval_bounds: impl Into<PixelRect>, paint: &Self::Paint);
+    fn draw_oval<'a>(
+        &mut self,
+        oval_bounds: impl Into<PixelRect>,
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a path.
-    fn draw_path(
+    fn draw_path<'a>(
         &mut self,
         path: &<Self::PathBuilder as crate::PathBuilder>::Path,
-        paint: &Self::Paint,
-    );
+        paint: impl Into<OptRef<'a, Self::Paint>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a shadow for a Path given a material elevation.
     fn draw_shadow(
         &mut self,
         path: &<Self::PathBuilder as crate::PathBuilder>::Path,
-        color: &Color,
+        color: impl Into<Color>,
         elevation: f32,
         oocluder_is_transparent: bool,
         device_pixel_ratio: f32,
     );
 
     /// Draw a portion of texture at the specified location.
-    fn draw_texture_rect(
+    fn draw_texture_rect<'a>(
         &mut self,
         texture: &Self::Texture,
         src_rect: impl Into<PixelRect>,
         dst_rect: impl Into<PixelRect>,
         sampling: TextureSampling,
-        paint: Option<&Self::Paint>,
-    );
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a texture at the specified point.
-    fn draw_texture(
+    fn draw_texture<'a>(
         &mut self,
         texture: &Self::Texture,
         point: impl Into<PixelPoint>,
         sampling: TextureSampling,
-        paint: Option<&Self::Paint>,
-    );
+        paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
+    ) where
+        <Self as crate::DisplayListBuilder>::Paint: 'a;
 
     /// Draws a paragraph at the specified location.
     fn draw_paragraph(
