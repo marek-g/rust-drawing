@@ -4,7 +4,7 @@
 [![Docs.rs Version](https://docs.rs/drawing/badge.svg)](https://docs.rs/drawing)
 [![Apache-2.0 OR MIT License](https://img.shields.io/crates/l/drawing.svg)](https://github.com/marek-g/rust-drawing/blob/master/LICENSE-APACHE)
 
-API for 2D graphics library.
+Abstraction API for 2D graphics libraries.
 
 ## Introduction
 
@@ -21,7 +21,7 @@ The context creation is not standarized. Can be different depending on the platf
 
 A single context can be used for rendering into multiple windows / targets. This is the recommended way to use this library. It may work with other configurations, but this is not fully tested. Please note that in OpenGL using a single context is not the same as having multiple shared contexts.
 
-It is reference counted, single threaded, mutable object (via interior mutability). In future it may change, for example it may make sense for it to be thread safe.
+It is reference counted, single-threaded for OpenGL and thread safe for Vulkan, mutable object (via interior mutability).
 
 ## Surface
 

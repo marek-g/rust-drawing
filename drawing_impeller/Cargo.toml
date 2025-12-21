@@ -1,9 +1,9 @@
 [package]
 name = "drawing_impeller"
-version = "0.6.0-pre"
+version = "1000.0.0"
 authors = ["Marek Gibek <marek-dev@yandex.com>"]
 description = "Impeller backend for 2D graphics library"
-keywords = ["graphics", "2d", "draw", "canvas", "opengl"]
+keywords = ["graphics", "2d", "draw", "canvas", "opengl", "vulkan"]
 categories = ["graphics", "rendering::graphics-api", "visualization"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/marek-g/rust-drawing"
@@ -12,6 +12,6 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "0.6.0-pre" }
+drawing_api = { path = "../drawing_api", version = "1000" }
 #impellers = { path = "../../impellers/", version = "0.4" }
 impellers = { git = "https://github.com/coderedart/impellers", rev = "2d10dfac53711ed5e1cd8c9c8ec82106714c4b60", version = "0.4" }
