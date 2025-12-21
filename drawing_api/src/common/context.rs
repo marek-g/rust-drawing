@@ -2,9 +2,9 @@ use std::borrow::Cow;
 
 use crate::{Capabilities, ColorSource, GraphicsApi, ImageFilter, TextureDescriptor};
 
-/// An abstraction over graphics context (like OpenGL context).
+/// An abstraction over graphics context (like OpenGL or Vulkan context).
 ///
-/// It is reference counted, single threaded object.
+/// This object contains common methods for all backends.
 pub trait Context: Clone {
     type ColorSourceFragment: crate::ColorSourceFragment;
     type DisplayListBuilder: crate::DisplayListBuilder<

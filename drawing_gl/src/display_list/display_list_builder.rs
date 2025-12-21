@@ -1,4 +1,6 @@
-use drawing_api::{OptRef, PixelPoint, PixelRect, PixelSize, PixelUnit, TextureSampling};
+use drawing_api::{
+    OptRef, PixelPoint, PixelRect, PixelSize, PixelUnit, RoundingRadii, TextureSampling,
+};
 use euclid::Angle;
 
 use crate::{generic::device::convert_color, units::PixelTransform, GlContext, GlTexture};
@@ -155,10 +157,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         //todo!()
     }
 
-    fn clip_rounded_rect(
+    fn clip_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &drawing_api::RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         operation: drawing_api::ClipOperation,
     ) {
         //todo!()
@@ -344,7 +346,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &drawing_api::RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         todo!()
@@ -353,9 +355,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_rounded_rect_difference<'a>(
         &mut self,
         outer_rect: impl Into<PixelRect>,
-        outer_radii: &drawing_api::RoundingRadii,
+        outer_radii: impl Into<OptRef<'a, RoundingRadii>>,
         inner_rect: impl Into<PixelRect>,
-        inner_radii: &drawing_api::RoundingRadii,
+        inner_radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         todo!()

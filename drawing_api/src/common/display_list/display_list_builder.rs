@@ -42,10 +42,10 @@ pub trait DisplayListBuilder {
     fn clip_oval(&mut self, oval_bounds: impl Into<PixelRect>, operation: ClipOperation);
 
     /// Reduces the clip region to the intersection of the current clip and the given rounded rectangle taking into account the clip operation.
-    fn clip_rounded_rect(
+    fn clip_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         operation: ClipOperation,
     );
 
@@ -120,7 +120,7 @@ pub trait DisplayListBuilder {
     fn draw_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) where
         <Self as crate::DisplayListBuilder>::Paint: 'a;
@@ -129,9 +129,9 @@ pub trait DisplayListBuilder {
     fn draw_rounded_rect_difference<'a>(
         &mut self,
         outer_rect: impl Into<PixelRect>,
-        outer_radii: &RoundingRadii,
+        outer_radii: impl Into<OptRef<'a, RoundingRadii>>,
         inner_rect: impl Into<PixelRect>,
-        inner_radii: &RoundingRadii,
+        inner_radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) where
         <Self as crate::DisplayListBuilder>::Paint: 'a;

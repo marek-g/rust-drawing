@@ -1,4 +1,4 @@
-use drawing_api::{OptRef, PixelRect};
+use drawing_api::{OptRef, PixelRect, RoundingRadii};
 
 use super::{
     convert_clip_operation, convert_color, convert_image_filter, convert_matrix, convert_point,
@@ -76,14 +76,14 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         self.display_list_builder.clip_oval(&oval_bounds, operation);
     }
 
-    fn clip_rounded_rect(
+    fn clip_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &drawing_api::RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         operation: drawing_api::ClipOperation,
     ) {
         let rect = convert_rect(&rect.into());
-        let radii = convert_radii(&radii);
+        let radii = convert_radii(&radii.into());
         let operation = convert_clip_operation(&operation);
         self.display_list_builder
             .clip_rounded_rect(&rect, &radii, operation);
@@ -179,13 +179,13 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_rounded_rect<'a>(
         &mut self,
         rect: impl Into<PixelRect>,
-        radii: &drawing_api::RoundingRadii,
+        radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         let paint = paint.into();
         self.display_list_builder.draw_rounded_rect(
             &convert_rect(&rect.into()),
-            &convert_radii(&radii),
+            &convert_radii(&radii.into()),
             &paint.paint,
         );
     }
@@ -193,17 +193,17 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn draw_rounded_rect_difference<'a>(
         &mut self,
         outer_rect: impl Into<PixelRect>,
-        outer_radii: &drawing_api::RoundingRadii,
+        outer_radii: impl Into<OptRef<'a, RoundingRadii>>,
         inner_rect: impl Into<PixelRect>,
-        inner_radii: &drawing_api::RoundingRadii,
+        inner_radii: impl Into<OptRef<'a, RoundingRadii>>,
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         let paint = paint.into();
         self.display_list_builder.draw_rounded_rect_difference(
             &convert_rect(&outer_rect.into()),
-            &convert_radii(&outer_radii),
+            &convert_radii(&outer_radii.into()),
             &convert_rect(&inner_rect.into()),
-            &convert_radii(&inner_radii),
+            &convert_radii(&inner_radii.into()),
             &paint.paint,
         );
     }
