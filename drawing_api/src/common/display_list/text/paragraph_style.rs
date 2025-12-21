@@ -1,7 +1,8 @@
-use crate::Owned;
+use crate::{OptRef, Owned};
 
 use super::{FontStyle, FontWeight, TextAlignment, TextDecoration, TextDirection};
 
+#[derive(Clone)]
 pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub foreground: Option<P>,
     pub background: Option<P>,
@@ -120,5 +121,29 @@ where
     pub fn with_locale(mut self, locale: Option<String>) -> Self {
         self.locale = locale;
         self
+    }
+}
+
+impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>> From<&'a ParagraphStyle<T, P>>
+    for OptRef<'a, ParagraphStyle<T, P>>
+{
+    fn from(value: &'a ParagraphStyle<T, P>) -> Self {
+        OptRef::Borrowed(value)
+    }
+}
+
+impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>> From<ParagraphStyle<T, P>>
+    for OptRef<'a, ParagraphStyle<T, P>>
+{
+    fn from(value: ParagraphStyle<T, P>) -> Self {
+        OptRef::Owned(value)
+    }
+}
+
+impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>, S: Into<String>, P2: Into<Owned<P>>>
+    From<(S, f32, P2)> for OptRef<'a, ParagraphStyle<T, P>>
+{
+    fn from(value: (S, f32, P2)) -> Self {
+        OptRef::Owned(ParagraphStyle::simple(value.0, value.1, value.2))
     }
 }

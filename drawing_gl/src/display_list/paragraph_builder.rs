@@ -1,4 +1,4 @@
-use drawing_api::PixelPoint;
+use drawing_api::{OptRef, PixelPoint};
 
 use crate::{GlContext, GlTexture};
 
@@ -24,11 +24,12 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
         })
     }
 
-    fn push_style(
+    fn push_style<'a>(
         &mut self,
-        style: drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>,
+        style: impl Into<OptRef<'a, drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>>,
     ) {
-        self.styles.push(style);
+        let style = style.into();
+        self.styles.push(style.to_owned());
     }
 
     fn pop_style(&mut self) {

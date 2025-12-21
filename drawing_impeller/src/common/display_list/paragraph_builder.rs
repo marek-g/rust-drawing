@@ -1,3 +1,5 @@
+use drawing_api::OptRef;
+
 use crate::ImpellerTexture;
 
 use super::convert_paragraph_style;
@@ -19,8 +21,11 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
         })
     }
 
-    fn push_style(&mut self, style: drawing_api::ParagraphStyle<ImpellerTexture, crate::Paint>) {
-        let paragraph_style = convert_paragraph_style(&style);
+    fn push_style<'a>(
+        &mut self,
+        style: impl Into<OptRef<'a, drawing_api::ParagraphStyle<ImpellerTexture, crate::Paint>>>,
+    ) {
+        let paragraph_style = convert_paragraph_style(&style.into());
         self.paragraph_builder.push_style(&paragraph_style);
     }
 

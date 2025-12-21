@@ -271,31 +271,31 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     );
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 10.0, "#FFF"));
+    pb.push_style(("F1", 10.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 200.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 12.0, "#FFF"));
+    pb.push_style(("F1", 12.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0, 220.0 - pos_y), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 14.0, "#FFF"));
+    pb.push_style(("F1", 14.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,.\n01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 240.0 + pos_y * 2.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 16.0, "#FFF"));
+    pb.push_style(("F1", 16.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 - pos_y, 260.0), &paragraph);
 
     let mut pb = C::ParagraphBuilder::new(&resources.fonts).unwrap();
-    pb.push_style(ParagraphStyle::simple("F1", 18.0, "#FFF"));
+    pb.push_style(("F1", 18.0, "#FFF"));
     pb.add_text("Hello World!! yyy ąęśżółw,. 01234567890 abcdefghijk ABCDEFGHIJK XYZ xyz");
     let paragraph = pb.build().unwrap();
     dlb.draw_paragraph((350.0 + pos_y, 280.0 + pos_y), &paragraph);

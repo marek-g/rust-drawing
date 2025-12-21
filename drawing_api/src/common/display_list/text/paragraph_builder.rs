@@ -1,3 +1,5 @@
+use crate::OptRef;
+
 use super::ParagraphStyle;
 
 pub trait ParagraphBuilder: Sized {
@@ -8,7 +10,12 @@ pub trait ParagraphBuilder: Sized {
 
     fn new(fonts: &Self::Fonts) -> Result<Self, &'static str>;
 
-    fn push_style(&mut self, style: ParagraphStyle<Self::Texture, Self::Paint>);
+    fn push_style<'a>(
+        &mut self,
+        style: impl Into<OptRef<'a, ParagraphStyle<Self::Texture, Self::Paint>>>,
+    ) where
+        Self::Texture: 'a,
+        Self::Paint: 'a;
 
     fn pop_style(&mut self);
 
