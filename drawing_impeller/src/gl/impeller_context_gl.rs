@@ -12,6 +12,8 @@ pub struct ImpellerContextGl {
 impl drawing_api::Context for ImpellerContextGl {
     type ColorSourceFragment = crate::ColorSourceFragment;
 
+    type DisplayList = crate::DisplayList;
+
     type DisplayListBuilder = crate::DisplayListBuilder;
 
     type Fonts = crate::Fonts;

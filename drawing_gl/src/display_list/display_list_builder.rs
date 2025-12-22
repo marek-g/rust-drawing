@@ -3,7 +3,7 @@ use drawing_api::{
 };
 use euclid::Angle;
 
-use crate::{generic::device::convert_color, units::PixelTransform, GlContext, GlTexture};
+use crate::{generic::device::convert_color, units::PixelTransform, GlTexture};
 
 use super::{ImageFilterFragment, PathElement, Primitive};
 
@@ -27,10 +27,7 @@ enum StackElement {
 }
 
 pub struct DisplayListBuilder {
-    display_list_stack: Vec<(
-        StackElement,
-        Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>,
-    )>,
+    display_list_stack: Vec<(StackElement, crate::display_list::DisplayList)>,
 }
 
 impl DisplayListBuilder {
@@ -74,7 +71,7 @@ impl DisplayListBuilder {
 }
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
-    type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>;
+    type DisplayList = crate::display_list::DisplayList;
     type ImageFilterFragment = crate::display_list::ImageFilterFragment;
     type Paint = crate::Paint;
     type ParagraphBuilder = crate::display_list::ParagraphBuilder;
@@ -83,7 +80,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn new(bounds: impl Into<Option<PixelRect>>) -> Self {
         Self {
-            display_list_stack: vec![(StackElement::Start, Vec::new())],
+            display_list_stack: vec![(
+                StackElement::Start,
+                crate::display_list::DisplayList::new(),
+            )],
         }
     }
 
@@ -92,7 +92,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             StackElement::Transform {
                 transform: PixelTransform::identity().then_scale(x_scale, y_scale),
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
@@ -101,7 +101,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             StackElement::Transform {
                 transform: PixelTransform::identity().then_rotate(Angle::degrees(angle_degrees)),
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
@@ -116,7 +116,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     y_translation,
                 )),
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
@@ -145,7 +145,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     PixelSize::new(rect.size.width, rect.size.height),
                 ),
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
@@ -175,13 +175,15 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             StackElement::ClipPath {
                 path: path.path.to_vec(),
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
     fn save(&mut self) {
-        self.display_list_stack
-            .push((StackElement::RestorePoint, Vec::new()));
+        self.display_list_stack.push((
+            StackElement::RestorePoint,
+            crate::display_list::DisplayList::new(),
+        ));
     }
 
     fn save_layer<'a>(
@@ -190,8 +192,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
         filter: Option<drawing_api::ImageFilter<ImageFilterFragment>>,
     ) {
-        self.display_list_stack
-            .push((StackElement::RestorePoint, Vec::new()));
+        self.display_list_stack.push((
+            StackElement::RestorePoint,
+            crate::display_list::DisplayList::new(),
+        ));
         let paint = paint.into();
         self.display_list_stack.push((
             StackElement::Layer {
@@ -199,7 +203,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                 paint: paint.map(|p| p.to_owned()),
                 filter,
             },
-            Vec::new(),
+            crate::display_list::DisplayList::new(),
         ));
     }
 
@@ -223,7 +227,8 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
-                        .append(&mut stack_el.1);
+                        .display_list
+                        .append(&mut stack_el.1.display_list);
                     return;
                 }
 
@@ -232,9 +237,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
+                        .display_list
                         .push(Primitive::Transform {
                             transform,
-                            primitives: stack_el.1,
+                            primitives: stack_el.1.display_list,
                         });
                 }
 
@@ -243,9 +249,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
+                        .display_list
                         .push(Primitive::ClipRect {
                             rect,
-                            primitives: stack_el.1,
+                            primitives: stack_el.1.display_list,
                         });
                 }
 
@@ -254,9 +261,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
+                        .display_list
                         .push(Primitive::ClipPath {
                             path,
-                            primitives: stack_el.1,
+                            primitives: stack_el.1.display_list,
                         });
                 }
 
@@ -269,11 +277,12 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
+                        .display_list
                         .push(Primitive::Composite {
                             color: paint
                                 .map(|p| p.color)
                                 .unwrap_or([0.0f32, 0.0f32, 0.0f32, 1.0f32]),
-                            primitives: stack_el.1,
+                            primitives: stack_el.1.display_list,
                         });
                 }
             }
@@ -287,6 +296,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .last_mut()
             .unwrap()
             .1
+            .display_list
             .push(Primitive::Clear { color: paint.color });
     }
 
@@ -303,6 +313,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .last_mut()
             .unwrap()
             .1
+            .display_list
             .push(Primitive::Line {
                 color: paint.color,
                 thickness: 1.0f32,
@@ -334,6 +345,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .last_mut()
             .unwrap()
             .1
+            .display_list
             .push(Primitive::Rectangle {
                 color: paint.color,
                 rect: PixelRect::new(
@@ -378,32 +390,33 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let paint = paint.into();
         match paint.draw_style {
-            drawing_api::DrawStyle::Fill => {
-                self.display_list_stack
-                    .last_mut()
-                    .unwrap()
-                    .1
-                    .push(Primitive::Fill {
-                        path: path.path.to_vec(),
-                        brush: DisplayListBuilder::paint_to_brush(&paint),
-                    })
-            }
-            drawing_api::DrawStyle::Stroke => {
-                self.display_list_stack
-                    .last_mut()
-                    .unwrap()
-                    .1
-                    .push(Primitive::Stroke {
-                        path: path.path.to_vec(),
-                        thickness: paint.stroke_width.max(1.0f32),
-                        brush: DisplayListBuilder::paint_to_brush(&paint),
-                    })
-            }
+            drawing_api::DrawStyle::Fill => self
+                .display_list_stack
+                .last_mut()
+                .unwrap()
+                .1
+                .display_list
+                .push(Primitive::Fill {
+                    path: path.path.to_vec(),
+                    brush: DisplayListBuilder::paint_to_brush(&paint),
+                }),
+            drawing_api::DrawStyle::Stroke => self
+                .display_list_stack
+                .last_mut()
+                .unwrap()
+                .1
+                .display_list
+                .push(Primitive::Stroke {
+                    path: path.path.to_vec(),
+                    thickness: paint.stroke_width.max(1.0f32),
+                    brush: DisplayListBuilder::paint_to_brush(&paint),
+                }),
             drawing_api::DrawStyle::StrokeAndFill => {
                 self.display_list_stack
                     .last_mut()
                     .unwrap()
                     .1
+                    .display_list
                     .push(Primitive::Fill {
                         path: path.path.to_vec(),
                         brush: DisplayListBuilder::paint_to_brush(&paint),
@@ -412,6 +425,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                     .last_mut()
                     .unwrap()
                     .1
+                    .display_list
                     .push(Primitive::Stroke {
                         path: path.path.to_vec(),
                         thickness: paint.stroke_width.max(1.0f32),
@@ -456,6 +470,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             .last_mut()
             .unwrap()
             .1
+            .display_list
             .push(Primitive::Image {
                 texture: texture.clone(),
                 rect: dst_rect,
@@ -487,6 +502,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
                         .last_mut()
                         .unwrap()
                         .1
+                        .display_list
                         .push(Primitive::Text {
                             fonts: fonts.clone(),
                             family_name: family_name.clone(),

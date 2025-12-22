@@ -4,6 +4,9 @@ pub use color_source_fragment::*;
 mod conversion;
 use conversion::*;
 
+mod display_list;
+pub use display_list::*;
+
 mod display_list_builder;
 pub use display_list_builder::*;
 

@@ -7,7 +7,9 @@ use crate::{Capabilities, ColorSource, GraphicsApi, ImageFilter, TextureDescript
 /// This object contains common methods for all backends.
 pub trait Context: Clone {
     type ColorSourceFragment: crate::ColorSourceFragment;
+    type DisplayList: crate::DisplayList;
     type DisplayListBuilder: crate::DisplayListBuilder<
+        DisplayList = Self::DisplayList,
         ImageFilterFragment = Self::ImageFilterFragment,
         Paint = Self::Paint,
         ParagraphBuilder = Self::ParagraphBuilder,
@@ -28,9 +30,7 @@ pub trait Context: Clone {
         Fonts = Self::Fonts,
     >;
     type PathBuilder: crate::PathBuilder;
-    type Surface: crate::Surface<
-        DisplayList = <Self::DisplayListBuilder as crate::DisplayListBuilder>::DisplayList,
-    >;
+    type Surface: crate::Surface<DisplayList = Self::DisplayList>;
     type Texture: crate::Texture;
 
     /// Gets implementation capabilities depending on graphics API.

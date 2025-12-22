@@ -3,10 +3,10 @@ pub struct ImpellerSurface {
 }
 
 impl drawing_api::Surface for ImpellerSurface {
-    type DisplayList = impellers::DisplayList;
+    type DisplayList = crate::DisplayList;
 
     fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str> {
-        self.surface.draw_display_list(display_list)
+        self.surface.draw_display_list(&display_list.display_list)
     }
 
     fn present(self) -> Result<(), &'static str> {

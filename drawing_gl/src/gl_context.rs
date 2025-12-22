@@ -673,6 +673,7 @@ impl Device for GlContext {
 
 impl Context for GlContext {
     type ColorSourceFragment = crate::display_list::ColorSourceFragment;
+    type DisplayList = crate::display_list::DisplayList;
     type DisplayListBuilder = crate::DisplayListBuilder;
     type Fonts = crate::Fonts<GlContext>;
     type FragmentProgram = crate::GlFragmentProgram;

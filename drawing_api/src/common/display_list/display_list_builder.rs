@@ -3,7 +3,7 @@ use crate::{Matrix, OptRef, PixelPoint, PixelRect};
 use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 
 pub trait DisplayListBuilder {
-    type DisplayList: Send + Sync + Clone;
+    type DisplayList: crate::DisplayList;
     type ImageFilterFragment: crate::ImageFilterFragment;
     type Paint: crate::Paint;
     type ParagraphBuilder: crate::ParagraphBuilder;

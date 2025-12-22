@@ -11,9 +11,9 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "1000" }
+drawing_api = { path = "../drawing_api", version = "1001" }
 euclid = "0.22"
-drawing_gl = { path = "../drawing_gl", version = "0.6" }
+drawing_gl = { path = "../drawing_gl", version = "0.7" }
 drawing_impeller = { path = "../drawing_impeller", version = "1000" }
 windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.17" }
 #impellers = { path = "../../impellers/", version = "0.4", features = ["static_link"] }

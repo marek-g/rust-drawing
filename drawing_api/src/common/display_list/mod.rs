@@ -1,6 +1,9 @@
 mod clip_operation;
 pub use clip_operation::*;
 
+mod display_list;
+pub use display_list::*;
+
 mod display_list_builder;
 pub use display_list_builder::*;
 

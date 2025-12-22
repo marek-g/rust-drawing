@@ -1,7 +1,7 @@
 /// A surface represents a render target.
 /// That can be usually a window or a texture.
 pub trait Surface {
-    type DisplayList;
+    type DisplayList: crate::DisplayList;
 
     /// Draws a display list on the surface.
     fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str>;

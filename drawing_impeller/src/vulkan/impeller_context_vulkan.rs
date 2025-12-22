@@ -19,6 +19,8 @@ unsafe impl Sync for ImpellerContextVulkan {}
 impl Context for ImpellerContextVulkan {
     type ColorSourceFragment = crate::ColorSourceFragment;
 
+    type DisplayList = crate::DisplayList;
+
     type DisplayListBuilder = crate::DisplayListBuilder;
 
     type Fonts = crate::Fonts;

@@ -1,7 +1,7 @@
 use crate::generic::device::RenderTarget;
 use crate::generic::renderer::Renderer;
 use crate::units::PixelToDeviceTransform;
-use crate::{GlContext, GlTexture, Primitive};
+use crate::GlContext;
 use drawing_api::ColorFormat;
 use euclid::Vector2D;
 use gl::types::GLuint;
@@ -54,11 +54,11 @@ impl RenderTarget for GlSurface {
 }
 
 impl drawing_api::Surface for GlSurface {
-    type DisplayList = Vec<Primitive<GlTexture, crate::Fonts<GlContext>>>;
+    type DisplayList = crate::display_list::DisplayList;
 
     fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str> {
         let mut renderer = Renderer::new();
-        renderer.draw::<GlContext>(&self, display_list, true)?;
+        renderer.draw::<GlContext>(&self, &display_list.display_list, true)?;
         Ok(())
     }
 

@@ -10,7 +10,7 @@ pub struct DisplayListBuilder {
 }
 
 impl drawing_api::DisplayListBuilder for DisplayListBuilder {
-    type DisplayList = impellers::DisplayList;
+    type DisplayList = crate::DisplayList;
 
     type ImageFilterFragment = crate::ImageFilterFragment;
 
@@ -295,12 +295,15 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_display_list(&mut self, display_list: &Self::DisplayList, opacity: f32) {
         self.display_list_builder
-            .draw_display_list(display_list, opacity);
+            .draw_display_list(&display_list.display_list, opacity);
     }
 
     fn build(mut self) -> Result<Self::DisplayList, &'static str> {
-        self.display_list_builder
-            .build()
-            .ok_or("Cannot build impeller display list")
+        Ok(crate::DisplayList {
+            display_list: self
+                .display_list_builder
+                .build()
+                .ok_or("Cannot build impeller display list")?,
+        })
     }
 }
