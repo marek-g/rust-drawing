@@ -2,7 +2,7 @@ use crate::OptRef;
 
 use super::ParagraphStyle;
 
-pub trait ParagraphBuilder: Sized {
+pub trait ParagraphBuilder: Sized + 'static {
     type Paragraph: crate::Paragraph;
     type Paint: crate::Paint<Texture = Self::Texture>;
     type Fonts: crate::Fonts;

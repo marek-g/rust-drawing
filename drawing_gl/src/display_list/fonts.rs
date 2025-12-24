@@ -8,11 +8,11 @@ use crate::generic::{
     texture_font::{Font, TextureFont},
 };
 
-pub(crate) struct FontsData<D: Device> {
+pub(crate) struct FontsData<D: Device + 'static> {
     pub fonts: HashMap<String, TextureFont<D>>,
 }
 
-pub struct Fonts<D: Device> {
+pub struct Fonts<D: Device + 'static> {
     pub(crate) data: Arc<Mutex<FontsData<D>>>,
 }
 

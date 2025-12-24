@@ -5,7 +5,7 @@ use crate::{Capabilities, ColorSource, GraphicsApi, ImageFilter, TextureDescript
 /// An abstraction over graphics context (like OpenGL or Vulkan context).
 ///
 /// This object contains common methods for all backends.
-pub trait Context: Clone {
+pub trait Context: Clone + 'static {
     type ColorSourceFragment: crate::ColorSourceFragment;
     type DisplayList: crate::DisplayList;
     type DisplayListBuilder: crate::DisplayListBuilder<

@@ -1,6 +1,6 @@
 /// A surface represents a render target.
 /// That can be usually a window or a texture.
-pub trait Surface {
+pub trait Surface: 'static {
     type DisplayList: crate::DisplayList;
 
     /// Draws a display list on the surface.

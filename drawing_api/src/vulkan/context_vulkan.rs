@@ -4,7 +4,7 @@ use crate::Context;
 
 use super::ContextVulkanInfo;
 
-pub trait ContextVulkan: Context + Send + Sync + Clone {
+pub trait ContextVulkan: Context + Send + Sync + Clone + 'static {
     type VulkanSwapchain: crate::VulkanSwapchain;
 
     /// Creates a Vulkan context.

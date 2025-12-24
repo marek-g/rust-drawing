@@ -11,7 +11,7 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "1001" }
+drawing_api = { path = "../drawing_api", version = "1002" }
 euclid = "0.22"
 drawing_gl = { path = "../drawing_gl", version = "0.7" }
 drawing_impeller = { path = "../drawing_impeller", version = "1000" }

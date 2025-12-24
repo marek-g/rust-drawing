@@ -2,7 +2,7 @@ use crate::{PixelPoint, PixelRect, RoundingRadii};
 
 use super::FillType;
 
-pub trait PathBuilder: Default {
+pub trait PathBuilder: Default + 'static {
     type Path: crate::Path;
 
     /// Sets the fill type.

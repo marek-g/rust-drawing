@@ -1,4 +1,4 @@
-pub trait LineMetrics {
+pub trait LineMetrics: 'static {
     fn get_unscaled_ascent(&self, line: usize) -> f64;
 
     fn get_ascent(&self, line: usize) -> f64;

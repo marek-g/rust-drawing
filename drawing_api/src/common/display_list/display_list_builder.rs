@@ -2,7 +2,7 @@ use crate::{Matrix, OptRef, PixelPoint, PixelRect};
 
 use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 
-pub trait DisplayListBuilder {
+pub trait DisplayListBuilder: 'static {
     type DisplayList: crate::DisplayList;
     type ImageFilterFragment: crate::ImageFilterFragment;
     type Paint: crate::Paint;

@@ -4,7 +4,7 @@ use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,
 };
 
-pub trait Paint: Default {
+pub trait Paint: Default + 'static {
     type ColorSourceFragment: crate::ColorSourceFragment;
     type ImageFilterFragment: crate::ImageFilterFragment;
     type Texture: crate::Texture;

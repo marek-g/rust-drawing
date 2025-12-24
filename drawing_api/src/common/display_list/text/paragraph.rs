@@ -1,6 +1,6 @@
 use super::Range;
 
-pub trait Paragraph {
+pub trait Paragraph: 'static {
     type GlyphInfo: crate::GlyphInfo;
     type LineMetrics: crate::LineMetrics;
 

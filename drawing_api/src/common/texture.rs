@@ -4,7 +4,7 @@ use crate::ColorFormat;
 
 /// Represents an image whose data is resident in GPU memory.
 /// Reference counted, thread safe, immutable object.
-pub trait Texture: Sized + Sync + Send + Clone {
+pub trait Texture: Sized + Sync + Send + Clone + 'static {
     /// Returns descriptor of the texture.
     fn get_descriptor(&self) -> TextureDescriptor;
 

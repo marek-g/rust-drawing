@@ -1,5 +1,5 @@
 use crate::PixelRect;
 
-pub trait Path {
+pub trait Path: 'static {
     fn get_bounds(&self) -> PixelRect;
 }

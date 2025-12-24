@@ -1,1 +1,1 @@
-pub trait DisplayList: Send + Sync + Clone {}
+pub trait DisplayList: Send + Sync + Clone + 'static {}

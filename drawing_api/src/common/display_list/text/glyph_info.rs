@@ -2,7 +2,7 @@ use crate::PixelRect;
 
 use super::TextDirection;
 
-pub trait GlyphInfo {
+pub trait GlyphInfo: 'static {
     fn get_grapheme_cluster_code_unit_range_begin_utf16(&self) -> usize;
 
     fn get_grapheme_cluster_code_unit_range_end_utf16(&self) -> usize;
