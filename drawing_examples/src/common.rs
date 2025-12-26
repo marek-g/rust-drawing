@@ -196,7 +196,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.line_to((300.0, 550.0));
     pb.line_to((100.0, 550.0));
     dlb.draw_path(
-        &pb.build().unwrap(),
+        &pb.build(),
         drawing_api::ColorSource::Image {
             image: resources.image2.clone(),
             horizontal_tile_mode: drawing_api::TileMode::Repeat,
@@ -304,7 +304,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.move_to((100.0, 350.0));
     pb.cubic_curve_to((120.0, 50.0), (180.0, 50.0), (300.0, 150.0));
     dlb.draw_path(
-        &pb.build().unwrap(),
+        &pb.build(),
         drawing_api::ColorSource::LinearGradient {
             start: (100.0, 150.0).into(),
             end: (350.0, 350.0).into(),
@@ -331,7 +331,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
     pb.line_to((750.0, 150.0));
     pb.close();
     dlb.draw_path(
-        &pb.build().unwrap(),
+        &pb.build(),
         drawing_api::ColorSource::LinearGradient {
             start: (500.0, 150.0).into(),
             end: (750.0, 350.0).into(),
@@ -365,7 +365,7 @@ fn draw<C: drawing_api::ContextGl>(gl_window: &mut GlWindow<C>, resources: &Reso
         transformation: None,
     })
     .with_draw_style(drawing_api::DrawStyle::Stroke);
-    dlb.draw_path(&pb.build().unwrap(), &paint);
+    dlb.draw_path(&pb.build(), &paint);
 
     //
     // Clipping & transformation test

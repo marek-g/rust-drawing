@@ -72,9 +72,9 @@ pub trait PathBuilder: Default + 'static {
     fn close(&mut self);
 
     /// Builds the path.
-    fn build(self) -> Result<Self::Path, &'static str>;
+    fn build(self) -> Self::Path;
 
     /// Create a new path by copying the existing built-up path.
     /// The existing path can continue being added to.
-    fn build_copy(&mut self) -> Result<Self::Path, &'static str>;
+    fn build_copy(&mut self) -> Self::Path;
 }

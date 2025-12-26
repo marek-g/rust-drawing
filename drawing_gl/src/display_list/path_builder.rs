@@ -76,17 +76,17 @@ impl drawing_api::PathBuilder for PathBuilder {
         self.path.push(PathElement::ClosePath);
     }
 
-    fn build(self) -> Result<Self::Path, &'static str> {
-        Ok(super::Path {
+    fn build(self) -> Self::Path {
+        super::Path {
             path: self.path,
             fill_type: self.fill_type,
-        })
+        }
     }
 
-    fn build_copy(&mut self) -> Result<Self::Path, &'static str> {
-        Ok(super::Path {
+    fn build_copy(&mut self) -> Self::Path {
+        super::Path {
             path: self.path.clone(),
             fill_type: self.fill_type,
-        })
+        }
     }
 }

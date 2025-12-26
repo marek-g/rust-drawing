@@ -83,15 +83,15 @@ impl drawing_api::PathBuilder for PathBuilder {
         self.path_builder.close();
     }
 
-    fn build(mut self) -> Result<Self::Path, &'static str> {
-        Ok(crate::Path {
+    fn build(mut self) -> Self::Path {
+        crate::Path {
             path: self.path_builder.take_path_new(self.fill_type),
-        })
+        }
     }
 
-    fn build_copy(&mut self) -> Result<Self::Path, &'static str> {
-        Ok(crate::Path {
+    fn build_copy(&mut self) -> Self::Path {
+        crate::Path {
             path: self.path_builder.copy_path_new(self.fill_type),
-        })
+        }
     }
 }
