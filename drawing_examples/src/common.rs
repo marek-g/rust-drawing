@@ -12,7 +12,7 @@ use rust_embed::RustEmbed;
 #[folder = "assets/"]
 struct Assets;
 
-pub struct GlWindow<C: drawing_api::Context> {
+pub struct GlWindow<C: drawing_api::DrawingContext> {
     pub window: windowing_qt::Window,
     pub gl_context: Option<C>,
 
@@ -23,7 +23,7 @@ pub struct GlWindow<C: drawing_api::Context> {
     pub pos_y: f32,
 }
 
-pub struct Resources<C: drawing_api::Context> {
+pub struct Resources<C: drawing_api::DrawingContext> {
     pub fonts: C::Fonts,
     pub image1: C::Texture,
     pub image2: C::Texture,
@@ -105,7 +105,7 @@ fn register_fonts<F: drawing_api::Fonts>(fonts: &mut F) -> Result<(), &'static s
     )
 }
 
-fn initialize_resources<C: drawing_api::Context>(drawing_context: &C) -> Resources<C> {
+fn initialize_resources<C: drawing_api::DrawingContext>(drawing_context: &C) -> Resources<C> {
     Resources::<C> {
         fonts: C::Fonts::default(),
         image1: create_chessboard(drawing_context, 4, 4),
@@ -113,7 +113,7 @@ fn initialize_resources<C: drawing_api::Context>(drawing_context: &C) -> Resourc
     }
 }
 
-pub fn create_chessboard<C: drawing_api::Context>(
+pub fn create_chessboard<C: drawing_api::DrawingContext>(
     drawing_context: &C,
     w: usize,
     h: usize,

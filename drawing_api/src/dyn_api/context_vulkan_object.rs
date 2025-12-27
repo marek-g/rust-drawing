@@ -2,9 +2,9 @@ use std::os::raw::c_void;
 
 use crate::{ContextVulkan, ContextVulkanInfo};
 
-use super::{ContextObject, VulkanSwapchainObject};
+use super::{DrawingContextObject, VulkanSwapchainObject};
 
-pub trait ContextVulkanObject: ContextObject {
+pub trait ContextVulkanObject: DrawingContextObject {
     /// Gets internal Vulkan handles managed by the given Vulkan context.
     fn get_vulkan_info(&self) -> Result<ContextVulkanInfo, &'static str>;
 

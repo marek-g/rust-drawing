@@ -1,10 +1,10 @@
 use std::os::raw::{c_char, c_void};
 
-use crate::Context;
+use crate::DrawingContext;
 
 use super::ContextVulkanInfo;
 
-pub trait ContextVulkan: Context + Send + Sync + Clone + 'static {
+pub trait ContextVulkan: DrawingContext + Send + Sync + Clone + 'static {
     type VulkanSwapchain: crate::VulkanSwapchain;
 
     /// Creates a Vulkan context.

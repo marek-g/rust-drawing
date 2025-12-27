@@ -1,11 +1,11 @@
 mod capabilities;
 pub use capabilities::*;
 
-mod context;
-pub use context::*;
-
 mod display_list;
 pub use display_list::*;
+
+mod drawing_context;
+pub use drawing_context::*;
 
 mod fragment_program;
 pub use fragment_program::*;

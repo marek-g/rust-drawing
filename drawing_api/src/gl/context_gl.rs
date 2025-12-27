@@ -1,8 +1,8 @@
 use std::os::raw::c_void;
 
-use crate::{ColorFormat, Context, TextureDescriptor};
+use crate::{ColorFormat, DrawingContext, TextureDescriptor};
 
-pub trait ContextGl: Context + Clone + 'static {
+pub trait ContextGl: DrawingContext + Clone + 'static {
     /// Creates an OpenGL context.
     unsafe fn new_gl<F>(loadfn: F) -> Result<Self, &'static str>
     where

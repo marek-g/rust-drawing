@@ -4,9 +4,6 @@ pub use color_source_fragment_object::*;
 mod context_gl_object;
 pub use context_gl_object::*;
 
-mod context_object;
-pub use context_object::*;
-
 mod context_vulkan_object;
 pub use context_vulkan_object::*;
 
@@ -15,6 +12,9 @@ pub use display_list_builder_object::*;
 
 mod display_list_object;
 pub use display_list_object::*;
+
+mod drawing_context_object;
+pub use drawing_context_object::*;
 
 mod fonts_object;
 pub use fonts_object::*;

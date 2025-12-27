@@ -9,7 +9,7 @@ pub struct ImpellerContextGl {
     context: Rc<RefCell<impellers::Context>>,
 }
 
-impl drawing_api::Context for ImpellerContextGl {
+impl drawing_api::DrawingContext for ImpellerContextGl {
     type ColorSourceFragment = crate::ColorSourceFragment;
 
     type DisplayList = crate::DisplayList;

@@ -1,5 +1,5 @@
 use drawing_api::{
-    Capabilities, ColorFormat, Context, ContextGl, PixelPoint, Texture, TextureDescriptor,
+    Capabilities, ColorFormat, ContextGl, DrawingContext, PixelPoint, Texture, TextureDescriptor,
 };
 use euclid::Vector2D;
 use gl::types::*;
@@ -671,7 +671,7 @@ impl Device for GlContext {
     }
 }
 
-impl Context for GlContext {
+impl DrawingContext for GlContext {
     type ColorSourceFragment = crate::display_list::ColorSourceFragment;
     type DisplayList = crate::display_list::DisplayList;
     type DisplayListBuilder = crate::DisplayListBuilder;

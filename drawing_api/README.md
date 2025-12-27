@@ -13,9 +13,9 @@ To draw something, you need to have:
 - surface - points to the destination (window or texture)
 - display list - description what to draw
 
-## Context
+## Drawing Context
 
-Context is an abstraction object over target graphics context (like OpenGL context). The context keeps all the data required for rendering. It is the main object.
+Drawing Context is an abstraction object over target graphics context (like OpenGL context). The context keeps all the data required for rendering. It is the main object.
 
 The context creation is not standarized. Can be different depending on the platform or windowing library. You should first create the context outside of this drawing API and then use drawing API to wrap it.
 

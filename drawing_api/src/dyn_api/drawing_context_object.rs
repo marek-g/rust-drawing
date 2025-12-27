@@ -1,7 +1,7 @@
 use std::{any::Any, borrow::Cow, rc::Rc, sync::Arc};
 
 use crate::{
-    Capabilities, ColorSource, Context, DisplayListBuilder, FragmentProgram, ImageFilter,
+    Capabilities, ColorSource, DisplayListBuilder, DrawingContext, FragmentProgram, ImageFilter,
     ParagraphBuilder, PixelRect, TextureDescriptor,
 };
 
@@ -11,7 +11,7 @@ use super::{
     TextureObject,
 };
 
-pub trait ContextObject {
+pub trait DrawingContextObject {
     /// Gets implementation capabilities of the current instance.
     fn get_capabilities(&self) -> Capabilities;
 
@@ -66,7 +66,7 @@ pub trait ContextObject {
     ) -> ImageFilter<Box<dyn ImageFilterFragmentObject>>;
 }
 
-impl<C: Context> ContextObject for C {
+impl<C: DrawingContext> DrawingContextObject for C {
     fn get_capabilities(&self) -> Capabilities {
         self.get_capabilities()
     }

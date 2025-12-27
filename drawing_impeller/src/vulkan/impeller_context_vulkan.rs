@@ -5,7 +5,7 @@ use std::{
 };
 
 use drawing_api::{
-    Capabilities, ColorSource, Context, GraphicsApi, ImageFilter, TextureDescriptor,
+    Capabilities, ColorSource, DrawingContext, GraphicsApi, ImageFilter, TextureDescriptor,
 };
 
 use crate::{ImpellerSurface, ImpellerTexture};
@@ -18,7 +18,7 @@ pub struct ImpellerContextVulkan {
 unsafe impl Send for ImpellerContextVulkan {}
 unsafe impl Sync for ImpellerContextVulkan {}
 
-impl Context for ImpellerContextVulkan {
+impl DrawingContext for ImpellerContextVulkan {
     type ColorSourceFragment = crate::ColorSourceFragment;
 
     type DisplayList = crate::DisplayList;

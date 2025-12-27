@@ -1,8 +1,8 @@
 use crate::{ColorFormat, ContextGl, TextureDescriptor};
 
-use super::{ContextObject, SurfaceObject, TextureObject};
+use super::{DrawingContextObject, SurfaceObject, TextureObject};
 
-pub trait ContextGlObject: ContextObject {
+pub trait ContextGlObject: DrawingContextObject {
     /// Creates a new surface by wrapping an existing OpenGL framebuffer object.
     unsafe fn wrap_gl_framebuffer(
         &mut self,
