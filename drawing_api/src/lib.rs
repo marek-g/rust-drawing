@@ -1,6 +1,4 @@
 mod common;
-use std::ops::Deref;
-
 pub use common::*;
 
 mod gl;
@@ -10,6 +8,10 @@ mod vulkan;
 pub use vulkan::*;
 
 pub mod dyn_api;
+
+use std::ops::Deref;
+
+pub use euclid::*;
 
 /// Represents either an owned or borrowed T.
 /// Useful to pass `T` or `&'a T` to a function when used as `Into<OptRef<'a, T>>`.

@@ -1,6 +1,5 @@
 use crate::{PathElement, Primitive};
 use drawing_api::*;
-use euclid::Point2D;
 
 pub trait Transformation<T>
 where
@@ -38,13 +37,13 @@ impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
                 }
 
                 Primitive::Rectangle { rect, .. } => {
-                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                    <Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
                         rect, offset,
                     );
                 }
 
                 Primitive::Image { rect, .. } => {
-                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                    <Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
                         rect, offset,
                     );
                 }
@@ -58,7 +57,7 @@ impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
                         position, offset,
                     );
                     clipping_rect.as_mut().map(|r| {
-                        <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                        <Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
                             r, offset,
                         )
                     });
@@ -77,7 +76,7 @@ impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
                 }
 
                 Primitive::ClipRect { rect, primitives } => {
-                    <euclid::Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
+                    <Rect<f32, drawing_api::PixelUnit> as Transformation<T>>::translate(
                         rect, offset,
                     );
                     primitives.translate(offset);
@@ -89,8 +88,7 @@ impl<T: Texture, F: Fonts> Transformation<T> for Vec<Primitive<T, F>> {
                 }
 
                 Primitive::Transform { transform, .. } => {
-                    *transform =
-                        transform.then_translate(euclid::Vector2D::new(offset.x, offset.y));
+                    *transform = transform.then_translate(Vector2D::new(offset.x, offset.y));
                 }
 
                 Primitive::Composite { primitives, .. } => primitives.translate(offset),

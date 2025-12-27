@@ -1,5 +1,4 @@
 use drawing_api::*;
-use euclid::Vector2D;
 
 use crate::units::PixelTransform;
 

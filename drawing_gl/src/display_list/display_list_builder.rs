@@ -1,7 +1,7 @@
 use drawing_api::{
-    OptRef, PixelPoint, PixelRect, PixelSize, PixelUnit, RoundingRadii, TextureSampling,
+    Angle, OptRef, PixelPoint, PixelRect, PixelSize, PixelUnit, RoundingRadii, TextureSampling,
+    Vector2D,
 };
-use euclid::Angle;
 
 use crate::{generic::device::convert_color, units::PixelTransform, GlTexture};
 
@@ -108,13 +108,9 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     fn translate(&mut self, x_translation: f32, y_translation: f32) {
         self.display_list_stack.push((
             StackElement::Transform {
-                transform: PixelTransform::identity().then_translate(euclid::Vector2D::<
-                    f32,
-                    PixelUnit,
-                >::new(
-                    x_translation,
-                    y_translation,
-                )),
+                transform: PixelTransform::identity().then_translate(
+                    Vector2D::<f32, PixelUnit>::new(x_translation, y_translation),
+                ),
             },
             crate::display_list::DisplayList::new(),
         ));

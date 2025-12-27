@@ -2,8 +2,7 @@ use crate::generic::device::RenderTarget;
 use crate::generic::renderer::Renderer;
 use crate::units::PixelToDeviceTransform;
 use crate::GlContext;
-use drawing_api::ColorFormat;
-use euclid::Vector2D;
+use drawing_api::{ColorFormat, Vector2D};
 use gl::types::GLuint;
 
 pub struct GlSurface {

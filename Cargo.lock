@@ -252,7 +252,7 @@ dependencies = [
 
 [[package]]
 name = "drawing_api"
-version = "1005.0.0"
+version = "1006.0.0"
 dependencies = [
  "euclid",
 ]
@@ -265,7 +265,6 @@ dependencies = [
  "drawing_api",
  "drawing_gl",
  "drawing_impeller",
- "euclid",
  "gl",
  "impellers",
  "rust-embed",
@@ -279,7 +278,6 @@ dependencies = [
  "bitflags",
  "clamped",
  "drawing_api",
- "euclid",
  "freetype-rs",
  "gl",
  "rawpointer",
