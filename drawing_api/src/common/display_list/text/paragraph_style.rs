@@ -3,7 +3,7 @@ use crate::{OptRef, Owned};
 use super::{FontStyle, FontWeight, TextAlignment, TextDecoration, TextDirection};
 
 #[derive(Clone)]
-pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
+pub struct ParagraphStyle<P> {
     pub foreground: Option<P>,
     pub background: Option<P>,
     pub weight: FontWeight,
@@ -19,7 +19,7 @@ pub struct ParagraphStyle<T: crate::Texture, P: crate::Paint<Texture = T>> {
     pub locale: Option<String>,
 }
 
-impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle<T, P> {
+impl<P: Default> Default for ParagraphStyle<P> {
     fn default() -> Self {
         Self {
             foreground: Some(P::default()),
@@ -39,11 +39,7 @@ impl<T: crate::Texture, P: crate::Paint<Texture = T>> Default for ParagraphStyle
     }
 }
 
-impl<T, P> ParagraphStyle<T, P>
-where
-    T: crate::Texture,
-    P: crate::Paint<Texture = T>,
-{
+impl<P: Default> ParagraphStyle<P> {
     pub fn simple(family: impl Into<String>, size: f32, paint: impl Into<Owned<P>>) -> Self {
         ParagraphStyle {
             foreground: Some(paint.into().0),
@@ -124,24 +120,20 @@ where
     }
 }
 
-impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>> From<&'a ParagraphStyle<T, P>>
-    for OptRef<'a, ParagraphStyle<T, P>>
-{
-    fn from(value: &'a ParagraphStyle<T, P>) -> Self {
+impl<'a, P: Default> From<&'a ParagraphStyle<P>> for OptRef<'a, ParagraphStyle<P>> {
+    fn from(value: &'a ParagraphStyle<P>) -> Self {
         OptRef::Borrowed(value)
     }
 }
 
-impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>> From<ParagraphStyle<T, P>>
-    for OptRef<'a, ParagraphStyle<T, P>>
-{
-    fn from(value: ParagraphStyle<T, P>) -> Self {
+impl<'a, P: Default> From<ParagraphStyle<P>> for OptRef<'a, ParagraphStyle<P>> {
+    fn from(value: ParagraphStyle<P>) -> Self {
         OptRef::Owned(value)
     }
 }
 
-impl<'a, T: crate::Texture, P: crate::Paint<Texture = T>, S: Into<String>, P2: Into<Owned<P>>>
-    From<(S, f32, P2)> for OptRef<'a, ParagraphStyle<T, P>>
+impl<'a, P: Default, S: Into<String>, P2: Into<Owned<P>>> From<(S, f32, P2)>
+    for OptRef<'a, ParagraphStyle<P>>
 {
     fn from(value: (S, f32, P2)) -> Self {
         OptRef::Owned(ParagraphStyle::simple(value.0, value.1, value.2))

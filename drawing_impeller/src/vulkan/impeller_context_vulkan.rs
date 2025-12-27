@@ -4,7 +4,9 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use drawing_api::{Capabilities, ColorSource, Context, ImageFilter, TextureDescriptor};
+use drawing_api::{
+    Capabilities, ColorSource, Context, GraphicsApi, ImageFilter, TextureDescriptor,
+};
 
 use crate::{ImpellerSurface, ImpellerTexture};
 
@@ -39,8 +41,9 @@ impl Context for ImpellerContextVulkan {
 
     type Texture = ImpellerTexture;
 
-    fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
+    fn get_api_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
         let mut capabilities = Capabilities {
+            api: GraphicsApi::OpenGL { major: 3, minor: 1 },
             transformations: true,
             layers: true,
             rect_clipping: true,
@@ -58,6 +61,7 @@ impl Context for ImpellerContextVulkan {
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {
                 if major >= 4 || major == 3 && minor >= 1 {
+                    capabilities.api = GraphicsApi::OpenGL { major: 3, minor: 1 };
                     Some(capabilities)
                 } else {
                     None
@@ -65,8 +69,7 @@ impl Context for ImpellerContextVulkan {
             }
             drawing_api::GraphicsApi::OpenGLES { major, minor: _ } => {
                 if major >= 2 {
-                    capabilities.rect_clipping = false;
-                    capabilities.path_clipping = false;
+                    capabilities.api = GraphicsApi::OpenGLES { major: 2, minor: 0 };
                     Some(capabilities)
                 } else {
                     None
@@ -74,12 +77,17 @@ impl Context for ImpellerContextVulkan {
             }
             drawing_api::GraphicsApi::Vulkan { major, minor } => {
                 if major >= 2 || major == 1 && minor >= 1 {
+                    capabilities.api = GraphicsApi::Vulkan { major: 1, minor: 1 };
                     Some(capabilities)
                 } else {
                     None
                 }
             }
         }
+    }
+
+    fn get_capabilities(&self) -> drawing_api::Capabilities {
+        Self::get_api_capabilities(drawing_api::GraphicsApi::Vulkan { major: 1, minor: 1 }).unwrap()
     }
 
     unsafe fn create_texture(

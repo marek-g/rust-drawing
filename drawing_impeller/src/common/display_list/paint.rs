@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use crate::ImpellerTexture;
 
 use super::{
@@ -6,14 +8,15 @@ use super::{
     ImageFilterFragment,
 };
 
+#[derive(Clone)]
 pub struct Paint {
-    pub(crate) paint: impellers::Paint,
+    pub(crate) paint: Arc<Mutex<impellers::Paint>>,
 }
 
 impl Default for Paint {
     fn default() -> Self {
         Self {
-            paint: impellers::Paint::default(),
+            paint: Arc::new(Mutex::new(impellers::Paint::default())),
         }
     }
 }
@@ -25,15 +28,18 @@ impl drawing_api::Paint for Paint {
 
     fn set_color(&mut self, color: impl Into<drawing_api::Color>) {
         let color = color.into();
-        self.paint.set_color(convert_color(&color));
+        self.paint.lock().unwrap().set_color(convert_color(&color));
     }
 
     fn set_blend_mode(&mut self, blend_mode: drawing_api::BlendMode) {
-        self.paint.set_blend_mode(convert_blend_mode(blend_mode));
+        self.paint
+            .lock()
+            .unwrap()
+            .set_blend_mode(convert_blend_mode(blend_mode));
     }
 
     fn set_draw_style(&mut self, draw_style: drawing_api::DrawStyle) {
-        self.paint.set_draw_style(match draw_style {
+        self.paint.lock().unwrap().set_draw_style(match draw_style {
             drawing_api::DrawStyle::Fill => impellers::DrawStyle::Fill,
             drawing_api::DrawStyle::Stroke => impellers::DrawStyle::Stroke,
             drawing_api::DrawStyle::StrokeAndFill => impellers::DrawStyle::StrokeAndFill,
@@ -41,7 +47,7 @@ impl drawing_api::Paint for Paint {
     }
 
     fn set_stroke_cap(&mut self, cap: drawing_api::StrokeCap) {
-        self.paint.set_stroke_cap(match cap {
+        self.paint.lock().unwrap().set_stroke_cap(match cap {
             drawing_api::StrokeCap::Butt => impellers::StrokeCap::Butt,
             drawing_api::StrokeCap::Round => impellers::StrokeCap::Round,
             drawing_api::StrokeCap::Square => impellers::StrokeCap::Square,
@@ -49,7 +55,7 @@ impl drawing_api::Paint for Paint {
     }
 
     fn set_stroke_join(&mut self, join: drawing_api::StrokeJoin) {
-        self.paint.set_stroke_join(match join {
+        self.paint.lock().unwrap().set_stroke_join(match join {
             drawing_api::StrokeJoin::Miter => impellers::StrokeJoin::Miter,
             drawing_api::StrokeJoin::Round => impellers::StrokeJoin::Round,
             drawing_api::StrokeJoin::Bevel => impellers::StrokeJoin::Bevel,
@@ -57,11 +63,11 @@ impl drawing_api::Paint for Paint {
     }
 
     fn set_stroke_width(&mut self, width: f32) {
-        self.paint.set_stroke_width(width);
+        self.paint.lock().unwrap().set_stroke_width(width);
     }
 
     fn set_stroke_miter(&mut self, miter: f32) {
-        self.paint.set_stroke_miter(miter);
+        self.paint.lock().unwrap().set_stroke_miter(miter);
     }
 
     fn set_color_source(
@@ -162,7 +168,7 @@ impl drawing_api::Paint for Paint {
             ),
             drawing_api::ColorSource::Fragment { color_source } => color_source.color_source,
         };
-        self.paint.set_color_source(&color_source);
+        self.paint.lock().unwrap().set_color_source(&color_source);
     }
 
     fn set_color_filter(&mut self, color_filter: drawing_api::ColorFilter) {
@@ -177,12 +183,12 @@ impl drawing_api::Paint for Paint {
                 impellers::ColorFilter::new_matrix(convert_color_matrix(&color_matrix))
             }
         };
-        self.paint.set_color_filter(&color_filter);
+        self.paint.lock().unwrap().set_color_filter(&color_filter);
     }
 
     fn set_image_filter(&mut self, image_filter: drawing_api::ImageFilter<ImageFilterFragment>) {
         let image_filter = convert_image_filter(image_filter);
-        self.paint.set_image_filter(&image_filter);
+        self.paint.lock().unwrap().set_image_filter(&image_filter);
     }
 
     fn set_mask_filter(&mut self, mask_filter: drawing_api::MaskFilter) {
@@ -197,6 +203,6 @@ impl drawing_api::Paint for Paint {
                 sigma,
             ),
         };
-        self.paint.set_mask_filter(&mask_filter);
+        self.paint.lock().unwrap().set_mask_filter(&mask_filter);
     }
 }

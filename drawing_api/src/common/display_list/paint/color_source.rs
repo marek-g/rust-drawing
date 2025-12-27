@@ -1,9 +1,9 @@
-use crate::{Matrix, PixelPoint, Texture};
+use crate::{Matrix, PixelPoint};
 
-use super::{Color, ColorSourceFragment, TextureSampling, TileMode};
+use super::{Color, TextureSampling, TileMode};
 
 #[derive(Debug, Clone)]
-pub enum ColorSource<T: Texture, F: ColorSourceFragment> {
+pub enum ColorSource<T, F> {
     LinearGradient {
         start: PixelPoint,
         end: PixelPoint,

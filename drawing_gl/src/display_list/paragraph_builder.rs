@@ -1,4 +1,4 @@
-use drawing_api::{OptRef, PixelPoint};
+use drawing_api::{OptRef, ParagraphStyle, PixelPoint};
 
 use crate::{GlContext, GlTexture};
 
@@ -7,7 +7,7 @@ use super::Primitive;
 pub struct ParagraphBuilder {
     fonts: crate::Fonts<GlContext>,
     paragraph: crate::display_list::Paragraph,
-    styles: Vec<drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>,
+    styles: Vec<ParagraphStyle<crate::display_list::Paint>>,
 }
 
 impl drawing_api::ParagraphBuilder for ParagraphBuilder {
@@ -26,7 +26,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
 
     fn push_style<'a>(
         &mut self,
-        style: impl Into<OptRef<'a, drawing_api::ParagraphStyle<GlTexture, crate::display_list::Paint>>>,
+        style: impl Into<OptRef<'a, drawing_api::ParagraphStyle<crate::display_list::Paint>>>,
     ) {
         let style = style.into();
         self.styles.push(style.to_owned());

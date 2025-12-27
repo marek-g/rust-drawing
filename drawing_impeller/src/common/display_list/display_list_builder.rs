@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use drawing_api::{OptRef, PixelRect, RoundingRadii};
 
 use super::{
@@ -110,11 +112,18 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let bounds = convert_rect(&bounds.into());
         let paint = paint.into();
-        self.display_list_builder.save_layer(
-            &bounds,
-            paint.as_ref().map(|p| &p.paint),
-            filter.map(|f| convert_image_filter(f)).as_ref(),
-        );
+        match paint {
+            Some(paint) => self.display_list_builder.save_layer(
+                &bounds,
+                Some(&paint.paint.lock().unwrap()),
+                filter.map(|f| convert_image_filter(f)).as_ref(),
+            ),
+            None => self.display_list_builder.save_layer(
+                &bounds,
+                None,
+                filter.map(|f| convert_image_filter(f)).as_ref(),
+            ),
+        };
     }
 
     fn get_save_count(&mut self) -> usize {
@@ -131,7 +140,8 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
 
     fn draw_paint<'a>(&mut self, paint: impl Into<OptRef<'a, Self::Paint>>) {
         let paint = paint.into();
-        self.display_list_builder.draw_paint(&paint.paint);
+        self.display_list_builder
+            .draw_paint(&paint.paint.lock().unwrap());
     }
 
     fn draw_line<'a>(
@@ -144,7 +154,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         self.display_list_builder.draw_line(
             convert_point(&from.into()),
             convert_point(&to.into()),
-            &paint.paint,
+            &paint.paint.lock().unwrap(),
         );
     }
 
@@ -162,7 +172,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             convert_point(&to.into()),
             on_length,
             off_length,
-            &paint.paint,
+            &paint.paint.lock().unwrap(),
         );
     }
 
@@ -173,7 +183,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let paint = paint.into();
         self.display_list_builder
-            .draw_rect(&convert_rect(&rect.into()), &paint.paint);
+            .draw_rect(&convert_rect(&rect.into()), &paint.paint.lock().unwrap());
     }
 
     fn draw_rounded_rect<'a>(
@@ -186,7 +196,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         self.display_list_builder.draw_rounded_rect(
             &convert_rect(&rect.into()),
             &convert_radii(&radii.into()),
-            &paint.paint,
+            &paint.paint.lock().unwrap(),
         );
     }
 
@@ -204,7 +214,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
             &convert_radii(&outer_radii.into()),
             &convert_rect(&inner_rect.into()),
             &convert_radii(&inner_radii.into()),
-            &paint.paint,
+            &paint.paint.lock().unwrap(),
         );
     }
 
@@ -214,8 +224,10 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         let paint = paint.into();
-        self.display_list_builder
-            .draw_rect(&convert_rect(&oval_bounds.into()), &paint.paint);
+        self.display_list_builder.draw_rect(
+            &convert_rect(&oval_bounds.into()),
+            &paint.paint.lock().unwrap(),
+        );
     }
 
     fn draw_path<'a>(
@@ -225,7 +237,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
     ) {
         let paint = paint.into();
         self.display_list_builder
-            .draw_path(&path.path, &paint.paint);
+            .draw_path(&path.path, &paint.paint.lock().unwrap());
     }
 
     fn draw_shadow(
@@ -255,14 +267,14 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         let paint = paint.into();
         let paint = paint.unwrap_or_else(|| {
             OptRef::Owned(Self::Paint {
-                paint: impellers::Paint::default(),
+                paint: Arc::new(Mutex::new(impellers::Paint::default())),
             })
         });
         self.display_list_builder.draw_texture(
             &texture.texture,
             convert_point(&point.into()),
             convert_texture_sampling(sampling),
-            &paint.paint,
+            &paint.paint.lock().unwrap(),
         );
     }
 
@@ -275,13 +287,22 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: impl Into<Option<OptRef<'a, Self::Paint>>>,
     ) {
         let paint = paint.into();
-        self.display_list_builder.draw_texture_rect(
-            &texture.texture,
-            &convert_rect(&src_rect.into()),
-            &convert_rect(&dst_rect.into()),
-            convert_texture_sampling(sampling),
-            paint.as_ref().map(|p| &p.paint),
-        );
+        match paint {
+            Some(paint) => self.display_list_builder.draw_texture_rect(
+                &texture.texture,
+                &convert_rect(&src_rect.into()),
+                &convert_rect(&dst_rect.into()),
+                convert_texture_sampling(sampling),
+                Some(&paint.paint.lock().unwrap()),
+            ),
+            None => self.display_list_builder.draw_texture_rect(
+                &texture.texture,
+                &convert_rect(&src_rect.into()),
+                &convert_rect(&dst_rect.into()),
+                convert_texture_sampling(sampling),
+                None,
+            ),
+        };
     }
 
     fn draw_paragraph(

@@ -1,9 +1,9 @@
 use crate::Matrix;
 
-use super::{ImageFilterFragment, TextureSampling, TileMode};
+use super::{TextureSampling, TileMode};
 
 #[derive(Clone)]
-pub enum ImageFilter<F: ImageFilterFragment> {
+pub enum ImageFilter<F> {
     Blur {
         x_sigma: f32,
         y_sigma: f32,

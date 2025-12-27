@@ -34,7 +34,10 @@ pub trait Context: Clone + 'static {
     type Texture: crate::Texture;
 
     /// Gets implementation capabilities depending on graphics API.
-    fn get_capabilities(api: GraphicsApi) -> Option<Capabilities>;
+    fn get_api_capabilities(api: GraphicsApi) -> Option<Capabilities>;
+
+    /// Gets implementation capabilities of the current instance.
+    fn get_capabilities(&self) -> Capabilities;
 
     /// Creates a new texture.
     unsafe fn create_texture(

@@ -6,6 +6,6 @@ pub trait Surface: 'static {
     /// Draws a display list on the surface.
     fn draw(&mut self, display_list: &Self::DisplayList) -> Result<(), &'static str>;
 
-    // Present the surface to the underlying window system (for Vulkan).
+    /// Present the surface to the underlying window system (for Vulkan).
     fn present(self) -> Result<(), &'static str>;
 }

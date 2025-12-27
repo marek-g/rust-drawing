@@ -9,6 +9,8 @@ pub use gl::*;
 mod vulkan;
 pub use vulkan::*;
 
+pub mod dyn_api;
+
 /// Represents either an owned or borrowed T.
 /// Useful to pass `T` or `&'a T` to a function when used as `Into<OptRef<'a, T>>`.
 ///

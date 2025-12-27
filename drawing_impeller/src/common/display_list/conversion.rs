@@ -141,14 +141,14 @@ pub fn convert_fill_type(fill_type: drawing_api::FillType) -> impellers::FillTyp
 }
 
 pub fn convert_paragraph_style(
-    style: &drawing_api::ParagraphStyle<crate::ImpellerTexture, crate::Paint>,
+    style: &drawing_api::ParagraphStyle<crate::Paint>,
 ) -> impellers::ParagraphStyle {
     let mut result = impellers::ParagraphStyle::default();
     if let Some(foreground) = &style.foreground {
-        result.set_foreground(&foreground.paint);
+        result.set_foreground(&foreground.paint.lock().unwrap());
     }
     if let Some(background) = &style.background {
-        result.set_background(&background.paint);
+        result.set_background(&background.paint.lock().unwrap());
     }
     result.set_font_weight(convert_font_weight(style.weight));
     result.set_font_style(convert_font_style(style.style));

@@ -6,6 +6,7 @@ pub enum GraphicsApi {
 
 /// Drawing backend capabilities.
 pub struct Capabilities {
+    pub api: GraphicsApi,
     pub transformations: bool,
     pub layers: bool,
     pub rect_clipping: bool,

@@ -10,11 +10,8 @@ pub trait ParagraphBuilder: Sized + 'static {
 
     fn new(fonts: &Self::Fonts) -> Result<Self, &'static str>;
 
-    fn push_style<'a>(
-        &mut self,
-        style: impl Into<OptRef<'a, ParagraphStyle<Self::Texture, Self::Paint>>>,
-    ) where
-        Self::Texture: 'a,
+    fn push_style<'a>(&mut self, style: impl Into<OptRef<'a, ParagraphStyle<Self::Paint>>>)
+    where
         Self::Paint: 'a;
 
     fn pop_style(&mut self);

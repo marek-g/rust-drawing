@@ -684,8 +684,9 @@ impl Context for GlContext {
     type Surface = GlSurface;
     type Texture = GlTexture;
 
-    fn get_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
+    fn get_api_capabilities(api: drawing_api::GraphicsApi) -> Option<drawing_api::Capabilities> {
         let mut capabilities = Capabilities {
+            api: drawing_api::GraphicsApi::OpenGL { major: 3, minor: 1 },
             transformations: true,
             layers: true,
             rect_clipping: true,
@@ -703,6 +704,7 @@ impl Context for GlContext {
         match api {
             drawing_api::GraphicsApi::OpenGL { major, minor } => {
                 if major >= 4 || major == 3 && minor >= 1 {
+                    capabilities.api = drawing_api::GraphicsApi::OpenGL { major: 3, minor: 1 };
                     Some(capabilities)
                 } else {
                     None
@@ -711,6 +713,7 @@ impl Context for GlContext {
             drawing_api::GraphicsApi::OpenGLES { major, minor: _ } => {
                 // TODO: some bugs with stencil buffer?
                 if major >= 2 {
+                    capabilities.api = drawing_api::GraphicsApi::OpenGLES { major: 2, minor: 0 };
                     capabilities.rect_clipping = false;
                     Some(capabilities)
                 } else {
@@ -719,6 +722,11 @@ impl Context for GlContext {
             }
             drawing_api::GraphicsApi::Vulkan { major: _, minor: _ } => None,
         }
+    }
+
+    fn get_capabilities(&self) -> Capabilities {
+        GlContext::get_api_capabilities(drawing_api::GraphicsApi::OpenGLES { major: 2, minor: 0 })
+            .unwrap()
     }
 
     unsafe fn create_texture(
