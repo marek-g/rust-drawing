@@ -252,9 +252,7 @@ dependencies = [
 
 [[package]]
 name = "drawing_api"
-version = "1007.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36cfcc028081b3adfccb69cf7d3ca2d2d22bcab1f6c940700e90e214c8f48847"
+version = "1008.0.0"
 dependencies = [
  "euclid",
 ]
@@ -262,6 +260,8 @@ dependencies = [
 [[package]]
 name = "drawing_api"
 version = "1008.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f06ec5ce64d7537463dd2a63aa56023f49462e20b9729997cdfc089528c3ee4"
 dependencies = [
  "euclid",
 ]
@@ -296,7 +296,7 @@ dependencies = [
 name = "drawing_impeller"
 version = "1000.0.0"
 dependencies = [
- "drawing_api 1007.0.0",
+ "drawing_api 1008.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "impellers",
 ]
 
