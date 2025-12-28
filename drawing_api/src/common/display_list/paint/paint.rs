@@ -129,6 +129,18 @@ impl<P: Paint> From<P> for Owned<P> {
     }
 }
 
+impl<P: Paint> From<Color> for Owned<P> {
+    fn from(value: Color) -> Self {
+        Owned(P::color(value))
+    }
+}
+
+impl<P: Paint> From<&Color> for Owned<P> {
+    fn from(value: &Color) -> Self {
+        Owned(P::color(value.clone()))
+    }
+}
+
 impl<P: Paint> From<(f32, f32, f32)> for Owned<P> {
     fn from(value: (f32, f32, f32)) -> Self {
         Owned(P::color(value))
@@ -180,6 +192,18 @@ impl<'a, P: Paint> From<&'a P> for OptRef<'a, P> {
 impl<'a, P: Paint> From<P> for OptRef<'a, P> {
     fn from(value: P) -> Self {
         OptRef::Owned(value)
+    }
+}
+
+impl<'a, P: Paint> From<Color> for OptRef<'a, P> {
+    fn from(value: Color) -> Self {
+        OptRef::Owned(P::color(value))
+    }
+}
+
+impl<'a, P: Paint> From<&Color> for OptRef<'a, P> {
+    fn from(value: &Color) -> Self {
+        OptRef::Owned(P::color(value.clone()))
     }
 }
 
