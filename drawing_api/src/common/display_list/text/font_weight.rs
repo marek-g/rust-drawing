@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FontWeight {
     Thin,
     ExtraLight,

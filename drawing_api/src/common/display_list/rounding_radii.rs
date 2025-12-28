@@ -1,5 +1,6 @@
 use crate::{OptRef, PixelSize};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct RoundingRadii {
     pub top_left: PixelSize,
     pub bottom_left: PixelSize,

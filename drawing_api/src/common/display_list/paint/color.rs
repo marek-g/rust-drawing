@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Color {
     pub red: f32,
     pub green: f32,
@@ -173,14 +173,14 @@ impl FromStr for Color {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ColorSpace {
     SRGB,
     ExtendedSRGB,
     DisplayP3,
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ColorFormat {
     // for color images, 24-bit color with 8-bit alpha channel
     RGBA,

@@ -1,6 +1,6 @@
 use crate::Color;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct TextDecoration {
     pub types: TextDecorationType,
     pub color: Color,
