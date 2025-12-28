@@ -258,20 +258,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "drawing_api"
-version = "1008.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f06ec5ce64d7537463dd2a63aa56023f49462e20b9729997cdfc089528c3ee4"
-dependencies = [
- "euclid",
-]
-
-[[package]]
 name = "drawing_examples"
 version = "0.6.0"
 dependencies = [
  "cpu-time",
- "drawing_api 1008.0.0",
+ "drawing_api",
  "drawing_gl",
  "drawing_impeller",
  "gl",
@@ -286,7 +277,7 @@ version = "0.7.0"
 dependencies = [
  "bitflags",
  "clamped",
- "drawing_api 1008.0.0",
+ "drawing_api",
  "freetype-rs",
  "gl",
  "rawpointer",
@@ -296,7 +287,7 @@ dependencies = [
 name = "drawing_impeller"
 version = "1000.0.0"
 dependencies = [
- "drawing_api 1008.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drawing_api",
  "impellers",
 ]
 
