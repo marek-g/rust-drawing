@@ -1,4 +1,4 @@
-use crate::{OptRef, PixelSize};
+use crate::{smart_pointers::OptRef, PixelSize};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RoundingRadii {

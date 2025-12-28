@@ -1,6 +1,6 @@
 use std::{borrow::Cow, cell::RefCell, ptr::null_mut, rc::Rc};
 
-use drawing_api::{rect, Angle, Vector3D};
+use drawing_api::euclid::{rect, Angle, Vector3D};
 use drawing_api::{
     Color, DisplayListBuilder, Matrix, Paint, ParagraphBuilder, ParagraphStyle, PathBuilder,
     Surface, TextureDescriptor, TextureSampling,

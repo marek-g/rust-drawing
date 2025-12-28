@@ -1,4 +1,4 @@
-use drawing_api::OptRef;
+use drawing_api::smart_pointers::OptRef;
 
 use super::convert_paragraph_style;
 

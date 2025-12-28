@@ -1,4 +1,4 @@
-use drawing_api::{PixelUnit, Transform2D};
+use drawing_api::{euclid::Transform2D, PixelUnit};
 
 // backend device specific unit (for example in range -1.0 .. 1.0 for OpenGL and Direct3D)
 #[derive(Hash, Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]

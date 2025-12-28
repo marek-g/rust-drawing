@@ -1,4 +1,7 @@
-use crate::{Color, OptRef, Owned};
+use crate::{
+    smart_pointers::{OptRef, Owned},
+    Color,
+};
 
 use super::{
     BlendMode, ColorFilter, ColorSource, DrawStyle, ImageFilter, MaskFilter, StrokeCap, StrokeJoin,

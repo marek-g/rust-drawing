@@ -1,4 +1,4 @@
-use crate::{OptRef, Owned};
+use crate::smart_pointers::{OptRef, Owned};
 
 use super::{FontStyle, FontWeight, TextAlignment, TextDecoration, TextDirection};
 

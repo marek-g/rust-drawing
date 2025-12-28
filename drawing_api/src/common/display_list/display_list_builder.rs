@@ -1,4 +1,4 @@
-use crate::{Matrix, OptRef, PixelPoint, PixelRect};
+use crate::{smart_pointers::OptRef, Matrix, PixelPoint, PixelRect};
 
 use super::{ClipOperation, Color, ImageFilter, RoundingRadii, TextureSampling};
 

@@ -1,6 +1,6 @@
 use drawing_api::{
-    Capabilities, ColorFormat, ContextGl, DrawingContext, PixelPoint, Texture, TextureDescriptor,
-    Vector2D,
+    euclid::Vector2D, Capabilities, ColorFormat, ContextGl, DrawingContext, PixelPoint, Texture,
+    TextureDescriptor,
 };
 use gl::types::*;
 use std::{borrow::Cow, cell::RefCell, os::raw::c_void, rc::Rc, sync::Arc};

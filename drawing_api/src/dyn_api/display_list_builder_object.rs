@@ -1,8 +1,8 @@
 use std::any::Any;
 
 use crate::{
-    ClipOperation, Color, DisplayListBuilder, ImageFilter, Matrix, OptRef, PixelPoint, PixelRect,
-    RoundingRadii, TextureSampling,
+    smart_pointers::OptRef, ClipOperation, Color, DisplayListBuilder, ImageFilter, Matrix,
+    PixelPoint, PixelRect, RoundingRadii, TextureSampling,
 };
 
 use super::{

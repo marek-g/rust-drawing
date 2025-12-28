@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use drawing_api::{OptRef, PixelRect, RoundingRadii};
+use drawing_api::{smart_pointers::OptRef, PixelRect, RoundingRadii};
 
 use super::{
     convert_clip_operation, convert_color, convert_image_filter, convert_matrix, convert_point,

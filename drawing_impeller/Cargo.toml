@@ -12,7 +12,7 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api/", version = "1008" }
+drawing_api = { path = "../drawing_api/", version = "1009" }
 #drawing_api = "1008"
 #impellers = { path = "../../impellers/", version = "0.4" }
 impellers = { git = "https://github.com/coderedart/impellers", rev = "2d10dfac53711ed5e1cd8c9c8ec82106714c4b60", version = "0.4" }

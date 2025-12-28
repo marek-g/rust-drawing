@@ -26,7 +26,7 @@ impl Scissor {
         let width = rect.size.width.max(0.0);
         let height = rect.size.height.max(0.0);
         Scissor {
-            xform: PixelTransform::identity().then_translate(Vector2D::new(
+            xform: PixelTransform::identity().then_translate(euclid::Vector2D::new(
                 rect.origin.x + width * 0.5f32,
                 rect.origin.y + height * 0.5f32,
             )),

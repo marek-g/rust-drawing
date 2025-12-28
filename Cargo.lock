@@ -252,7 +252,7 @@ dependencies = [
 
 [[package]]
 name = "drawing_api"
-version = "1008.0.0"
+version = "1009.0.0"
 dependencies = [
  "euclid",
 ]

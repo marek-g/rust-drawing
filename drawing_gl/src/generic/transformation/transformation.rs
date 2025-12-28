@@ -1,5 +1,8 @@
 use crate::{PathElement, Primitive};
-use drawing_api::*;
+use drawing_api::{
+    euclid::{Point2D, Rect, Vector2D},
+    *,
+};
 
 pub trait Transformation<T>
 where

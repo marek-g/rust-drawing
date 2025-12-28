@@ -1,4 +1,4 @@
-use drawing_api::{OptRef, ParagraphStyle, PixelPoint};
+use drawing_api::{smart_pointers::OptRef, ParagraphStyle, PixelPoint};
 
 use crate::{GlContext, GlTexture};
 

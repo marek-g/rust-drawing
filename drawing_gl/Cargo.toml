@@ -12,7 +12,7 @@ readme = "README.md"
 edition = "2024"
 
 [dependencies]
-drawing_api = { path = "../drawing_api", version = "1008" }
+drawing_api = { path = "../drawing_api", version = "1009" }
 gl = "0.14"
 rawpointer = "0.2"
 clamped = "1.0"

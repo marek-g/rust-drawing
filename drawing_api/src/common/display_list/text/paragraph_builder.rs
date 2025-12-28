@@ -1,4 +1,4 @@
-use crate::OptRef;
+use crate::smart_pointers::OptRef;
 
 use super::ParagraphStyle;
 

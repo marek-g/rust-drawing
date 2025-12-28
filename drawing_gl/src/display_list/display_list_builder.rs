@@ -1,6 +1,7 @@
 use drawing_api::{
-    Angle, OptRef, PixelPoint, PixelRect, PixelSize, PixelUnit, RoundingRadii, TextureSampling,
-    Vector2D,
+    euclid::{Angle, Vector2D},
+    smart_pointers::OptRef,
+    PixelPoint, PixelRect, PixelSize, PixelUnit, RoundingRadii, TextureSampling,
 };
 
 use crate::{generic::device::convert_color, units::PixelTransform, GlTexture};
