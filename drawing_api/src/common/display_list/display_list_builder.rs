@@ -158,7 +158,7 @@ pub trait DisplayListBuilder: 'static {
         path: &<Self::PathBuilder as crate::PathBuilder>::Path,
         color: impl Into<Color>,
         elevation: f32,
-        oocluder_is_transparent: bool,
+        occluder_is_transparent: bool,
         device_pixel_ratio: f32,
     );
 

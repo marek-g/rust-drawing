@@ -436,7 +436,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
         color: impl Into<drawing_api::Color>,
         elevation: f32,
-        oocluder_is_transparent: bool,
+        occluder_is_transparent: bool,
         device_pixel_ratio: f32,
     ) {
         todo!()

@@ -245,14 +245,14 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         path: &<Self::PathBuilder as drawing_api::PathBuilder>::Path,
         color: impl Into<drawing_api::Color>,
         elevation: f32,
-        oocluder_is_transparent: bool,
+        occluder_is_transparent: bool,
         device_pixel_ratio: f32,
     ) {
         self.display_list_builder.draw_shadow(
             &path.path,
             &convert_color(&color.into()),
             elevation,
-            oocluder_is_transparent,
+            occluder_is_transparent,
             device_pixel_ratio,
         );
     }
