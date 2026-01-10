@@ -18,7 +18,8 @@ impl drawing_api::GlyphInfo for GlyphInfo {
     fn get_grapheme_cluster_bounds(&self) -> drawing_api::PixelRect {
         let rect = self.glyph_info.get_grapheme_cluster_bounds();
         drawing_api::PixelRect::new(
-            PixelPoint::new(rect.origin.x, rect.origin.y),
+            // TODO: a bug in impeller - x & y are swapped (?!)
+            PixelPoint::new(rect.origin.y, rect.origin.x),
             PixelSize::new(rect.size.width, rect.size.height),
         )
     }
