@@ -224,7 +224,7 @@ impl drawing_api::DisplayListBuilder for DisplayListBuilder {
         paint: impl Into<OptRef<'a, Self::Paint>>,
     ) {
         let paint = paint.into();
-        self.display_list_builder.draw_rect(
+        self.display_list_builder.draw_oval(
             &convert_rect(&oval_bounds.into()),
             &paint.paint.lock().unwrap(),
         );
