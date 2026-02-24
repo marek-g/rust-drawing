@@ -54,7 +54,7 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
         });
     }
 
-    fn build(self) -> Result<Self::Paragraph, &'static str> {
+    fn build(self, width: f32) -> Result<Self::Paragraph, &'static str> {
         Ok(self.paragraph)
     }
 }

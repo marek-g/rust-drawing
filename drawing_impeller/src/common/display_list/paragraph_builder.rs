@@ -35,10 +35,10 @@ impl drawing_api::ParagraphBuilder for ParagraphBuilder {
         self.paragraph_builder.add_text(text);
     }
 
-    fn build(self) -> Result<Self::Paragraph, &'static str> {
+    fn build(self, width: f32) -> Result<Self::Paragraph, &'static str> {
         let paragraph = self
             .paragraph_builder
-            .build(600.0f32)
+            .build(width)
             .ok_or("Impeller couldn't build the paragraph")?;
         Ok(crate::Paragraph { paragraph })
     }

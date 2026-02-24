@@ -11,7 +11,7 @@ pub trait ParagraphBuilderObject {
 
     fn add_text(&mut self, text: &str);
 
-    fn build(self) -> Result<Box<dyn ParagraphObject>, &'static str>;
+    fn build(self, width: f32) -> Result<Box<dyn ParagraphObject>, &'static str>;
 }
 
 impl<B: ParagraphBuilder> ParagraphBuilderObject for B {
@@ -50,7 +50,7 @@ impl<B: ParagraphBuilder> ParagraphBuilderObject for B {
         self.add_text(text);
     }
 
-    fn build(self) -> Result<Box<dyn ParagraphObject>, &'static str> {
-        Ok(Box::new(self.build()?))
+    fn build(self, width: f32) -> Result<Box<dyn ParagraphObject>, &'static str> {
+        Ok(Box::new(self.build(width)?))
     }
 }

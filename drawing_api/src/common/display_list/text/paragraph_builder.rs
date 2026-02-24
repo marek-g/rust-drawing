@@ -18,5 +18,5 @@ pub trait ParagraphBuilder: Sized + 'static {
 
     fn add_text(&mut self, text: &str);
 
-    fn build(self) -> Result<Self::Paragraph, &'static str>;
+    fn build(self, width: f32) -> Result<Self::Paragraph, &'static str>;
 }
