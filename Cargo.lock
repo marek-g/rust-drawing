@@ -291,7 +291,7 @@ dependencies = [
 
 [[package]]
 name = "drawing_impeller"
-version = "1002.0.0"
+version = "1002.0.1"
 dependencies = [
  "drawing_api",
  "impellers",
@@ -1024,14 +1024,14 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windowing_api"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "bitflags",
 ]
 
 [[package]]
 name = "windowing_qt"
-version = "0.17.0"
+version = "0.17.4"
 dependencies = [
  "bindgen",
  "cbindgen",

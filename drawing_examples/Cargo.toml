@@ -15,10 +15,15 @@ drawing_api = { path = "../drawing_api", version = "1010" }
 drawing_gl = { path = "../drawing_gl", version = "0.8" }
 drawing_impeller = { path = "../drawing_impeller", version = "1002" }
 windowing_qt = { path = "../../rust-windowing/windowing_qt/", version = "0.17" }
-impellers = { version = "0.4.1", features = ["static_link"] }
 gl = "0.14"
 rust-embed = "8.4"
 cpu-time = "1.0"
+
+[target.'cfg(not(any(target_arch = "aarch64", target_arch = "arm")))'.dependencies]
+impellers = { version = "0.4.1", features = ["static_link"] }
+
+[target.'cfg(any(target_arch = "aarch64", target_arch = "arm"))'.dependencies]
+impellers = { version = "0.4.1", features = ["prebuilt_libs"] }
 
 [[example]]
 name = "simple-gl"
