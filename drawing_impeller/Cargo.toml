@@ -13,4 +13,4 @@ edition = "2024"
 
 [dependencies]
 drawing_api = { path = "../drawing_api/", version = "1010" }
-impellers = "0.4.1"
+impellers = "0.4.2"
